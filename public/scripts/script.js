@@ -1,5 +1,6 @@
 const socket = io.connect();
 
+
 function hide(){
     document.getElementById("host").style.display = "none";
     document.getElementById("join").style.display = "none";
@@ -12,7 +13,12 @@ function tryJoin(){
 }
 
 socket.on("hosted", function(data){
-    roomId = data;
+	roomId = data;
+	var node = document.createElement("LI");   
+	node.innerHTML = "<li class='list-group-item' style='background: transparent;'></li>"              // Create a <li> node
+	var textnode = document.createTextNode(data);         // Create a text node
+	node.appendChild(textnode);                              // Append the text to <li>
+	document.getElementById("playerList").appendChild(node);
     document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
 	document.getElementById("gameId").innerHTML = "game id -  "+ data;

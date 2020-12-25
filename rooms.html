@@ -39,11 +39,12 @@
 	  </div>
 	</nav>
 
+  
 	<div class= "container">
 		<div class="row mt-6">
-            <div>
-                <h4 id="gameId" class="display-5 text-center"></h4>
-			    <h5 id="waitingMsg" class="text-center"></h5>
+            <div class="col-md-4 offset-md-4 text-center">
+                <h4 id="gameId" class="display-5 "></h4>
+			          <h5 id="waitingMsg"></h5>
             </div>
 			<div class="col-md-3 offset-md-3 text-center">
 				<button id="host" type="button" class="btn bt-lg btn-success" onClick="socket.emit('host'); hide();">Host</button>
@@ -79,7 +80,14 @@
                   </div>
             </div>
 		</div>
-	</div>
+  </div>
+  <div  class="d-inline-flex" style="border: 1px solid black;">
+    <div style="background: transparent;">
+      <ul id="playerList" class="list-group" >
+        <li class="list-group-item" style="background: transparent;">users connected - </li>
+      </ul>
+    </div>
+  </div>
 
 
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
