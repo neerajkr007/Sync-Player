@@ -1,97 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
-    <title>Welcome</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
+  <title>Welcome</title>
 </head>
-<body >
-	
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
-    <script src="/scripts/script.js"></script>
 
-	
-	<nav class="navbar navbar-expand-lg navbar-light bg-light nav-bg-style" >
-	  <a class="navbar-brand" href="index.html">SyncPlayer</a>
-	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-	    <span class="navbar-toggler-icon"></span>
-	  </button>
+<body>
 
-	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-	    <ul class="navbar-nav mr-auto">
-	      <li class="nav-item active">
-	        <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
-	      </li>
-	      <li class="nav-item active">
-	      	<a class="nav-link" href="notice.html">About</a>
-	      </li>
-	    </ul>
-	    <ul class="nav navbar-nav navbar-right">
-	    	<li class="nav-item active">
-	    		<a class="nav-link" href="notice.html"><span></span> Sign Up</a>
-	    	</li>
-	    	<li class="nav-item active">
-	    		<a class="nav-link" href="notice.html"><span></span> Login</a>
-	    	</li>
-	    </ul>
-	  </div>
-	</nav>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+  <script src="/scripts/script.js"></script>
 
-  
-	<div class= "container">
-		<div class="row mt-6">
-            <div class="col-md-4 offset-md-4 text-center">
-                <h4 id="gameId" class="display-5 "></h4>
-			          <h5 id="waitingMsg"></h5>
-            </div>
-			<div class="col-md-3 offset-md-3 text-center">
-				<button id="host" type="button" class="btn bt-lg btn-success" onClick="socket.emit('host'); hide();">Host</button>
-            </div>
-            <div class="col-md-3 text-center">
-				<button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2" onClick=" hide();">Join</button>
-            </div>
-            <div id="enterId">
-                <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalLabel2">Enter game id</h5>
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                            <label for="enteredId">Id - </label>
-                            <input type="number" id="enteredId" style="border: solid thin;
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light nav-bg-style">
+    <a class="navbar-brand" href="index.html">SyncPlayer</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="notice.html">About</a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="nav-item active">
+          <a class="nav-link" href="notice.html"><span></span> Sign Up</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="notice.html"><span></span> Login</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <div class="container">
+    <div class="row mt-6">
+      <div class="col-md-4" style="background: transparent;">
+        <ul id="playerList" class="list-group w-50">
+          <li class="list-group-item" style="background: transparent;">users connected - </li>
+        </ul>
+        <script>document.getElementById("playerList").style.display = "none";</script>
+      </div>
+      <div class="col-md-4  text-center">
+        <h4 id="gameId" class="display-5 "></h4>
+        <h5 id="waitingMsg"></h5>
+        <div id="nameField">
+          <h5>Enter name</h5>
+          <br>
+          <div class="input-group mb-3">
+            <input id="username" type="text" class="form-control" aria-label="Default"
+              aria-describedby="inputGroup-sizing-default" style="background: transparent; 
+                    border: solid thin;
+                    margin: auto;
+                    font-size: medium;
+                    text-align: center;" spellcheck="false">
+          </div>
+          <br>
+        </div>
+      </div>
+      <div class="col-md-3 offset-md-3 text-center">
+        <button id="host" type="button" class="btn bt-lg btn-success" onClick="sendit();">Host</button>
+      </div>
+      <div class="col-md-3 text-center">
+        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2"
+          onClick=" hide();">Join</button>
+      </div>
+      <div id="enterId">
+        <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel2">Enter game id</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <label for="enteredId">Id - </label>
+                <input type="number" id="enteredId" style="border: solid thin;
                             margin: auto;
                             font-size: medium;
                             color: black;
                             height: auto;
                             width: auto;">
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin();' data-dismiss="" >Join</button>
-                          <button type="button" id="cancel" class="btn btn-secondary"  data-dismiss="modal">Close</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin();'
+                  data-dismiss="">Join</button>
+                <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
             </div>
-		</div>
-  </div>
-  <div  class="d-inline-flex" style="border: 1px solid black;">
-    <div style="background: transparent;">
-      <ul id="playerList" class="list-group" >
-        <li class="list-group-item" style="background: transparent;">users connected - </li>
-      </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-6">
+        <a id="go" href="main.html" class="btn btn-success btn-lg active" role="button" aria-pressed="true">go</a>
+      </div>
     </div>
   </div>
 
 
-	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"></script>
 </body>
+
 </html>

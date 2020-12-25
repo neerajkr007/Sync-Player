@@ -35,6 +35,7 @@ var Player = function(id){
 	var self = {
         id:id,
         roomId: "",
+        name:"",
     } 
     return self;
 }
@@ -46,18 +47,22 @@ io.sockets.on('connection', function(socket){
     SOCKET_LIST[socket.id] = socket;
     var player = Player(socket.id);
 	PLAYER_LIST[socket.id] = player;
-    socket.on("host", function(){
+    socket.on("host", function(name){
         socket.join(player.id);
         player.roomId = player.id;
+        player.name = name;
+        console.log(player.name);
         socket.emit("hosted", String(player.id));  
     });
 
 
-    socket.on("tryJoin", id => {
+    socket.on("tryJoin", (id, name) => {
         for(var i in SOCKET_LIST){
             if(id == SOCKET_LIST[i].id){
                 socket.join(id);  
                 player.roomId = id;
+                player.name = name;
+                //console.log(socket);
                 socket.emit("joined"); 
                 return true;   
             }  

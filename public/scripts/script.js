@@ -1,24 +1,34 @@
 const socket = io.connect();
+var userName ="";
+
+
+function sendit(){
+	if(document.getElementById("username").value != ""){
+		userName = document.getElementById("username").value;
+		socket.emit('host', userName);
+		hide();
+	}
+}
 
 
 function hide(){
     document.getElementById("host").style.display = "none";
-    document.getElementById("join").style.display = "none";
+	document.getElementById("join").style.display = "none";
+	document.getElementById("nameField").style.display = "none";
 }
 
 function tryJoin(){
+	userName = document.getElementById("username").value;
 	roomId = document.getElementById("enteredId").value;
 	console.log(roomId);
-	socket.emit("tryJoin", roomId);
+	socket.emit("tryJoin", roomId, userName);
 }
 
 socket.on("hosted", function(data){
 	roomId = data;
-	var node = document.createElement("LI");   
-	node.innerHTML = "<li class='list-group-item' style='background: transparent;'></li>"              // Create a <li> node
-	var textnode = document.createTextNode(data);         // Create a text node
-	node.appendChild(textnode);                              // Append the text to <li>
-	document.getElementById("playerList").appendChild(node);
+	//var node = document.createElement("LI");   
+	//node.innerHTML = "<li class='list-group-item' style='background: transparent;'>" + userName +"</li>"                 // Append the text to <li>
+	//document.getElementById("playerList").appendChild(node);
     document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
 	document.getElementById("gameId").innerHTML = "game id -  "+ data;
@@ -28,6 +38,7 @@ socket.on("hosted", function(data){
 
 socket.on("joined", function(){
 	$('#exampleModal2').modal('toggle')
+	
 });
 
 socket.on("notJoined", function(){
