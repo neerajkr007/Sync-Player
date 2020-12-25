@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
+  <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
   <title>Welcome</title>
 </head>
 
@@ -109,10 +110,26 @@
         <a id="go" href="main.html" class="btn btn-success btn-lg active" role="button" aria-pressed="true">go</a>
       </div>
     </div>
+    <div id="player" class="row mt-6">
+      <h3>Show a file-select field which allows only one file to be chosen:</h3><br>
+      <input type="file" id="myfile" name="myfile" accept="video/*" onChange="loadVideo();" /><br><br>
+      <button onClick="loadVideo();"> test </button>
+      <video
+        id="my-video"
+        class="video-js"
+        controls
+        preload="auto"
+        width="640"
+        height="264"
+        data-setup='{"autoplay": true}'
+      >
+      </video>
+    </div>
   </div>
 
 
-
+  <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+  
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
     integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
     crossorigin="anonymous"></script>

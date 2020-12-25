@@ -10,6 +10,14 @@ function sendit(){
 	}
 }
 
+function  loadVideo(e){
+  var URL = window.URL || window.webkitURL
+  var clicked = e.target;
+    var file = clicked.files[0]
+    var videoNode = document.querySelector('video')
+    var fileURL = URL.createObjectURL(file)
+    videoNode.src = fileURL
+  }
 
 function hide(){
     document.getElementById("host").style.display = "none";
