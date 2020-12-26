@@ -14,15 +14,17 @@ function  loadVideo(e){
 	console.log("works");
 	const { target: { files } } = e
 	const [file] = files
-	const blob = new Blob([file], { type: 'video/mp4' })
-	const blobURL = URL.createObjectURL(blob)
-	console.log(blobURL)
-	var video = document.getElementById("my-video")
-	video.addEventListener('loadeddata', function once () {
-		video.removeEventListener('loadeddata', once)
-		video.play()
-	})
-	video.src = blobURL
+	var blob = new Blob([file], { type: 'video/mp4' })
+	var blobURL = URL.createObjectURL(blob)
+	var blobURL2 = blobURL.replace("localhost:3000", "cdpn.io")
+	console.log(blobURL2)
+	//var video = document.getElementById("test")
+	const video = document.querySelector('video')
+	var myplayer = videojs("my-video")
+	myplayer.src({type: 'video/mp4', src: blobURL});
+	//video.src = blobURL
+	
+	//myplayer.load()
 }  
 
 function hide(){
