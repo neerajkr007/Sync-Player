@@ -53,7 +53,7 @@ io.sockets.on('connection', function(socket){
         player.name = name;
         console.log(player.name);
         socket.emit("hosted", String(player.id));  
-    });
+    }); 
 
 
     socket.on("tryJoin", (id, name) => {

@@ -12,12 +12,11 @@ function sendit(){
 
 function  loadVideo(e){
   var URL = window.URL || window.webkitURL
-  var clicked = e.target;
-    var file = clicked.files[0]
-    var videoNode = document.querySelector('video')
-    var fileURL = URL.createObjectURL(file)
-    videoNode.src = fileURL
-  }
+	document.getElementById("test").src = URL.createObjectURL(this.files[0]);
+	vid.load();
+	vid.onended = function(){
+		URL.revokeObjectURL(vid.currentSrc);}
+  }  
 
 function hide(){
     document.getElementById("host").style.display = "none";
