@@ -16,15 +16,8 @@ function  loadVideo(e){
 	const [file] = files
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
-	var blobURL2 = blobURL.replace("localhost:3000", "cdpn.io")
-	console.log(blobURL2)
-	//var video = document.getElementById("test")
-	const video = document.querySelector('video')
 	var myplayer = videojs("my-video")
 	myplayer.src({type: 'video/mp4', src: blobURL});
-	//video.src = blobURL
-	
-	//myplayer.load()
 }  
 
 function hide(){
@@ -40,11 +33,14 @@ function tryJoin(){
 	socket.emit("tryJoin", roomId, userName);
 }  
 
+function showPlayeremit(){
+	socket.emit("showPlayeremit");
+}
+
 socket.on("hosted", function(data){
 	roomId = data;
-	//var node = document.createElement("LI");   
-	//node.innerHTML = "<li class='list-group-item' style='background: transparent;'>" + userName +"</li>"                 // Append the text to <li>
-	//document.getElementById("playerList").appendChild(node);
+	document.getElementById("playerList").style.display = "inline-flex";
+	document.getElementById("go").style.display = "flex";
     document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
 	document.getElementById("gameId").innerHTML = "game id -  "+ data;
@@ -53,10 +49,21 @@ socket.on("hosted", function(data){
 });
 
 socket.on("joined", function(){
+	document.getElementById("playerList").style.display = "inline-flex";
 	$('#exampleModal2').modal('toggle')
 	
 });
 
 socket.on("notJoined", function(){
 	alert("id incorrect !");
+});
+
+socket.on("updatePlayerList", (name)=>{
+	var node = document.createElement("LI");   
+	node.innerHTML = "<li class='list-group-item' style='background: transparent;'>" + name +"</li>"                 // Append the text to <li>
+	document.getElementById("playerList").appendChild(node);
+});
+
+socket.on("showPlayer", ()=>{
+	document.getElementById("player").style.display = "flex";
 });
