@@ -112,43 +112,7 @@
     </div>
     <div id="player" class="row mt-6">
       <h3>Show a file-select field which allows only one file to be chosen:</h3><br>
-      <input type="file" id="myfile" name="myfile" accept="video/*"  /><br><br>
-      <button onClick="loadVideo();"> test </button>
-      <script>
-        let video = null;
-        const input = document.getElementById('myfile');
-        let file = null
-        const mediaSource = new MediaSource()
-        const reader = new FileReader()
-        mediaSource.addEventListener('sourceopen', feedMediaSource)
-  
-        input.addEventListener('change', pickFile)
-  
-        function pickFile(e) {
-          console.log("works");
-          file = e.currentTarget.files[0]
-          video = document.getElementById("my-video");
-          video.style.width = '640px'
-          video.style.height = '360px'
-          video.style.border = '1px solid black'
-          video.controls = true
-          video.src = URL.createObjectURL(mediaSource)
-          console.log(mediaSource);
-          //document.body.insertBefore(video, input)
-        }
-        
-  
-        function feedMediaSource() {
-          const sourceBuffer = mediaSource.addSourceBuffer(file.type)
-  
-          reader.onload = function () {
-            sourceBuffer.appendBuffer(new Uint8Array(reader.result))
-          }
-  
-          reader.readAsArrayBuffer(file)
-        }
-  
-      </script>
+      <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
       <video
         id="my-video"
         class="video-js"
@@ -158,7 +122,13 @@
         height="264"
         data-setup='{"autoplay": true}'
       >
+      <source id="test" type="video/mp4"/>
       </video>
+      <script>
+        const input = document.getElementById('myfile');
+        input.addEventListener('change', loadVideo);
+      </script>
+      
     </div>
   </div>
 

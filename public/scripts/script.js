@@ -11,12 +11,19 @@ function sendit(){
 }
 
 function  loadVideo(e){
-  var URL = window.URL || window.webkitURL
-	document.getElementById("test").src = URL.createObjectURL(this.files[0]);
-	vid.load();
-	vid.onended = function(){
-		URL.revokeObjectURL(vid.currentSrc);}
-  }  
+	console.log("works");
+	const { target: { files } } = e
+	const [file] = files
+	const blob = new Blob([file], { type: 'video/mp4' })
+	const blobURL = URL.createObjectURL(blob)
+	console.log(blobURL)
+	var video = document.getElementById("my-video")
+	video.addEventListener('loadeddata', function once () {
+		video.removeEventListener('loadeddata', once)
+		video.play()
+	})
+	video.src = blobURL
+}  
 
 function hide(){
     document.getElementById("host").style.display = "none";
@@ -29,7 +36,7 @@ function tryJoin(){
 	roomId = document.getElementById("enteredId").value;
 	console.log(roomId);
 	socket.emit("tryJoin", roomId, userName);
-}
+}  
 
 socket.on("hosted", function(data){
 	roomId = data;

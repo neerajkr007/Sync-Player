@@ -51,13 +51,13 @@ io.sockets.on('connection', function(socket){
         socket.join(player.id);
         player.roomId = player.id;
         player.name = name;
-        console.log(player.name);
+        console.log(player.name);  
         socket.emit("hosted", String(player.id));  
     }); 
 
 
     socket.on("tryJoin", (id, name) => {
-        for(var i in SOCKET_LIST){
+        for(var i in SOCKET_LIST){  
             if(id == SOCKET_LIST[i].id){
                 socket.join(id);  
                 player.roomId = id;
@@ -72,7 +72,7 @@ io.sockets.on('connection', function(socket){
 
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
-        delete SOCKET_LIST[socket.id]; 
+        delete SOCKET_LIST[socket.id];  
 		delete PLAYER_LIST[socket.id];
     });
 });
