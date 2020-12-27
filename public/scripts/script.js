@@ -1,5 +1,6 @@
 const socket = io.connect();
 var userName ="";
+var myplayer = videojs("my-video")
 
 
 function sendit(){
@@ -16,7 +17,6 @@ function  loadVideo(e){
 	const [file] = files
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
-	var myplayer = videojs("my-video")
 	myplayer.src({type: 'video/mp4', src: blobURL});
 }  
 
@@ -39,7 +39,7 @@ function showPlayeremit(){
 
 socket.on("hosted", function(data){
 	roomId = data;
-	document.getElementById("playerList").style.display = "inline-flex";
+	//document.getElementById("playerList").style.display = "inline-flex";
 	document.getElementById("go").style.display = "flex";
     document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
@@ -48,8 +48,13 @@ socket.on("hosted", function(data){
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for other player to join...</h5>";
 });
 
-socket.on("joined", function(){
-	document.getElementById("playerList").style.display = "inline-flex";
+socket.on("joined", function(data){
+	//document.getElementById("playerList").style.display = "inline-flex";
+	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
+	document.getElementById("gameId").style.display = "inline-flex";
+	document.getElementById("gameId").innerHTML = " joined game id -  "+ data;
+	document.getElementById("waitingMsg").style.display = "inline-flex";
+	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
 	
 });

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
-  <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
+  
   <title>Welcome</title>
 </head>
 
@@ -13,6 +13,7 @@
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" href="/css/style.css">
   <script src="/scripts/script.js"></script>
 
@@ -70,12 +71,10 @@
           <br>
         </div>
       </div>
-      <div class="col-md-3 offset-md-3 text-center">
+      <div class="col-md-4 offset-md-4 text-center">
         <button id="host" type="button" class="btn bt-lg btn-success" onClick="sendit();">Host</button>
-      </div>
-      <div class="col-md-3 text-center">
-        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2"
-          onClick=" hide();">Join</button>
+        <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
+        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
       </div>
       <div id="enterId">
         <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
@@ -98,7 +97,7 @@
                             width: auto;">
               </div>
               <div class="modal-footer">
-                <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin();'
+                <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin(); hide();'
                   data-dismiss="">Join</button>
                 <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
               </div>
@@ -122,8 +121,8 @@
           class="video-js"
           controls
           preload="auto"
-          width="640"
-          height="264"
+          width="450"
+          height="250"
           data-setup='{"autoplay": false}'
         >
         </video><br><br><br>
@@ -140,7 +139,6 @@
 
 
   <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
-  
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
     integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
     crossorigin="anonymous"></script>

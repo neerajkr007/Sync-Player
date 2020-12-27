@@ -60,7 +60,7 @@ io.sockets.on('connection', function(socket){
         player.name = name;
         player.isHost = true;
         console.log(player.name); 
-        updatePlayerList(player.name); 
+        updatePlayerList(player.name, player.roomId); 
         socket.emit("hosted", String(player.id));  
     }); 
 
@@ -77,17 +77,16 @@ io.sockets.on('connection', function(socket){
                         
                     }
                 }
-                updatePlayerList(player.name);
-                socket.emit("joined"); 
+                updatePlayerList(player.name, player.roomId);
+                socket.emit("joined", player.roomId); 
                 return true;   
             }  
         }
         socket.emit("notJoined"); 
     });
 
-    function updatePlayerList(name){
-        if(player.isHost)
-            io.sockets.emit("updatePlayerList", name)
+    function updatePlayerList(name, roomID){
+            io.sockets.in(String(roomID)).emit("updatePlayerList", name)
         
     }
 
