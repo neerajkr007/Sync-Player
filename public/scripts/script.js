@@ -26,15 +26,15 @@ function  loadVideo(e){
 		socket.emit("ready", myFileSize);
 	});
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
-	playButton.addEventListener('click', (e)=>{
-		if(isHost)
-		{
-			myplayer.pause();
-			socket.emit("playvideo?", myRoomId, myFileSize);
-		}
-		else
-			myplayer.pause();
-	});
+	if(isHost){
+		playButton.addEventListener('click', (e)=>{
+				myplayer.pause();
+				socket.emit("playvideo?", myRoomId, myFileSize);
+		});
+	}
+	else
+		playButton.style.display = "none";
+	
 }  
 
 
