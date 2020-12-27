@@ -1,6 +1,8 @@
 const socket = io.connect();
 var userName ="";
-var myplayer = videojs("my-video")
+var myRoomId = "";
+var isHost = false;
+var myFileSize = 0;
 
 
 function sendit(){
@@ -15,10 +17,27 @@ function  loadVideo(e){
 	console.log("works");
 	const { target: { files } } = e
 	const [file] = files
+	myFileSize = [file][0].size;
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
+	var myplayer = videojs("my-video")
 	myplayer.src({type: 'video/mp4', src: blobURL});
+	myplayer.on('loadeddata', (e)=>{
+		socket.emit("ready", myFileSize);
+	});
+	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
+	playButton.addEventListener('click', (e)=>{
+		if(isHost)
+		{
+			myplayer.pause();
+			socket.emit("playvideo?", myRoomId, myFileSize);
+		}
+		else
+			myplayer.pause();
+	});
 }  
+
+
 
 function hide(){
     document.getElementById("host").style.display = "none";
@@ -38,7 +57,8 @@ function showPlayeremit(){
 }
 
 socket.on("hosted", function(data){
-	roomId = data;
+	myRoomId = data;
+	isHost = true;
 	//document.getElementById("playerList").style.display = "inline-flex";
 	document.getElementById("go").style.display = "flex";
     document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
@@ -50,6 +70,7 @@ socket.on("hosted", function(data){
 
 socket.on("joined", function(data){
 	//document.getElementById("playerList").style.display = "inline-flex";
+	myRoomId = data;
 	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
 	document.getElementById("gameId").innerHTML = " joined game id -  "+ data;
@@ -69,6 +90,50 @@ socket.on("updatePlayerList", (name)=>{
 	document.getElementById("playerList").appendChild(node);
 });
 
-socket.on("showPlayer", ()=>{
-	document.getElementById("player").style.display = "flex";
+socket.on("showPlayer", (roomId)=>{
+	if(roomId == myRoomId)
+	{
+		document.getElementById("player").style.display = "flex";
+	}
+});
+
+socket.on("playVideo", (roomId)=>{
+	if(roomId == myRoomId)
+	{
+		var myplayer = videojs("my-video");
+		myplayer.play();
+		console.log("works ?")
+		var video = document.querySelector('video');
+		video.addEventListener('pause', e=>{
+			socket.emit("pauseEmit");
+		});
+	}
+});
+
+socket.on("pause", (roomId)=>{
+	if(roomId == myRoomId)
+	{
+		var myplayer = videojs("my-video");
+		myplayer.pause();
+		if(isHost){
+			var video = document.querySelector('video');
+			video.addEventListener('play', e=>{
+				socket.emit("playEmit");
+			});
+		}
+	}
+});
+
+socket.on("play", (roomId)=>{
+	if(roomId == myRoomId)
+	{
+		var myplayer = videojs("my-video");
+		myplayer.play();
+		if(isHost){
+			var video = document.querySelector('video');
+			video.addEventListener('pause', e=>{
+				socket.emit("pauseEmit");
+			});
+		}
+	}
 });
