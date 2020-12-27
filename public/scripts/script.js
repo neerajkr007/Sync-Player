@@ -1,6 +1,5 @@
 const socket = io.connect();
 var userName ="";
-var myplayer = videojs("my-video")
 
 
 function sendit(){
@@ -17,7 +16,12 @@ function  loadVideo(e){
 	const [file] = files
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
+	var myplayer = videojs("my-video")
+	var video = document.querySelector("video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
+	video.addEventListener('loadeddata', (e)=>{
+		socket.emit("ready");
+	});
 }  
 
 function hide(){
