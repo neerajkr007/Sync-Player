@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
-  <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
+  
   <title>Welcome</title>
 </head>
 
@@ -13,6 +13,7 @@
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" href="/css/style.css">
   <script src="/scripts/script.js"></script>
 
@@ -70,12 +71,10 @@
           <br>
         </div>
       </div>
-      <div class="col-md-3 offset-md-3 text-center">
+      <div class="col-md-4 offset-md-4 text-center">
         <button id="host" type="button" class="btn bt-lg btn-success" onClick="sendit();">Host</button>
-      </div>
-      <div class="col-md-3 text-center">
-        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2"
-          onClick=" hide();">Join</button>
+        <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
+        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
       </div>
       <div id="enterId">
         <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
@@ -98,7 +97,7 @@
                             width: auto;">
               </div>
               <div class="modal-footer">
-                <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin();'
+                <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin(); hide();'
                   data-dismiss="">Join</button>
                 <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
               </div>
@@ -106,65 +105,40 @@
           </div>
         </div>
       </div>
-      <div class="row mt-6">
-        <a id="go" href="main.html" class="btn btn-success btn-lg active" role="button" aria-pressed="true">go</a>
+    </div>
+    <div id="go" class="row mt-6">
+      <div class="col-md-4 offset-md-4 text-center">
+        <button class="btn btn-success" onClick="showPlayeremit();">Go</button>
+        <script>document.getElementById("go").style.display="none";</script>
       </div>
     </div>
     <div id="player" class="row mt-6">
-      <h3>Show a file-select field which allows only one file to be chosen:</h3><br>
-      <input type="file" id="myfile" name="myfile" accept="video/*"  /><br><br>
-      <button onClick="loadVideo();"> test </button>
-      <script>
-        let video = null;
-        const input = document.getElementById('myfile');
-        let file = null
-        const mediaSource = new MediaSource()
-        const reader = new FileReader()
-        mediaSource.addEventListener('sourceopen', feedMediaSource)
-  
-        input.addEventListener('change', pickFile)
-  
-        function pickFile(e) {
-          console.log("works");
-          file = e.currentTarget.files[0]
-          video = document.getElementById("my-video");
-          video.style.width = '640px'
-          video.style.height = '360px'
-          video.style.border = '1px solid black'
-          video.controls = true
-          video.src = URL.createObjectURL(mediaSource)
-          console.log(mediaSource);
-          //document.body.insertBefore(video, input)
-        }
-        
-  
-        function feedMediaSource() {
-          const sourceBuffer = mediaSource.addSourceBuffer(file.type)
-  
-          reader.onload = function () {
-            sourceBuffer.appendBuffer(new Uint8Array(reader.result))
-          }
-  
-          reader.readAsArrayBuffer(file)
-        }
-  
-      </script>
-      <video
-        id="my-video"
-        class="video-js"
-        controls
-        preload="auto"
-        width="640"
-        height="264"
-        data-setup='{"autoplay": true}'
-      >
-      </video>
+      <div class="col-md-8 offset-md-2">
+        <h3>choose local file:</h3><br>
+        <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
+        <video
+          id="my-video"
+          class="video-js"
+          controls
+          preload="auto"
+          width="450"
+          height="250"
+          data-setup='{"autoplay": false}'
+        >
+        </video><br><br><br>
+        <div> <h3> </h3></div>
+        <script>
+          document.getElementById("player").style.display = "none";
+          const input = document.getElementById('myfile');
+          input.addEventListener('change', loadVideo);
+        </script>
+      </div>
+      
     </div>
   </div>
 
 
   <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
-  
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
     integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
     crossorigin="anonymous"></script>
