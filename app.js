@@ -67,9 +67,9 @@ io.on('connection', function(socket){
         //console.log(player.name); 
         //updatePlayerList();
         socket.adapter.rooms.get(player.id).size;
-        ROOM_LIST[0][0] = player;
+        //ROOM_LIST[0][0] = player;
         numberOfHosts++;
-        console.log(ROOM_LIST[numberOfHosts][0])
+        //console.log(ROOM_LIST[numberOfHosts][0])
         socket.emit("hosted", String(player.id));
     }); 
 
@@ -125,6 +125,7 @@ io.on('connection', function(socket){
             if(roomID == PLAYER_LIST[i].roomId) 
             {
                 if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
+                    alert("not ready or wrong size");
                     return false;
                 }
             }
