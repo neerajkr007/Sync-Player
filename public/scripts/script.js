@@ -111,21 +111,24 @@ socket.on("playVideo", (roomId)=>{
 		
 		if(isHost){
 			var video = document.querySelector('video');
-			video.addEventListener('pause', e=>{
+			video.addEventListener('pause', function once (){
+				video.removeEventListener('pause', once)
 				socket.emit("pauseEmit");
 			});
 		}
 	}
 });
 
-socket.on("pause", (roomId)=>{
+socket.on("pause", (roomId, time)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
+		myplayer.currentTime(time);
 		myplayer.pause();
 		if(isHost){
 			var video = document.querySelector('video');
-			video.addEventListener('play', e=>{
+			video.addEventListener('play', function once (){
+				video.removeEventListener('play', once)
 				socket.emit("playEmit");
 			});
 		}
@@ -139,8 +142,10 @@ socket.on("play", (roomId)=>{
 		myplayer.play();
 		if(isHost){
 			var video = document.querySelector('video');
-			video.addEventListener('pause', e=>{
-				socket.emit("pauseEmit");
+			video.addEventListener('pause', function once (){
+				video.removeEventListener('pause', once)
+				var time = myplayer.currentTime();
+				socket.emit("pauseEmit", time);
 			});
 		}
 	}
