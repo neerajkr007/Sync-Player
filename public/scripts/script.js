@@ -125,6 +125,7 @@ socket.on("pause", (roomId, time)=>{
 		var myplayer = videojs("my-video");
 		myplayer.currentTime(time);
 		myplayer.pause();
+		myplayer.controls(true);
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('play', function once (){
