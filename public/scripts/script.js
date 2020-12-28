@@ -20,24 +20,29 @@ function  loadVideo(e){
 	myFileSize = [file][0].size;
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
-	var myplayer = videojs("my-video")
+	var myplayer = videojs("my-video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		socket.emit("ready", myFileSize);
 	});
+	if(!isHost){
+		myplayer.controls(false);
+	}
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(isHost){
-		playButton.addEventListener('click', (e)=>{
-				myplayer.pause();
-				socket.emit("playvideo?", myRoomId, myFileSize);
+		var video = document.querySelector('video');
+		video.addEventListener('play', function once (){
+			video.removeEventListener('play', once)
+			myplayer.pause();
+			socket.emit("playvideo?", myRoomId, myFileSize);
 		});
 	}
-	else
+	else{
 		playButton.style.display = "none";
-	
+		//document.querySelector("video").innerHTML = "controls": false, "techOrder": ["html5", "flash", "other supported tech"]
+		//myplayer.data-setup
+	}
 }  
-
-
 
 function hide(){
     document.getElementById("host").style.display = "none";
@@ -99,14 +104,17 @@ socket.on("showPlayer", (roomId)=>{
 
 socket.on("playVideo", (roomId)=>{
 	if(roomId == myRoomId)
-	{
+	{	
+		console.log("works ?")
 		var myplayer = videojs("my-video");
 		myplayer.play();
-		console.log("works ?")
-		var video = document.querySelector('video');
-		video.addEventListener('pause', e=>{
-			socket.emit("pauseEmit");
-		});
+		
+		if(isHost){
+			var video = document.querySelector('video');
+			video.addEventListener('pause', e=>{
+				socket.emit("pauseEmit");
+			});
+		}
 	}
 });
 
