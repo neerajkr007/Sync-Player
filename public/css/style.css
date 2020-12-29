@@ -10,10 +10,13 @@ body{
 	margin-bottom: 150px;
 }
 
+ul {
+    list-style-type: none;
+}
+
 .cardsize{
 	height: 250px;
 }
-
 
 .nav-bg-style{
 	border-bottom: 1px solid black;
