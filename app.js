@@ -168,6 +168,17 @@ io.on('connection', function(socket){
         socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  
         delete PLAYER_LIST[socket.id];
+        for(var i in ROOM_LIST[player.hostNumber]){
+            if(player == ROOM_LIST[player.hostNumber][i])
+            {
+                ROOM_LIST[player.hostNumber].splice(i, 1);
+                io.sockets.emit("clearPlayerList", ROOM_LIST[player.hostNumber][0].roomId);
+                io.sockets.emit("updatePlayerList", "connected users -", ROOM_LIST[player.hostNumber][0].roomId)
+                for(var i = 0; i<ROOM_LIST[player.hostNumber].length; i++){
+                    io.sockets.emit("updatePlayerList", ROOM_LIST[player.hostNumber][i].name, ROOM_LIST[player.hostNumber][i].roomId)
+                }
+            }
+        }
         if(player.isHost)
             delete ROOM_LIST[player.hostNumber]
     });
