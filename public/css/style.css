@@ -10,6 +10,10 @@ body{
 	margin-bottom: 150px;
 }
 
+ul {
+    list-style-type: none;
+}
+
 .cardsize{
 	height: 250px;
 }

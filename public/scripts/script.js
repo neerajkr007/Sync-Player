@@ -58,27 +58,29 @@ function tryJoin(){
 }  
 
 function showPlayeremit(){
+	$('#Modal3').modal('toggle')
+	document.getElementById("go").style.display = "none";
 	socket.emit("showPlayeremit");
 }
 
 socket.on("hosted", function(data){
 	myRoomId = data;
 	isHost = true;
-	//document.getElementById("playerList").style.display = "inline-flex";
+	document.getElementById("playerList").style.display = "inline-flex";
 	document.getElementById("go").style.display = "flex";
     document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
-	document.getElementById("gameId").innerHTML = "game id -  "+ data;
+	document.getElementById("gameId").innerHTML = "room id -  "+ data;
 	document.getElementById("waitingMsg").style.display = "inline-flex";
-	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for other player to join...</h5>";
+	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> click go to load the player</h5>";
 });
 
 socket.on("joined", function(data){
-	//document.getElementById("playerList").style.display = "inline-flex";
+	document.getElementById("playerList").style.display = "inline-flex";
 	myRoomId = data;
 	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
-	document.getElementById("gameId").innerHTML = " joined game id -  "+ data;
+	document.getElementById("gameId").innerHTML = " joined room id -  "+ data;
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
@@ -89,10 +91,20 @@ socket.on("notJoined", function(){
 	alert("id incorrect !");
 });
 
-socket.on("updatePlayerList", (name)=>{
-	var node = document.createElement("LI");   
-	node.innerHTML = "<li class='list-group-item' style='background: transparent;'>" + name +"</li>"                 // Append the text to <li>
-	document.getElementById("playerList").appendChild(node);
+socket.on("clearPlayerList", (roomId)=>{
+	if(roomId == myRoomId)
+	{	
+		document.getElementById("playerList").innerHTML="";
+	}
+});
+
+socket.on("updatePlayerList", (name, roomId)=>{
+	if(roomId == myRoomId)
+	{
+		var node = document.createElement("LI");   
+		node.innerHTML = "<li class='list-group-item' style='background: transparent;'>" + name +"</li>"                 // Append the text to <li>
+		document.getElementById("playerList").appendChild(node);
+	}
 });
 
 socket.on("showPlayer", (roomId)=>{
@@ -108,6 +120,7 @@ socket.on("playVideo", (roomId)=>{
 		console.log("works ?")
 		var myplayer = videojs("my-video");
 		myplayer.play();
+		myplayer.controls(true);
 		
 		if(isHost){
 			var video = document.querySelector('video');
@@ -125,7 +138,6 @@ socket.on("pause", (roomId, time)=>{
 		var myplayer = videojs("my-video");
 		myplayer.currentTime(time);
 		myplayer.pause();
-		myplayer.controls(true);
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('play', function once (){

@@ -47,7 +47,7 @@
 
   <div class="container">
     <div class="row mt-6">
-      <div class="col-md-4" style="background: transparent;">
+      <div class="col-md-4 text-center" style="background: transparent;">
         <ul id="playerList" class="list-group w-50">
           <li class="list-group-item" style="background: transparent;">users connected - </li>
         </ul>
@@ -107,8 +107,32 @@
     </div>
     <div id="go" class="row mt-6">
       <div class="col-md-4 offset-md-4 text-center">
-        <button class="btn btn-success" onClick="showPlayeremit();">Go</button>
+        <button class="btn btn-success" data-toggle="modal" data-target="#Modal3">Go</button>
         <script>document.getElementById("go").style.display="none";</script>
+      </div>
+    </div>
+    <div id="loadPlayerModal">
+      <div class="modal fade" id="Modal3" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="ModalLabel3">Warning !!!</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h7 class="display-5">sure you want to load the player?</h3><br>
+              <h7 class="">don't do this before all users have joined your room.</h3>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="sure" class="btn btn-primary" onClick='showPlayeremit();'
+                data-dismiss="">sure, go ahead</button>
+              <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div id="player" class="row mt-6">

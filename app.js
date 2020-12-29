@@ -31,9 +31,9 @@ var io = require('socket.io')(serv,{});
 
 var SOCKET_LIST = {};
 var PLAYER_LIST = {};
-var ROOM_LIST = {};
-for (var i = 0, l = 10; i < l; i++){
-    ROOM_LIST[i] = {};
+var ROOM_LIST = []; 
+for(var i =0; i<10; i++){
+    ROOM_LIST[i] = [];
 }
 
 var Player = function(id){
@@ -45,10 +45,18 @@ var Player = function(id){
         isHost:false,
         isReady:false,
         fileSize:0,
+        hostNumber:-1,
     } 
     return self;
 }
 var numberOfHosts = 0;
+
+var eventify = function(arr, callback) {
+    arr.push = function(e) {
+        Array.prototype.push.call(arr, e);
+        callback(arr);
+    };
+};
 
 io.on('connection', function(socket){
     console.log('socket connected ');
@@ -56,7 +64,23 @@ io.on('connection', function(socket){
     console.log(socket.id);
     SOCKET_LIST[socket.id] = socket;
     var player = Player(socket.id);
-	PLAYER_LIST[socket.id] = player;
+    PLAYER_LIST[socket.id] = player;
+    
+
+    function callEventify(id){
+        eventify(ROOM_LIST[id], function(updatedArr) {
+            //if(updatedArr.length>1){
+                io.sockets.emit("clearPlayerList", updatedArr[0].roomId);
+                io.sockets.emit("updatePlayerList", "connected users -", updatedArr[0].roomId)
+                for(var i = 0; i<updatedArr.length; i++){
+                    io.sockets.emit("updatePlayerList", updatedArr[i].name, updatedArr[i].roomId)
+                }
+            //}
+            //io.sockets.emit("updatePlayerList", updatedArr[updatedArr.length - 1].name, updatedArr[updatedArr.length - 1].roomId)
+          });
+    }
+
+
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
         //player.myRoomNumber = numberOfHosts;
@@ -64,25 +88,30 @@ io.on('connection', function(socket){
         player.roomId = player.id;
         player.name = name;
         player.isHost = true;
-        //console.log(player.name); 
-        //updatePlayerList();
+        player.hostNumber = numberOfHosts;
+        //console.log(player.name);
         socket.adapter.rooms.get(player.id).size;
         //ROOM_LIST[0][0] = player;
-        numberOfHosts++;
+        
         //console.log(ROOM_LIST[numberOfHosts][0])
+        callEventify(player.hostNumber);
         socket.emit("hosted", String(player.id));
+        updatePlayerList();
+        numberOfHosts++;
     }); 
 
 
     socket.on("tryJoin", (id, name) => {
-        for(var i in SOCKET_LIST){  
-            if(id == SOCKET_LIST[i].id){
+        for(var i in PLAYER_LIST){  
+            if(id == PLAYER_LIST[i].id){
                 socket.join(id);  
                 player.roomId = id;
                 player.name = name;
+                player.hostNumber = PLAYER_LIST[i].hostNumber;
                 //console.log(socket);
-                //updatePlayerList();
+                callEventify(player.hostNumber);
                 socket.emit("joined", player.roomId);
+                updatePlayerList();
                 return true;   
             }  
         }
@@ -90,14 +119,7 @@ io.on('connection', function(socket){
     });
 
     function updatePlayerList(){
-        for(var i in PLAYER_LIST)
-        {
-            if(player.roomId == PLAYER_LIST[i].roomId)
-            {
-                socket.emit("updatePlayerList", PLAYER_LIST[i].name)
-            }
-        }
-        
+        ROOM_LIST[player.hostNumber].push(player);
     }
 
     socket.on("showPlayeremit", ()=>{
@@ -143,7 +165,10 @@ io.on('connection', function(socket){
 
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
+        socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  
-		delete PLAYER_LIST[socket.id];
+        delete PLAYER_LIST[socket.id];
+        if(player.isHost)
+            delete ROOM_LIST[player.hostNumber]
     });
 });
