@@ -1,6 +1,9 @@
 {
   "name": "basic-proto",
   "version": "1.0.0",
+  "engines": {
+    "node": "12.20.0"
+  },
   "description": "",
   "main": "app.js",
   "dependencies": {
