@@ -3,6 +3,41 @@ var userName ="";
 var myRoomId = "";
 var isHost = false;
 var myFileSize = 0;
+var client = new WebTorrent()
+
+client.on('error', function (err) {
+	console.error('ERROR: ' + err.message)
+})
+var torrentId = 'magnet:?xt=urn:btih:6a9759bffd5c0af65319979fb7832189f4f3c35d&dn=sintel.mp4&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&tr=wss%3A%2F%2Ftracker.webtorrent.io&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel-1024-surround.mp4';
+//after recieving torrentid
+function onTorrent (torrent) {
+	console.log("torrent loaded");
+	// Print out progress every 5 seconds
+	var interval = setInterval(function () {
+	  console.log('Progress: ' + (torrent.progress * 100).toFixed(1) + '%')
+	}, 5000)
+
+	torrent.on('done', function () {
+	  console.log('Progress: 100%')
+	  clearInterval(interval)
+	})
+	const file = torrent.files.find(function(file) {
+			return file.name.endsWith('.mp4')
+		});
+	file.renderTo("video#my-video_html5_api", {}, () => {
+		console.log("Ready to play!");
+	  });
+	
+	//document.querySelector('video').controls = false
+	var myplayer = videojs("my-video")
+	myplayer.controls(false)
+	// var myplayer = videojs("my-video", {preload: "auto",controls: true,fluid: true,autoplay: false});
+	// var blobUrl=document.getElementById("my-video").getAttribute("src");
+	// setTimeout(function(){myplayer.src= { type: "video/mp4", "src": blobUrl };},100);
+
+	
+	//document.querySelector('video').controls = false
+}
 
 
 function sendit(){
@@ -15,18 +50,32 @@ function sendit(){
 
 function  loadVideo(e){
 	console.log("works");
-	const { target: { files } } = e
-	const [file] = files
-	myFileSize = [file][0].size;
-	var blob = new Blob([file], { type: 'video/mp4' })
-	var blobURL = URL.createObjectURL(blob)
-	var myplayer = videojs("my-video");
-	myplayer.src({type: 'video/mp4', src: blobURL});
-	myplayer.on('loadeddata', (e)=>{
+	if(isHost)
+	{	var myplayer = videojs("my-video")
+		myplayer.controls(true)
+		const { target: { files } } = e
+		const [file] = files
+		myFileSize = [file][0].size;
+		var blob = new Blob([file], { type: 'video/mp4' })
+		var blobURL = URL.createObjectURL(blob)
+		myplayer.src({type: 'video/mp4', src: blobURL});
+		myplayer.on('loadeddata', (e)=>{
+			socket.emit("ready", myFileSize);
+			client.seed([file][0], function (torrent) {
+				console.log('Client is seeding ' + torrent.magnetURI)
+				socket.emit("torrenturlemit", torrent.magnetURI)
+			})
+		});
+		
+	}
+	else
+	{
 		socket.emit("ready", myFileSize);
-	});
+		client.add(torrentId, onTorrent)
+		console.log("loading torrent")
+	}
 	if(!isHost){
-		myplayer.controls(false);
+		//myplayer.controls(true);
 	}
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(isHost){
@@ -119,8 +168,10 @@ socket.on("playVideo", (roomId)=>{
 	{	
 		console.log("works ?")
 		var myplayer = videojs("my-video");
+		var video = document.querySelector('video')
+		video.play();
 		myplayer.play();
-		myplayer.controls(true);
+		//myplayer.controls(true);
 		
 		if(isHost){
 			var video = document.querySelector('video');
@@ -137,6 +188,8 @@ socket.on("pause", (roomId, time)=>{
 	{
 		var myplayer = videojs("my-video");
 		myplayer.currentTime(time);
+		var video = document.querySelector('video')
+		video.pause();
 		myplayer.pause();
 		if(isHost){
 			var video = document.querySelector('video');
@@ -152,6 +205,8 @@ socket.on("play", (roomId)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
+		var video = document.querySelector('video')
+		video.play();
 		myplayer.play();
 		if(isHost){
 			var video = document.querySelector('video');
@@ -161,5 +216,12 @@ socket.on("play", (roomId)=>{
 				socket.emit("pauseEmit", time);
 			});
 		}
+	}
+});
+
+socket.on("torrenturl", (roomId, url)=>{
+	if(roomId == myRoomId)
+	{
+		torrentId = url;
 	}
 });

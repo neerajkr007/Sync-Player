@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
   <title>Welcome</title>
 </head>
 
@@ -142,10 +143,8 @@
         <video
           id="my-video"
           class="video-js"
-          controls
           preload="auto"
-          height="auto"
-          width="350"
+          fluid= "true"
           data-setup='{"autoplay": false}'
         >
         </video><br><br><br>
