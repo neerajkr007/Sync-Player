@@ -2,18 +2,50 @@ const socket = io.connect();
 var userName ="";
 var myRoomId = "";
 var isHost = false;
+var sessionType = ""
 var myFileSize = 0;
+var peer = new Peer();
+var peerIds = []
+var myPeerId = ""
+peer.on("open", ()=>{
+	myPeerId = peer.id;
+})
+
+let stream;
+function maybeCreateStream(video) {
+	if (stream) {
+	  return;
+	}
+	if (video.captureStream) {
+	  stream = video.captureStream();
+	  console.log('Captured stream from video with captureStream',
+		  stream);
+	} else if (video.mozCaptureStream) {
+	  stream = video.mozCaptureStream();
+	  console.log('Captured stream from video with mozCaptureStream()',
+		  stream);
+	} else {
+	  console.log('captureStream() not supported');
+	}
+  }
 
 function sendit(){
 	if(document.getElementById("username").value != ""){
 		userName = document.getElementById("username").value;
 		socket.emit('host', userName);
 		hide();
+		
 	}
 }
 
 function  loadVideo(e){
 	console.log("works");
+	if(isHost){
+		if(document.getElementById("Radios2").checked)
+		{
+			socket.emit("fetchmePeerIdsemit");
+		}
+	}
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
@@ -23,7 +55,14 @@ function  loadVideo(e){
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		var video = document.querySelector('video')
-		//maybeCreateStream(video);
+		maybeCreateStream(video);
+		for(var i in peerIds){
+			var conn = peer.connect(String(peerIds[i]))
+			conn.on('open', function() {
+				conn.send([file][0].slice(0, 1024*1024));
+			  });
+		}
+		
 		socket.emit("ready", myFileSize);
 	});
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
@@ -36,7 +75,7 @@ function  loadVideo(e){
 		video.addEventListener('play', function once (){
 			video.removeEventListener('play', once)
 			myplayer.pause();
-			socket.emit("playvideo?", myRoomId, myFileSize);
+			socket.emit("playvideo?", myRoomId, myFileSize, sessionType);
 		});
 	}
 }  
@@ -60,11 +99,13 @@ function showPlayeremit(){
 	if(document.getElementById("Radios1").checked)
 	{
 		console.log("1")
+		sessionType = "load"
 		socket.emit("showPlayeremit1");
 	}
 	else
 	{
 		console.log("2")
+		sessionType = "stream"
 		socket.emit("showPlayeremit2");
 	} 
 }
@@ -90,6 +131,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
+	socket.emit("mypeerid", myPeerId)
 	
 });
 
@@ -170,3 +212,33 @@ socket.on("play", (roomId)=>{
 		}
 	}
 });
+
+socket.on("heresmypeerid", (id, roomId)=>{
+	if(roomId == myRoomId)
+	{
+		if(isHost)
+		{
+			peerIds.push(id)
+		}
+	}
+});
+
+
+peer.on("connection", (conn)=>{
+	console.log("yoyoyo")
+	document.getElementById("player").style.display = "flex"
+	conn.on('open', function() {
+		// Receive messages
+		conn.on('data', function(data) {
+		  console.log('Received', data);
+		  var blob = new Blob([new Uint8Array(data)]);
+		  var blobURL = URL.createObjectURL(blob)
+			var myplayer = videojs("my-video");
+			myplayer.src({type: 'video/mp4', src: blobURL});
+			myplayer.on('loadeddata', (e)=>{
+				socket.emit("ready2");
+			});
+		  console.log(blob)
+		});
+	  });
+})

@@ -136,15 +136,29 @@ io.on('connection', function(socket){
         console.log("ready");
     });
 
-    socket.on("playvideo?", (roomID, size)=>{
+    socket.on("ready2", ()=>{
+        player.isReady = true;
+        console.log("ready");
+    });
+
+    socket.on("playvideo?", (roomID, size, type)=>{
         for(var i in PLAYER_LIST)
         {
             if(roomID == PLAYER_LIST[i].roomId) 
             {
-                if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
-                    alert("not ready or wrong size");
-                    return false;
+                if(type === "load"){
+                    if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
+                        alert("not ready or wrong size");
+                        return false;
+                    }
                 }
+                else{
+                    if(!PLAYER_LIST[i].isReady){
+                        alert("not ready or wrong size");
+                        return false;
+                    }
+                }
+                
             }
         }
         io.sockets.emit("playVideo", player.roomId);
@@ -156,6 +170,10 @@ io.on('connection', function(socket){
 
     socket.on("playEmit", ()=>{
         io.sockets.emit("play", player.roomId);
+    });
+
+    socket.on("mypeerid", (peerid)=>{
+        io.sockets.emit("heresmypeerid", peerid, player.roomId);
     });
 
     socket.on('disconnect',function(){
