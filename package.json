@@ -7,8 +7,7 @@
     "express": "^4.17.1",
     "nodemon": "^2.0.6",
     "socket.io": "^3.0.4",
-    "video.js": "^7.10.2",
-    "webtorrent": "^0.112.0"
+    "video.js": "^7.10.2"
   },
   "devDependencies": {},
   "scripts": {
