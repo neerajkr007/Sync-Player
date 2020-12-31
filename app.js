@@ -164,7 +164,6 @@ io.on('connection', function(socket){
     });
 
     socket.on("torrenturlemit", (url)=>{
-        console.log(url);
         io.sockets.emit("torrenturl", player.roomId, url);
     });
 

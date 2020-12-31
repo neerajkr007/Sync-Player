@@ -222,7 +222,6 @@ socket.on("play", (roomId)=>{
 socket.on("torrenturl", (roomId, url)=>{
 	if(roomId == myRoomId)
 	{
-		console.log(url);
 		torrentId = url;
 	}
 });
