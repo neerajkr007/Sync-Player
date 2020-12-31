@@ -25,22 +25,18 @@ function  loadVideo(e){
 	myplayer.on('loadeddata', (e)=>{
 		socket.emit("ready", myFileSize);
 	});
+	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(!isHost){
+		playButton.style.display = "none";
 		myplayer.controls(false);
 	}
-	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
-	if(isHost){
+	else{
 		var video = document.querySelector('video');
 		video.addEventListener('play', function once (){
 			video.removeEventListener('play', once)
 			myplayer.pause();
 			socket.emit("playvideo?", myRoomId, myFileSize);
 		});
-	}
-	else{
-		playButton.style.display = "none";
-		//document.querySelector("video").innerHTML = "controls": false, "techOrder": ["html5", "flash", "other supported tech"]
-		//myplayer.data-setup
 	}
 }  
 
@@ -60,7 +56,16 @@ function tryJoin(){
 function showPlayeremit(){
 	$('#Modal3').modal('toggle')
 	document.getElementById("go").style.display = "none";
-	socket.emit("showPlayeremit");
+	if(document.getElementById("Radios1").checked)
+	{
+		console.log("1")
+		socket.emit("showPlayeremit1");
+	}
+	else
+	{
+		console.log("2")
+		socket.emit("showPlayeremit2");
+	} 
 }
 
 socket.on("hosted", function(data){
@@ -126,7 +131,8 @@ socket.on("playVideo", (roomId)=>{
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
 				video.removeEventListener('pause', once)
-				socket.emit("pauseEmit");
+				var time = myplayer.currentTime();
+				socket.emit("pauseEmit", time);
 			});
 		}
 	}
