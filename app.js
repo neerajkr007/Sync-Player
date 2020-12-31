@@ -130,6 +130,11 @@ io.on('connection', function(socket){
         socket.emit("showPlayer", player.roomId);
     });
 
+    socket.on("test", ()=>{
+        console.log("works?")
+        io.sockets.emit("testi", player.roomId);
+    });
+
     socket.on("ready", (size)=>{
         player.isReady = true;
         player.fileSize = size;
@@ -142,8 +147,8 @@ io.on('connection', function(socket){
             if(roomID == PLAYER_LIST[i].roomId) 
             {
                 if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
-                    alert("not ready or wrong size");
-                    return false;
+                    //alert("not ready or wrong size");
+                    //return false;
                 }
             }
         }
@@ -157,6 +162,11 @@ io.on('connection', function(socket){
     socket.on("playEmit", ()=>{
         io.sockets.emit("play", player.roomId);
     });
+
+    socket.on('webrtc_ice_candidate', (event) => {
+        console.log(`Broadcasting webrtc_ice_candidate event to peers in room ${event.roomId}`)
+        io.sockets.emit('webrtc_ice_candidate', event, player.roomId, event.isHost)
+      })
 
     socket.on('disconnect',function(){
         console.log('socket disconnected ');

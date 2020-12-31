@@ -3,6 +3,16 @@ var userName ="";
 var myRoomId = "";
 var isHost = false;
 var myFileSize = 0;
+let pc1;
+const iceServers = {
+	iceServers: [
+	  { urls: 'stun:stun.l.google.com:19302' },
+	  { urls: 'stun:stun1.l.google.com:19302' },
+	  { urls: 'stun:stun2.l.google.com:19302' },
+	  { urls: 'stun:stun3.l.google.com:19302' },
+	  { urls: 'stun:stun4.l.google.com:19302' },
+	],
+  }
 
 
 function sendit(){
@@ -12,6 +22,26 @@ function sendit(){
 		hide();
 	}
 }
+
+let stream;
+function maybeCreateStream(video) {
+	if (stream) {
+	  return;
+	}
+	if (video.captureStream) {
+	  stream = video.captureStream();
+	  console.log('Captured stream from video with captureStream',
+		  stream);
+	  call();
+	} else if (video.mozCaptureStream) {
+	  stream = video.mozCaptureStream();
+	  console.log('Captured stream from video with mozCaptureStream()',
+		  stream);
+	  call();
+	} else {
+	  console.log('captureStream() not supported');
+	}
+  }
 
 function  loadVideo(e){
 	console.log("works");
@@ -23,6 +53,8 @@ function  loadVideo(e){
 	var myplayer = videojs("my-video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
+		var video = document.querySelector('video')
+		maybeCreateStream(video);
 		socket.emit("ready", myFileSize);
 	});
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
@@ -66,6 +98,54 @@ function showPlayeremit(){
 		console.log("2")
 		socket.emit("showPlayeremit2");
 	} 
+}
+function call(){
+	console.log("1")
+	if (isHost) {
+		pc1 = new RTCPeerConnection(iceServers)
+		console.log("2")
+		addLocalTracks(pc1)
+		console.log("3")
+		pc1.onicecandidate = sendIceCandidate
+		console.log("4")
+		socket.emit("test")
+		//await createOffer(rtcPeerConnection)
+	  }
+	if(!isHost){
+		document.getElementById("player").style.display = "flex";
+		console.log("1")
+		pc1 = new RTCPeerConnection(iceServers)
+		console.log("2")
+		pc1.ontrack = setRemoteStream
+		console.log("3")
+		pc1.onicecandidate = sendIceCandidate
+		console.log("4")
+	}
+}
+
+function addLocalTracks(rtcPeerConnection) {
+	console.log("5")
+	stream.getTracks().forEach((track) => {
+	  rtcPeerConnection.addTrack(track, stream)
+	})
+}
+
+function setRemoteStream(event) {
+	console.log(event.streams[0])
+	document.querySelector('video').srcObject = event.streams[0]
+	stream = event.stream
+}
+
+function sendIceCandidate(event) {
+	console.log("does this works >?")
+	if (event.candidate) {
+	  socket.emit('webrtc_ice_candidate', {
+		  isHost,
+		roomId,
+		label: event.candidate.sdpMLineIndex,
+		candidate: event.candidate.candidate,
+	  })
+	}
 }
 
 socket.on("hosted", function(data){
@@ -169,3 +249,28 @@ socket.on("play", (roomId)=>{
 		}
 	}
 });
+
+socket.on('webrtc_ice_candidate', (event, roomId, is) => {
+	if(roomId == myRoomId){
+		if(!is){
+			
+			console.log('Socket event callback: webrtc_ice_candidate')
+	
+			// ICE candidate configuration.
+			var candidate = new RTCIceCandidate({
+			sdpMLineIndex: event.label,
+			candidate: event.candidate,
+			})
+			pc1.addIceCandidate(candidate)
+		}
+	}
+  })
+
+  socket.on("testi", (roomId)=>{
+	if(roomId == myRoomId)
+	{
+		if(!isHost){
+			call();
+		}
+	}
+  })
