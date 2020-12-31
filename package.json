@@ -1,11 +1,13 @@
 {
   "name": "basic-proto",
   "version": "1.0.0",
+  "engines": {
+    "node": "12.20.0"
+  },
   "description": "",
   "main": "app.js",
   "dependencies": {
     "express": "^4.17.1",
-    "node-gyp-build": "^4.2.3",
     "nodemon": "^2.0.6",
     "socket.io": "^3.0.4",
     "video.js": "^7.10.2",
