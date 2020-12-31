@@ -96,7 +96,7 @@ io.on('connection', function(socket){
         //console.log(ROOM_LIST[numberOfHosts][0])
         callEventify(player.hostNumber);
         socket.emit("hosted", String(player.id));
-        //updatePlayerList();
+        updatePlayerList();
         numberOfHosts++;
     }); 
 
@@ -147,8 +147,8 @@ io.on('connection', function(socket){
             if(roomID == PLAYER_LIST[i].roomId) 
             {
                 if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
-                    //alert("not ready or wrong size");
-                    //return false;
+                    alert("not ready or wrong size");
+                    return false;
                 }
             }
         }
@@ -161,10 +161,6 @@ io.on('connection', function(socket){
 
     socket.on("playEmit", ()=>{
         io.sockets.emit("play", player.roomId);
-    });
-
-    socket.on("torrenturlemit", (url)=>{
-        io.sockets.emit("torrenturl", player.roomId, url);
     });
 
     socket.on('disconnect',function(){
