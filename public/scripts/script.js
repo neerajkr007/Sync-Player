@@ -49,8 +49,32 @@ function  loadVideo(e){
 			// 	chunk++;
 			// }
 			//alert("splitting done");
-			tryConnect()
-			alert("please wait spliting your file click ok to start spliting");
+			//tryConnect()
+			for(var i in peerIds){
+				console.log("connecting to peers")
+				var conn = peer.connect(String(peerIds[i]))
+				conn.on('open', function() {
+					console.log("connected to peer")
+					var chunksSent = 0;
+					socket.on("sendNextchunk", (id)=>{
+						console.log("next chunk sent")
+						if(id == myRoomId){
+							 if(isHost && chunksSent<chunkArray.length){
+								conn.send(chunkArray[chunksSent]);
+								chunksSent++;		
+								 
+							 }
+						}
+					})
+					
+					
+					
+				});
+				conn.on('close', ()=>{
+					console.log("connection cloased")
+				})
+			}
+			//alert("please wait spliting your file click ok to start spliting");
 			parseFile([file][0])
 		
 		
@@ -72,30 +96,7 @@ function  loadVideo(e){
 }  
 
 function tryConnect(){
-	for(var i in peerIds){
-		console.log("connecting to peers")
-		var conn = peer.connect(String(peerIds[i]))
-		conn.on('open', function() {
-			console.log("connected to peer")
-			var chunksSent = 0;
-			
-			socket.on("sendNextchunk", (id)=>{
-				if(id == myRoomId){
-					 if(isHost && chunksSent<chunkArray.length){
-						conn.send(chunkArray[chunksSent]);
-						chunksSent++;		
-						 console.log("next chunk sent")
-					 }
-				}
-			})
-			
-			
-			
-		});
-		conn.on('close', ()=>{
-			console.log("connection cloased")
-		})
-	}
+	
 }
 
 function hide(){
@@ -153,9 +154,11 @@ function parseFile(file) {
         }
         if (offset >= fileSize) {
 			console.log("Done reading file");
-			alert("spliting complete");
-			setInterval(()=>{socket.emit("sendNextchunkemit")}, 1000)
-			
+			//alert("spliting complete");
+			setTimeout(()=>{
+				console.log("yo")
+				socket.emit("sendNextchunkemit");}, 1000)
+			socket.emit("test", chunkArray[0])
 			doneParsing = true
             return;
         }
@@ -325,7 +328,7 @@ peer.on("connection", (conn)=>{
 				isplaying = false
 			else 
 				isplaying = true
-			if(chunksRecieved%10 == 0 && firsttime)
+			if(chunksRecieved%1 == 0 && firsttime)
 			{
 				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 				console.log("all set to load")
@@ -344,10 +347,10 @@ peer.on("connection", (conn)=>{
 				}
 				
 			}
-			else if(chunksRecieved%20 == 0 && !firsttime)
+			else if(chunksRecieved%1 == 0 && !firsttime)
 			{
 				if(totalFileSize != 0)
-					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
+					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
 				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 				console.log("all set to load")
 				myplayer.on('loadeddata', (e)=>{
@@ -359,9 +362,8 @@ peer.on("connection", (conn)=>{
 				});
 				console.log(blob)
 			}
-		});
-		if(!firsttime)
 			socket.emit("sendNextchunkemit");
+		});
 	  });
 })
 
