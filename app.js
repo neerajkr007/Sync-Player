@@ -50,7 +50,6 @@ var Player = function(id){
     return self;
 }
 var numberOfHosts = 0;
-
 var eventify = function(arr, callback) {
     arr.push = function(e) {
         Array.prototype.push.call(arr, e);
@@ -161,6 +160,7 @@ io.on('connection', function(socket){
                 
             }
         }
+        io.sockets.emit("fileSize", size, player.roomId);
         io.sockets.emit("playVideo", player.roomId);
     });
 

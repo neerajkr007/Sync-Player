@@ -4,6 +4,7 @@ var myRoomId = "";
 var isHost = false;
 var sessionType = ""
 var myFileSize = 0;
+var totalFileSize = 0;
 var peer = new Peer();
 var peerIds = []
 var myPeerId = ""
@@ -13,12 +14,6 @@ var doneParsing = false
 peer.on("open", ()=>{
 	myPeerId = peer.id;
 })
-// var eventify = function(arr, callback) {
-//     arr.push = function(e) {
-//         Array.prototype.push.call(arr, e);
-//         callback(arr);
-//     };
-// };
 
 function sendit(){
 	if(document.getElementById("username").value != ""){
@@ -54,30 +49,7 @@ function  loadVideo(e){
 			// 	chunk++;
 			// }
 			//alert("splitting done");
-			for(var i in peerIds){
-				console.log("connecting to peers")
-				var conn = peer.connect(String(peerIds[i]))
-				conn.on('open', function() {
-					console.log("connected to peer")
-					var chunksSent = 0;
-					
-					socket.on("sendNextchunk", (id)=>{
-						if(id == myRoomId){
-						 	if(isHost && chunksSent<chunkArray.length){
-								conn.send(chunkArray[chunksSent]);
-								chunksSent++;		
-						 		console.log("next chunk sent")
-						 	}
-						}
-					})
-					
-					
-					
-				});
-				conn.on('close', ()=>{
-					console.log("connection cloased")
-				})
-			}
+			tryConnect()
 			alert("please wait spliting your file click ok to start spliting");
 			parseFile([file][0])
 		
@@ -98,6 +70,33 @@ function  loadVideo(e){
 		});
 	}
 }  
+
+function tryConnect(){
+	for(var i in peerIds){
+		console.log("connecting to peers")
+		var conn = peer.connect(String(peerIds[i]))
+		conn.on('open', function() {
+			console.log("connected to peer")
+			var chunksSent = 0;
+			
+			socket.on("sendNextchunk", (id)=>{
+				if(id == myRoomId){
+					 if(isHost && chunksSent<chunkArray.length){
+						conn.send(chunkArray[chunksSent]);
+						chunksSent++;		
+						 console.log("next chunk sent")
+					 }
+				}
+			})
+			
+			
+			
+		});
+		conn.on('close', ()=>{
+			console.log("connection cloased")
+		})
+	}
+}
 
 function hide(){
     document.getElementById("host").style.display = "none";
@@ -253,6 +252,14 @@ socket.on("playVideo", (roomId)=>{
 	}
 });
 
+socket.on("fileSize", (size, roomId)=>{
+	if(roomId == myRoomId)
+	{
+		console.log(typeof size)
+		totalFileSize  = size;
+	}
+});
+
 socket.on("pause", (roomId, time)=>{
 	if(roomId == myRoomId)
 	{
@@ -318,10 +325,12 @@ peer.on("connection", (conn)=>{
 				isplaying = false
 			else 
 				isplaying = true
-			if(chunksRecieved%10 == 0)
+			if(chunksRecieved%10 == 0 && firsttime)
 			{
 				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 				console.log("all set to load")
+				if(totalFileSize != 0)
+					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
 				myplayer.on('loadeddata', (e)=>{
 					myplayer.currentTime(currentTime);
 					if(isplaying)
@@ -333,6 +342,22 @@ peer.on("connection", (conn)=>{
 					socket.emit("ready2");
 					firsttime = false
 				}
+				
+			}
+			else if(chunksRecieved%20 == 0 && !firsttime)
+			{
+				if(totalFileSize != 0)
+					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
+				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+				console.log("all set to load")
+				myplayer.on('loadeddata', (e)=>{
+					myplayer.currentTime(currentTime);
+					if(isplaying)
+						myplayer.play();
+					else 
+						myplayer.pause();
+				});
+				console.log(blob)
 			}
 		});
 		if(!firsttime)
