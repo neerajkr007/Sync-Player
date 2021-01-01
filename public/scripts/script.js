@@ -11,6 +11,7 @@ var myPeerId = ""
 var chunkArray = []
 var isplaying = false
 var doneParsing = false
+var conn
 peer.on("open", ()=>{
 	myPeerId = peer.id;
 })
@@ -52,7 +53,7 @@ function  loadVideo(e){
 			//tryConnect()
 			for(var i in peerIds){
 				console.log("connecting to peers")
-				var conn = peer.connect(String(peerIds[i]))
+				conn = peer.connect(String(peerIds[i]))
 				conn.on('open', function() {
 					console.log("connected to peer")
 					var chunksSent = 0;
@@ -155,10 +156,10 @@ function parseFile(file) {
         if (offset >= fileSize) {
 			console.log("Done reading file");
 			//alert("spliting complete");
-			setTimeout(()=>{
-				console.log("yo")
-				socket.emit("sendNextchunkemit");}, 1000)
-			socket.emit("test", chunkArray[0])
+			conn.on("open",()=>{
+				console.log("yo peer connected")
+				socket.emit("sendNextchunkemit");
+			})
 			doneParsing = true
             return;
         }

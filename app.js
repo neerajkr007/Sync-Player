@@ -140,11 +140,6 @@ io.on('connection', function(socket){
         console.log("ready");
     });
 
-    socket.on("test", (data)=>{
-        //console.log(typeof data);
-        console.log(data);
-    });
-
     socket.on("playvideo?", (roomID, size, type)=>{
         for(var i in PLAYER_LIST)
         {
