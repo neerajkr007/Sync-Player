@@ -158,6 +158,7 @@ function parseFile(file) {
 			//alert("spliting complete");
 			conn.on("open",()=>{
 				console.log("yo peer connected")
+				document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'>loading stream on other users devices</h5>";
 				socket.emit("sendNextchunkemit");
 			})
 			doneParsing = true
