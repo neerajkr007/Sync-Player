@@ -154,8 +154,8 @@ io.on('connection', function(socket){
                 }
                 else{
                     if(!PLAYER_LIST[i].isReady){
-                        alert("not ready or wrong size");
-                        return false;
+                        //alert("not ready or wrong size");
+                        //return false;
                     }
                 }
                 
@@ -174,6 +174,10 @@ io.on('connection', function(socket){
 
     socket.on("mypeerid", (peerid)=>{
         io.sockets.emit("heresmypeerid", peerid, player.roomId);
+    });
+
+    socket.on("sendNextchunkemit", ()=>{
+        io.sockets.emit("sendNextchunk", player.roomId);
     });
 
     socket.on('disconnect',function(){

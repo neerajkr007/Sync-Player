@@ -7,27 +7,18 @@ var myFileSize = 0;
 var peer = new Peer();
 var peerIds = []
 var myPeerId = ""
+var chunkArray = []
+var isplaying = false
+var doneParsing = false
 peer.on("open", ()=>{
 	myPeerId = peer.id;
 })
-
-let stream;
-function maybeCreateStream(video) {
-	if (stream) {
-	  return;
-	}
-	if (video.captureStream) {
-	  stream = video.captureStream();
-	  console.log('Captured stream from video with captureStream',
-		  stream);
-	} else if (video.mozCaptureStream) {
-	  stream = video.mozCaptureStream();
-	  console.log('Captured stream from video with mozCaptureStream()',
-		  stream);
-	} else {
-	  console.log('captureStream() not supported');
-	}
-  }
+// var eventify = function(arr, callback) {
+//     arr.push = function(e) {
+//         Array.prototype.push.call(arr, e);
+//         callback(arr);
+//     };
+// };
 
 function sendit(){
 	if(document.getElementById("username").value != ""){
@@ -40,12 +31,6 @@ function sendit(){
 
 function  loadVideo(e){
 	console.log("works");
-	if(isHost){
-		if(document.getElementById("Radios2").checked)
-		{
-			socket.emit("fetchmePeerIdsemit");
-		}
-	}
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
@@ -54,14 +39,48 @@ function  loadVideo(e){
 	var myplayer = videojs("my-video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
-		var video = document.querySelector('video')
-		maybeCreateStream(video);
-		for(var i in peerIds){
-			var conn = peer.connect(String(peerIds[i]))
-			conn.on('open', function() {
-				conn.send([file][0].slice(0, 1024*1024));
-			  });
-		}
+		//var video = document.querySelector('video')
+		//maybeCreateStream(video);
+		//var call = peer.call(String(peerIds[0]), stream)
+			//console.log("call send")
+			//alert("splitting your video into small chunks");
+			// var chunkSize = 1024 * 1024;
+			// var chunks = Math.ceil(myFileSize/chunkSize,chunkSize);
+			// console.log(chunks)
+			// var chunk = 0;
+			// while (chunk <= chunks) {
+			// 	var offset = chunk*chunkSize;
+			// 	//chunkArray[chunk] = [file][0].slice(offset, offset + chunkSize);
+			// 	chunk++;
+			// }
+			//alert("splitting done");
+			for(var i in peerIds){
+				console.log("connecting to peers")
+				var conn = peer.connect(String(peerIds[i]))
+				conn.on('open', function() {
+					console.log("connected to peer")
+					var chunksSent = 0;
+					
+					socket.on("sendNextchunk", (id)=>{
+						if(id == myRoomId){
+						 	if(isHost && chunksSent<chunkArray.length){
+								conn.send(chunkArray[chunksSent]);
+								chunksSent++;		
+						 		console.log("next chunk sent")
+						 	}
+						}
+					})
+					
+					
+					
+				});
+				conn.on('close', ()=>{
+					console.log("connection cloased")
+				})
+			}
+			alert("please wait spliting your file click ok to start spliting");
+			parseFile([file][0])
+		
 		
 		socket.emit("ready", myFileSize);
 	});
@@ -109,6 +128,59 @@ function showPlayeremit(){
 		socket.emit("showPlayeremit2");
 	} 
 }
+
+function callback(e){
+	console.log("pushed");
+	chunkArray.push(e);
+	
+	//var blob = new Blob([e]);
+	//console.log(URL.createObjectURL(blob))
+}
+
+function parseFile(file) {
+    var fileSize   = file.size;
+    var chunkSize  = 1024 * 1024; // bytes
+    var offset     = 0;
+    var self       = this; // we need a reference to the current object
+    var chunkReaderBlock = null;
+
+    var readEventHandler = function(evt) {
+        if (evt.target.error == null) {
+            offset += chunkSize;
+            callback(evt.target.result); // callback for handling read chunk
+        } else {
+            console.log("Read error: " + evt.target.error);
+            return;
+        }
+        if (offset >= fileSize) {
+			console.log("Done reading file");
+			alert("spliting complete");
+			setInterval(()=>{socket.emit("sendNextchunkemit")}, 1000)
+			
+			doneParsing = true
+            return;
+        }
+
+		// of to the next chunk
+		chunkReaderBlock(offset, chunkSize, file);
+		
+        
+    }
+
+    chunkReaderBlock = function(_offset, length, _file) {
+        var r = new FileReader();
+        var blob = _file.slice(_offset, length + _offset);
+        r.onload = readEventHandler;
+        r.readAsArrayBuffer(blob);
+    }
+
+    // now let's start the read with the first block
+    chunkReaderBlock(offset, chunkSize, file);
+}
+
+
+
+
 
 socket.on("hosted", function(data){
 	myRoomId = data;
@@ -223,22 +295,64 @@ socket.on("heresmypeerid", (id, roomId)=>{
 	}
 });
 
-
+//var sourceBuffer = null;
 peer.on("connection", (conn)=>{
-	console.log("yoyoyo")
+	console.log("connected to peer")
 	document.getElementById("player").style.display = "flex"
+	document.getElementById("1").style.display = "none"
+	document.getElementById("myfile").style.display = "none"
+	document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
 	conn.on('open', function() {
-		// Receive messages
+		console.log("on open works")
+		var blobArray = []
+		var chunksRecieved = 0
+		var firsttime = true
 		conn.on('data', function(data) {
-		  console.log('Received', data);
-		  var blob = new Blob([new Uint8Array(data)]);
-		  var blobURL = URL.createObjectURL(blob)
+			console.log('Received', data);
 			var myplayer = videojs("my-video");
-			myplayer.src({type: 'video/mp4', src: blobURL});
-			myplayer.on('loadeddata', (e)=>{
-				socket.emit("ready2");
-			});
-		  console.log(blob)
+			blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
+			let blob = new Blob(blobArray,{'type':'video/mp4'});
+			chunksRecieved++;
+			let currentTime = myplayer.currentTime();
+			if(myplayer.paused()) 
+				isplaying = false
+			else 
+				isplaying = true
+			if(chunksRecieved%10 == 0)
+			{
+				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+				console.log("all set to load")
+				myplayer.on('loadeddata', (e)=>{
+					myplayer.currentTime(currentTime);
+					if(isplaying)
+						myplayer.play();
+					else 
+						myplayer.pause();
+				});
+				if(firsttime){
+					socket.emit("ready2");
+					firsttime = false
+				}
+			}
 		});
+		if(!firsttime)
+			socket.emit("sendNextchunkemit");
 	  });
 })
+
+// peer.on("call", (call)=>{
+// document.getElementById("player").style.display = "flex"
+//  	call.answer(stream);
+//  	var myplayer = videojs("my-video");
+//  	console.log("call answered")
+//  	call.on("stream", (stream)=>{
+//  		if(!isHost){
+// 			console.log(stream)
+// 			//var url = URL.createObjectURL(stream)
+   
+// 			var vid = document.querySelector('video')
+// 			  vid.srcObject = stream;
+// 			console.log("added sourece obj")
+// 		 }
+// 	 })
+//  })
