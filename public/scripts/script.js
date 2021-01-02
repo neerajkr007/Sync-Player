@@ -6,6 +6,7 @@ var sessionType = ""
 var myFileSize = 0;
 var totalFileSize = 0;
 var peer = new Peer();
+let stream
 var peerIds = []
 var myPeerId = ""
 var chunkArray = []
@@ -16,6 +17,35 @@ peer.on("open", ()=>{
 	myPeerId = peer.id;
 })
 
+var peerConnection = window.RTCPeerConnection ||
+window.mozRTCPeerConnection ||
+window.webkitRTCPeerConnection ||
+window.msRTCPeerConnection;
+
+var sessionDescription = window.RTCSessionDescription ||
+window.mozRTCSessionDescription ||
+window.webkitRTCSessionDescription ||
+window.msRTCSessionDescription;
+const servers = null;
+var pc = new peerConnection(servers)
+
+function maybeCreateStream(leftVideo) {
+  if (stream) {
+    return;
+  }
+  if (leftVideo.captureStream) {
+	stream = leftVideo.captureStream();
+    console.log('Captured stream from leftVideo with captureStream',
+        stream);
+  } else if (leftVideo.mozCaptureStream) {
+    stream = leftVideo.mozCaptureStream();
+    console.log('Captured stream from leftVideo with mozCaptureStream()',
+        stream);
+  } else {
+    console.log('captureStream() not supported');
+  }
+}
+
 function sendit(){
 	if(document.getElementById("username").value != ""){
 		userName = document.getElementById("username").value;
@@ -24,6 +54,71 @@ function sendit(){
 		
 	}
 }
+
+function error (err) {
+	console.warn(err);
+}
+
+	var answersFrom = {};
+
+	function createOffer () {
+		console.log("creating offer")
+	pc.createOffer(function(offer) {
+		pc.setLocalDescription(new sessionDescription(offer), function () {
+		socket.emit('make-offer', {offer: offer});
+		console.log("make offer")
+				}, error);
+			}, error);
+	}
+
+	socket.on('answer-made', function (data) {
+		if(data.roomid == myRoomId && isHost){
+			console.log("ans made")
+			console.log(data.answer)
+			pc.setRemoteDescription(new sessionDescription(data.answer), function () {
+				if (!answersFrom[data.socket]) {
+					//createOffer(data.socket);
+					answersFrom[data.socket] = true;
+						}
+					}, error);
+		}
+		
+	});
+
+	var offerData
+
+	function listen () {
+		console.log("listening offer")
+	pc.setRemoteDescription(new sessionDescription(offerData.offer), function () {
+	pc.createAnswer(function (answer) {
+	pc.setLocalDescription(new sessionDescription(answer), function () {
+	socket.emit('make-answer', {answer: answer, to: offerData.socket});
+	console.log("make ans")	}, error);
+			}, error);
+		}, error);
+	}
+
+	if(!isHost){
+		pc.ontrack = function(event) {
+			console.log("reading track")
+			console.log(event.streams[0])
+			//document.getElementById("my-video").srcObject = event.streams[0];
+			var myplayer = videojs("my-video")
+			var vid = document.getElementById("my-video2")
+			vid.srcObject = event.streams[0];
+			vid.onloadedmetadata = function(e) {
+				vid.play();
+			};
+		};
+	}
+
+	socket.on('offer-made', function (data) {
+		if(data.roomid == myRoomId && !isHost){
+			console.log("offer made")
+			offerData = data;
+		}
+	});
+	
 
 function  loadVideo(e){
 	console.log("works");
@@ -35,8 +130,17 @@ function  loadVideo(e){
 	var myplayer = videojs("my-video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
-		//var video = document.querySelector('video')
-		//maybeCreateStream(video);
+		var video = document.querySelector('video')
+		maybeCreateStream(video);
+		stream.getTracks().forEach(function(track) {
+			pc.addTrack(track, stream);
+		  });
+		if(isHost){
+			createOffer();
+			console.log("aboutto send emit")
+			socket.emit("showplayer2emit");
+		}
+		myplayer.play()
 		//var call = peer.call(String(peerIds[0]), stream)
 			//console.log("call send")
 			//alert("splitting your video into small chunks");
@@ -53,30 +157,30 @@ function  loadVideo(e){
 			//tryConnect()
 			for(var i in peerIds){
 				console.log("connecting to peers")
-				conn = peer.connect(String(peerIds[i]))
-				conn.on('open', function() {
-					console.log("connected to peer")
-					var chunksSent = 0;
-					socket.on("sendNextchunk", (id)=>{
-						console.log("next chunk sent")
-						if(id == myRoomId){
-							 if(isHost && chunksSent<chunkArray.length){
-								conn.send(chunkArray[chunksSent]);
-								chunksSent++;		
+				//conn = peer.connect(String(peerIds[i]))
+				// conn.on('open', function() {
+				// 	console.log("connected to peer")
+				// 	var chunksSent = 0;
+				// 	socket.on("sendNextchunk", (id)=>{
+				// 		console.log("next chunk sent")
+				// 		if(id == myRoomId){
+				// 			 if(isHost && chunksSent<chunkArray.length){
+				// 				conn.send(chunkArray[chunksSent]);
+				// 				chunksSent++;		
 								 
-							 }
-						}
-					})
+				// 			 }
+				// 		}
+				// 	})
 					
 					
 					
-				});
-				conn.on('close', ()=>{
-					console.log("connection cloased")
-				})
+				// });
+				// conn.on('close', ()=>{
+				// 	console.log("connection cloased")
+				// })
 			}
 			//alert("please wait spliting your file click ok to start spliting");
-			parseFile([file][0])
+			//parseFile([file][0])
 		
 		
 		socket.emit("ready", myFileSize);
@@ -156,11 +260,11 @@ function parseFile(file) {
         if (offset >= fileSize) {
 			console.log("Done reading file");
 			//alert("spliting complete");
-			conn.on("open",()=>{
-				console.log("yo peer connected")
-				document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'>loading stream on other users devices</h5>";
-				socket.emit("sendNextchunkemit");
-			})
+			// conn.on("open",()=>{
+			// 	console.log("yo peer connected")
+			// 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'>loading stream on other users devices</h5>";
+			// 	socket.emit("sendNextchunkemit");
+			// })
 			doneParsing = true
             return;
         }
@@ -294,6 +398,18 @@ socket.on("play", (roomId)=>{
 				socket.emit("pauseEmit", time);
 			});
 		}
+	}
+});
+
+socket.on("showplayer2", (roomId)=>{
+	if(roomId == myRoomId && !isHost)
+	{
+		socket.emit("ready2");
+		document.getElementById("player").style.display = "flex"
+		document.getElementById("1").style.display = "none"
+		document.getElementById("myfile").style.display = "none"
+		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
+		setTimeout(()=>{if(!isHost){listen()}}, 1000)
 	}
 });
 

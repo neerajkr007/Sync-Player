@@ -181,6 +181,27 @@ io.on('connection', function(socket){
         io.sockets.emit("sendNextchunk", player.roomId);
     });
 
+    socket.on("showplayer2emit", ()=>{
+        //console.log("recieved")
+        io.sockets.emit("showplayer2", player.roomId);
+    });
+
+    socket.on('make-offer', function (data) {
+        io.sockets.emit('offer-made', {
+        roomid:player.roomId,
+        offer: data.offer,
+        socket: socket.id
+                });
+    });
+
+    socket.on('make-answer', function (data) {
+        io.sockets.emit('answer-made', {
+        roomid: player.roomId,
+        socket: socket.id,
+        answer: data.answer
+                });
+    });
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         socket.leave(player.roomId);
