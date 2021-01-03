@@ -11,6 +11,21 @@
 
 <body>
 
+  <script>
+    window.onload = function() {
+       let xhr = new XMLHttpRequest();
+       xhr.onreadystatechange = function($evt){
+          if(xhr.readyState == 4 && xhr.status == 200){
+              let res = JSON.parse(xhr.responseText);
+              console.log("response: ",res);
+          }
+       }
+       xhr.open("PUT", "https://global.xirsys.net/_turn/test", true);
+       xhr.setRequestHeader ("Authorization", "Basic " + btoa("strider:55987724-4df0-11eb-8a1a-0242ac150002") );
+       xhr.setRequestHeader ("Content-Type", "application/json");
+       xhr.send( JSON.stringify({"format": "urls"}) );
+    };
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
