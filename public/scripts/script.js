@@ -102,9 +102,13 @@ function addPeer(socket_id, am_initiator) {
         newVid.id = "yolo"
         newVid.playsinline = false
 		newVid.autoplay = true
+		newVid.controls = true
 		newVid.width = "300px"
 		newVid.className = "video-js"
 		document.getElementById("test").appendChild(newVid)
+		
+		var myplayer= videojs("yolo")
+		myplayer.fluid(true)
     })
 }
 
