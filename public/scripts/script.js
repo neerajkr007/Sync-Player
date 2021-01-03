@@ -11,17 +11,16 @@ var isplaying = false
 var doneParsing = false
 let peers = {}
 const configuration = {
-    "iceServers": [{
-            "urls": "stun:stun.l.google.com:19302"
-        },
-        // public turn server from https://gist.github.com/sagivo/3a4b2f2c7ac6e1b5267c2f1f59ac6c6b
-        // set your own servers here
-        {
-            url: 'turn:192.158.29.39:3478?transport=udp',
-            credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-            username: '28224511:1379330808'
-        }
-    ]
+	iceServers: [{   urls: [ "stun:bn-turn1.xirsys.com" ]}, 
+	{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
+		credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
+		urls: [       
+			"turn:bn-turn1.xirsys.com:80?transport=udp",       
+			"turn:bn-turn1.xirsys.com:3478?transport=udp",       
+			"turn:bn-turn1.xirsys.com:80?transport=tcp",       
+			"turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+			"turns:bn-turn1.xirsys.com:443?transport=tcp",       
+			"turns:bn-turn1.xirsys.com:5349?transport=tcp"   ]}]
 }
 function maybeCreateStream(leftVideo) {
   if (stream) {
