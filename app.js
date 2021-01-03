@@ -50,6 +50,7 @@ var Player = function(id){
     return self;
 }
 var numberOfHosts = 0;
+peers = {}
 var eventify = function(arr, callback) {
     arr.push = function(e) {
         Array.prototype.push.call(arr, e);
@@ -62,8 +63,11 @@ io.on('connection', function(socket){
     socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
     console.log(socket.id);
     SOCKET_LIST[socket.id] = socket;
+    peers[socket.id] = socket
     var player = Player(socket.id);
     PLAYER_LIST[socket.id] = player;
+
+    
     
 
     function callEventify(id){
@@ -132,6 +136,11 @@ io.on('connection', function(socket){
     socket.on("ready", (size)=>{
         player.isReady = true;
         player.fileSize = size;
+        for(let id in peers) {
+            if(id === socket.id) continue
+            console.log('sending init receive to ' + socket.id)
+            peers[id].emit('initReceive', socket.id)
+        }
         console.log("ready");
     });
 
@@ -172,10 +181,6 @@ io.on('connection', function(socket){
         io.sockets.emit("play", player.roomId);
     });
 
-    socket.on("mypeerid", (peerid)=>{
-        io.sockets.emit("heresmypeerid", peerid, player.roomId);
-    });
-
     socket.on("sendNextchunkemit", ()=>{
         //console.log("recieved")
         io.sockets.emit("sendNextchunk", player.roomId);
@@ -186,34 +191,28 @@ io.on('connection', function(socket){
         io.sockets.emit("showplayer2", player.roomId);
     });
 
-    socket.on("mypc", (data)=>{
-        //console.log("recieved")
-        io.sockets.emit("otherpc", data, player.roomId);
-    });
+    socket.on('signal', data => {
+        console.log('sending signal from ' + socket.id + ' to ', data)
+        if(!peers[data.socket_id])return
+        peers[data.socket_id].emit('signal', {
+            socket_id: socket.id,
+            signal: data.signal
+        })
+    })
 
-    socket.on("mypc2", (data)=>{
-        //console.log("recieved")
-        io.sockets.emit("otherpc2", data, player.roomId);
-    });
-
-    socket.on('make-offer', function (data) {
-        io.sockets.emit('offer-made', {
-        roomid:player.roomId,
-        offer: data.offer,
-        socket: socket.id
-                });
-    });
-
-    socket.on('make-answer', function (data) {
-        io.sockets.emit('answer-made', {
-        roomid: player.roomId,
-        socket: socket.id,
-        answer: data.answer
-                });
-    });
+    /**
+     * Send message to client to initiate a connection
+     * The sender has already setup a peer connection receiver
+     */
+    socket.on('initSend', init_socket_id => {
+        console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
+        peers[init_socket_id].emit('initSend', socket.id)
+    })
 
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
+        socket.broadcast.emit('removePeer', socket.id)
+        delete peers[socket.id]
         socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  
         delete PLAYER_LIST[socket.id];

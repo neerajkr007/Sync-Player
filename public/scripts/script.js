@@ -5,31 +5,24 @@ var isHost = false;
 var sessionType = ""
 var myFileSize = 0;
 var totalFileSize = 0;
-var peer = new Peer();
 let stream
-var peerIds = []
-var myPeerId = ""
 var chunkArray = []
 var isplaying = false
 var doneParsing = false
-var conn
-peer.on("open", ()=>{
-	myPeerId = peer.id;
-})
-
-var peerConnection = window.RTCPeerConnection ||
-window.mozRTCPeerConnection ||
-window.webkitRTCPeerConnection ||
-window.msRTCPeerConnection;
-
-var sessionDescription = window.RTCSessionDescription ||
-window.mozRTCSessionDescription ||
-window.webkitRTCSessionDescription ||
-window.msRTCSessionDescription;
-const servers = null;
-var pc = new peerConnection(servers)
-console.log(pc)
-var pc2
+let peers = {}
+const configuration = {
+    "iceServers": [{
+            "urls": "stun:stun.l.google.com:19302"
+        },
+        // public turn server from https://gist.github.com/sagivo/3a4b2f2c7ac6e1b5267c2f1f59ac6c6b
+        // set your own servers here
+        {
+            url: 'turn:192.158.29.39:3478?transport=udp',
+            credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+            username: '28224511:1379330808'
+        }
+    ]
+}
 function maybeCreateStream(leftVideo) {
   if (stream) {
     return;
@@ -37,7 +30,8 @@ function maybeCreateStream(leftVideo) {
   if (leftVideo.captureStream) {
 	stream = leftVideo.captureStream();
     console.log('Captured stream from leftVideo with captureStream',
-        stream);
+		stream);
+		//init()
   } else if (leftVideo.mozCaptureStream) {
     stream = leftVideo.mozCaptureStream();
     console.log('Captured stream from leftVideo with mozCaptureStream()',
@@ -46,10 +40,6 @@ function maybeCreateStream(leftVideo) {
     console.log('captureStream() not supported');
   }
 }
-
-function onIceCandidate(pc2, event) {
-	pc2.addIceCandidate(event.candidate)
-  }
 
 function sendit(){
 	if(document.getElementById("username").value != ""){
@@ -60,74 +50,66 @@ function sendit(){
 	}
 }
 
-function error (err) {
-	console.warn(err);
+function init() {
+
+    socket.on('initReceive', socket_id => {
+        console.log('INIT RECEIVE ' + socket_id)
+        addPeer(socket_id, false)
+        socket.emit('initSend', socket_id)
+    })
+
+    socket.on('initSend', socket_id => {
+        console.log('INIT SEND ' + socket_id)
+        addPeer(socket_id, true)
+    })
+
+    socket.on('removePeer', socket_id => {
+        console.log('removing peer ' + socket_id)
+        //removePeer(socket_id)
+    })
+
+    socket.on('disconnect', () => {
+        console.log('GOT DISCONNECTED')
+        for (let socket_id in peers) {
+            //removePeer(socket_id)
+        }
+    })
+
+    socket.on('signal', data => {
+        peers[data.socket_id].signal(data.signal)
+    })
 }
 
-	var answersFrom = {};
+function addPeer(socket_id, am_initiator) {
+	console.log(stream)
+    peers[socket_id] = new SimplePeer({
+        initiator: am_initiator,
+        stream: stream,
+        config: configuration
+    })
 
-	function createOffer () {
-		console.log("creating offer")
-	pc.createOffer(function(offer) {
-		pc.setLocalDescription(new sessionDescription(offer), function () {
-		socket.emit('make-offer', {offer: offer});
-		console.log("make offer")
-				}, error);
-			}, error);
-	}
+    peers[socket_id].on('signal', data => {
+        socket.emit('signal', {
+            signal: data,
+            socket_id: socket_id
+        })
+    })
 
-	socket.on('answer-made', function (data) {
-		if(data.roomid == myRoomId && isHost){
-			console.log("ans made")
-			console.log(data.answer)
-			pc.setRemoteDescription(new sessionDescription(data.answer), function () {
-				if (!answersFrom[data.socket]) {
-					//createOffer(data.socket);
-					answersFrom[data.socket] = true;
-						}
-					}, error);
-		}
-		
-	});
-
-	var offerData
-
-	function listen () {
-		console.log("listening offer")
-	pc.setRemoteDescription(new sessionDescription(offerData.offer), function () {
-	pc.createAnswer(function (answer) {
-	pc.setLocalDescription(new sessionDescription(answer), function () {
-	socket.emit('make-answer', {answer: answer, to: offerData.socket});
-	console.log("make ans")	}, error);
-			}, error);
-		}, error);
-	}
-
-	if(!isHost){
-		pc.ontrack = function(event) {
-			console.log("reading track")
-			console.log(event.streams[0])
-			//document.getElementById("my-video").srcObject = event.streams[0];
-			var myplayer = videojs("my-video")
-			var vid = document.getElementById("my-video2")
-			vid.srcObject = event.streams[0];
-			vid.onloadedmetadata = function(e) {
-				vid.play();
-			};
-		};
-	}
-
-	socket.on('offer-made', function (data) {
-		if(data.roomid == myRoomId && !isHost){
-			console.log("offer made")
-			offerData = data;
-		}
-	});
-	
+    peers[socket_id].on('stream', stream => {
+		console.log(stream)
+		let newVid = document.createElement('video')
+        newVid.srcObject = stream
+        newVid.id = "yolo"
+        newVid.playsinline = false
+		newVid.autoplay = true
+		newVid.width = "300px"
+		newVid.className = "video-js"
+		document.getElementById("test").appendChild(newVid)
+    })
+}
 
 function  loadVideo(e){
 	console.log("works");
-	socket.emit("mypc", pc)
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
@@ -138,59 +120,10 @@ function  loadVideo(e){
 	myplayer.on('loadeddata', (e)=>{
 		var video = document.querySelector('video')
 		maybeCreateStream(video);
-		stream.getTracks().forEach(function(track) {
-			pc.addTrack(track, stream);
-		  });
-
-		pc.onicecandidate = e => onIceCandidate(pc2, e);
+		init()
 		if(isHost){
-			//createOffer();
-			console.log("aboutto send emit")
 			socket.emit("showplayer2emit");
 		}
-		myplayer.play()
-		//var call = peer.call(String(peerIds[0]), stream)
-			//console.log("call send")
-			//alert("splitting your video into small chunks");
-			// var chunkSize = 1024 * 1024;
-			// var chunks = Math.ceil(myFileSize/chunkSize,chunkSize);
-			// console.log(chunks)
-			// var chunk = 0;
-			// while (chunk <= chunks) {
-			// 	var offset = chunk*chunkSize;
-			// 	//chunkArray[chunk] = [file][0].slice(offset, offset + chunkSize);
-			// 	chunk++;
-			// }
-			//alert("splitting done");
-			//tryConnect()
-			for(var i in peerIds){
-				console.log("connecting to peers")
-				//conn = peer.connect(String(peerIds[i]))
-				// conn.on('open', function() {
-				// 	console.log("connected to peer")
-				// 	var chunksSent = 0;
-				// 	socket.on("sendNextchunk", (id)=>{
-				// 		console.log("next chunk sent")
-				// 		if(id == myRoomId){
-				// 			 if(isHost && chunksSent<chunkArray.length){
-				// 				conn.send(chunkArray[chunksSent]);
-				// 				chunksSent++;		
-								 
-				// 			 }
-				// 		}
-				// 	})
-					
-					
-					
-				// });
-				// conn.on('close', ()=>{
-				// 	console.log("connection cloased")
-				// })
-			}
-			//alert("please wait spliting your file click ok to start spliting");
-			//parseFile([file][0])
-		
-		
 		socket.emit("ready", myFileSize);
 	});
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
@@ -207,10 +140,6 @@ function  loadVideo(e){
 		});
 	}
 }  
-
-function tryConnect(){
-	
-}
 
 function hide(){
     document.getElementById("host").style.display = "none";
@@ -295,9 +224,6 @@ function parseFile(file) {
 }
 
 
-
-
-
 socket.on("hosted", function(data){
 	myRoomId = data;
 	isHost = true;
@@ -319,8 +245,6 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
-	socket.emit("mypeerid", myPeerId)
-	socket.emit("mypc2", pc)
 	
 });
 
@@ -413,114 +337,13 @@ socket.on("play", (roomId)=>{
 socket.on("showplayer2", (roomId)=>{
 	if(roomId == myRoomId && !isHost)
 	{
+		init();
 		socket.emit("ready2");
 		document.getElementById("player").style.display = "flex"
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
-		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
+		document.getElementById("my-video").style.display = "none"
+		//document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
 		//setTimeout(()=>{if(!isHost){listen()}}, 1000)
-	}
-});
-
-socket.on("heresmypeerid", (id, roomId)=>{
-	if(roomId == myRoomId)
-	{
-		if(isHost)
-		{
-			peerIds.push(id)
-		}
-	}
-});
-
-//var sourceBuffer = null;
-peer.on("connection", (conn)=>{
-	console.log("connected to peer")
-	document.getElementById("player").style.display = "flex"
-	document.getElementById("1").style.display = "none"
-	document.getElementById("myfile").style.display = "none"
-	document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
-	conn.on('open', function() {
-		console.log("on open works")
-		var blobArray = []
-		var chunksRecieved = 0
-		var firsttime = true
-		conn.on('data', function(data) {
-			console.log('Received', data);
-			var myplayer = videojs("my-video");
-			blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
-			let blob = new Blob(blobArray,{'type':'video/mp4'});
-			chunksRecieved++;
-			let currentTime = myplayer.currentTime();
-			if(myplayer.paused()) 
-				isplaying = false
-			else 
-				isplaying = true
-			if(chunksRecieved%1 == 0 && firsttime)
-			{
-				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-				console.log("all set to load")
-				if(totalFileSize != 0)
-					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
-				myplayer.on('loadeddata', (e)=>{
-					myplayer.currentTime(currentTime);
-					if(isplaying)
-						myplayer.play();
-					else 
-						myplayer.pause();
-				});
-				if(firsttime){
-					socket.emit("ready2");
-					firsttime = false
-				}
-				
-			}
-			else if(chunksRecieved%1 == 0 && !firsttime)
-			{
-				if(totalFileSize != 0)
-					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
-				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-				console.log("all set to load")
-				myplayer.on('loadeddata', (e)=>{
-					myplayer.currentTime(currentTime);
-					if(isplaying)
-						myplayer.play();
-					else 
-						myplayer.pause();
-				});
-				console.log(blob)
-			}
-			socket.emit("sendNextchunkemit");
-		});
-	  });
-})
-
-// peer.on("call", (call)=>{
-// document.getElementById("player").style.display = "flex"
-//  	call.answer(stream);
-//  	var myplayer = videojs("my-video");
-//  	console.log("call answered")
-//  	call.on("stream", (stream)=>{
-//  		if(!isHost){
-// 			console.log(stream)
-// 			//var url = URL.createObjectURL(stream)
-   
-// 			var vid = document.querySelector('video')
-// 			  vid.srcObject = stream;
-// 			console.log("added sourece obj")
-// 		 }
-// 	 })
-//  })
-
-socket.on('otherpc', function (data, roomid) {
-	if(roomid == myRoomId && !isHost){
-		console.log("other pc recieved 1 " + data)
-		pc2 = data
-	}
-});
-
-socket.on('otherpc2', function (data, roomid) {
-	if(roomid == myRoomId && isHost){
-		console.log("other pc recieved 2 " + data)
-		pc2 = data
 	}
 });

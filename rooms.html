@@ -11,6 +11,7 @@
 
 <body>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
   <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
@@ -171,7 +172,7 @@
       </div>
     </div>
     <div id="player" class="row mt-6">
-      <div class="col-md-8 offset-md-2">
+      <div id = "test" class="col-md-8 offset-md-2">
         <h3 id="1">choose local file:</h3><br>
         <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
         <video
@@ -181,13 +182,6 @@
           preload="auto"
           fluid = "true"
           data-setup='{"autoplay": false}'
-        >
-        </video><br><br><br>
-        <video
-          id="my-video2"
-          controls
-          preload="auto"
-          fluid = "true"
         >
         </video><br><br><br>
         <div> <h3 id="progress"> </h3></div>
