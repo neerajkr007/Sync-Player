@@ -186,6 +186,16 @@ io.on('connection', function(socket){
         io.sockets.emit("showplayer2", player.roomId);
     });
 
+    socket.on("mypc", (data)=>{
+        //console.log("recieved")
+        io.sockets.emit("otherpc", data, player.roomId);
+    });
+
+    socket.on("mypc2", (data)=>{
+        //console.log("recieved")
+        io.sockets.emit("otherpc2", data, player.roomId);
+    });
+
     socket.on('make-offer', function (data) {
         io.sockets.emit('offer-made', {
         roomid:player.roomId,

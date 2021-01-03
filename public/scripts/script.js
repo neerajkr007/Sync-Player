@@ -28,7 +28,8 @@ window.webkitRTCSessionDescription ||
 window.msRTCSessionDescription;
 const servers = null;
 var pc = new peerConnection(servers)
-
+console.log(pc)
+var pc2
 function maybeCreateStream(leftVideo) {
   if (stream) {
     return;
@@ -45,6 +46,10 @@ function maybeCreateStream(leftVideo) {
     console.log('captureStream() not supported');
   }
 }
+
+function onIceCandidate(pc2, event) {
+	pc2.addIceCandidate(event.candidate)
+  }
 
 function sendit(){
 	if(document.getElementById("username").value != ""){
@@ -122,6 +127,7 @@ function error (err) {
 
 function  loadVideo(e){
 	console.log("works");
+	socket.emit("mypc", pc)
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
@@ -135,8 +141,10 @@ function  loadVideo(e){
 		stream.getTracks().forEach(function(track) {
 			pc.addTrack(track, stream);
 		  });
+
+		pc.onicecandidate = e => onIceCandidate(pc2, e);
 		if(isHost){
-			createOffer();
+			//createOffer();
 			console.log("aboutto send emit")
 			socket.emit("showplayer2emit");
 		}
@@ -312,6 +320,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
 	socket.emit("mypeerid", myPeerId)
+	socket.emit("mypc2", pc)
 	
 });
 
@@ -409,7 +418,7 @@ socket.on("showplayer2", (roomId)=>{
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
 		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
-		setTimeout(()=>{if(!isHost){listen()}}, 1000)
+		//setTimeout(()=>{if(!isHost){listen()}}, 1000)
 	}
 });
 
@@ -501,3 +510,17 @@ peer.on("connection", (conn)=>{
 // 		 }
 // 	 })
 //  })
+
+socket.on('otherpc', function (data, roomid) {
+	if(roomid == myRoomId && !isHost){
+		console.log("other pc recieved 1 " + data)
+		pc2 = data
+	}
+});
+
+socket.on('otherpc2', function (data, roomid) {
+	if(roomid == myRoomId && isHost){
+		console.log("other pc recieved 2 " + data)
+		pc2 = data
+	}
+});
