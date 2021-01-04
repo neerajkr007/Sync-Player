@@ -11,8 +11,9 @@ var blobArray = []
 var isplaying = false
 var doneParsing = false
 let peers = {}
+//"stun:bn-turn1.xirsys.com"
 const configuration = {
-	iceServers: [{   urls: [ "stun:bn-turn1.xirsys.com","stun:global.stun.twilio.com:3478?transport=udp" ]}, 
+	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp" ]}, 
 	{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
 		credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
 		urls: [       
