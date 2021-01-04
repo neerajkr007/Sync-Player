@@ -12,7 +12,7 @@ var isplaying = false
 var doneParsing = false
 let peers = {}
 const configuration = {
-	iceServers: [{   urls: [ "stun:bn-turn1.xirsys.com" ]}, 
+	iceServers: [{   urls: [ "stun:bn-turn1.xirsys.com","stun:global.stun.twilio.com:3478?transport=udp" ]}, 
 	{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
 		credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
 		urls: [       
@@ -117,7 +117,7 @@ function addPeer(socket_id, am_initiator) {
 				isplaying = false
 			else 
 				isplaying = true
-			if(chunksRecieved%50 == 0 && firsttime)
+			if(chunksRecieved%25 == 0 && firsttime)
 			{
 				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 				console.log("all set to load")
@@ -136,7 +136,7 @@ function addPeer(socket_id, am_initiator) {
 				}
 				
 			}
-			else if(chunksRecieved%50 == 0 && !firsttime)
+			else if(chunksRecieved%25 == 0 && !firsttime)
 			{
 				if(totalFileSize != 0)
 					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
