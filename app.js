@@ -200,13 +200,13 @@ io.on('connection', function(socket){
         })
     })
 
-    /**
-     * Send message to client to initiate a connection
-     * The sender has already setup a peer connection receiver
-     */
     socket.on('initSend', init_socket_id => {
         console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
         peers[init_socket_id].emit('initSend', socket.id)
+    })
+
+    socket.on('sendnextchunkemit', init_socket_id => {
+        peers[init_socket_id].emit('sendnextchunk')
     })
 
     socket.on('disconnect',function(){

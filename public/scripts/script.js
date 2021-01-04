@@ -7,6 +7,7 @@ var myFileSize = 0;
 var totalFileSize = 0;
 let stream
 var chunkArray = []
+var blobArray = []
 var isplaying = false
 var doneParsing = false
 let peers = {}
@@ -22,6 +23,7 @@ const configuration = {
 			"turns:bn-turn1.xirsys.com:443?transport=tcp",       
 			"turns:bn-turn1.xirsys.com:5349?transport=tcp"   ]}]
 }
+
 function maybeCreateStream(leftVideo) {
   if (stream) {
     return;
@@ -80,10 +82,8 @@ function init() {
 }
 
 function addPeer(socket_id, am_initiator) {
-	console.log(stream)
     peers[socket_id] = new SimplePeer({
         initiator: am_initiator,
-        stream: stream,
         config: configuration
     })
 
@@ -94,20 +94,65 @@ function addPeer(socket_id, am_initiator) {
         })
     })
 
-    peers[socket_id].on('stream', stream => {
-		console.log(stream)
-		let newVid = document.createElement('video')
-        newVid.srcObject = stream
-        newVid.id = "yolo"
-        newVid.playsinline = false
-		newVid.autoplay = true
-		newVid.controls = true
-		newVid.width = "300px"
-		newVid.className = "video-js"
-		document.getElementById("test").appendChild(newVid)
-		
-		var myplayer= videojs("yolo")
-		myplayer.fluid(true)
+    peers[socket_id].on('connect', () => {
+		console.log("connected")
+		socket.emit("sendnextchunkemit", myRoomId)
+		var i = 0
+		socket.on("sendnextchunk", ()=>{
+			if(i < chunkArray.length){
+				peers[socket_id].send(chunkArray[i])
+				i++
+			}
+		})
+		var chunksRecieved = 0
+		var firsttime = true
+		peers[socket_id].on('data', data =>{
+			console.log('Received');
+			var myplayer = videojs("my-video");
+			blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
+			let blob = new Blob(blobArray,{'type':'video/mp4'});
+			chunksRecieved++;
+			let currentTime = myplayer.currentTime();
+			if(myplayer.paused()) 
+				isplaying = false
+			else 
+				isplaying = true
+			if(chunksRecieved%50 == 0 && firsttime)
+			{
+				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+				console.log("all set to load")
+				if(totalFileSize != 0)
+					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
+				myplayer.on('loadeddata', (e)=>{
+					myplayer.currentTime(currentTime);
+					if(isplaying)
+						myplayer.play();
+					else 
+						myplayer.pause();
+				});
+				if(firsttime){
+					socket.emit("ready2");
+					firsttime = false
+				}
+				
+			}
+			else if(chunksRecieved%50 == 0 && !firsttime)
+			{
+				if(totalFileSize != 0)
+					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
+				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+				console.log("all set to load")
+				myplayer.on('loadeddata', (e)=>{
+					myplayer.currentTime(currentTime);
+					if(isplaying)
+						myplayer.play();
+					else 
+						myplayer.pause();
+				});
+				console.log(blob)
+			}
+			socket.emit("sendnextchunkemit", myRoomId);
+		})
     })
 }
 
@@ -121,13 +166,14 @@ function  loadVideo(e){
 	var myplayer = videojs("my-video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
-		var video = document.querySelector('video')
-		maybeCreateStream(video);
+		alert("spliting files")
+		parseFile([file][0])
 		init()
 		if(isHost){
 			socket.emit("showplayer2emit");
 		}
 		socket.emit("ready", myFileSize);
+		
 	});
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(!isHost){
@@ -184,7 +230,7 @@ function callback(e){
 
 function parseFile(file) {
     var fileSize   = file.size;
-    var chunkSize  = 1024 * 1024; // bytes
+    var chunkSize  = 262144; // bytes
     var offset     = 0;
     var self       = this; // we need a reference to the current object
     var chunkReaderBlock = null;
@@ -199,12 +245,7 @@ function parseFile(file) {
         }
         if (offset >= fileSize) {
 			console.log("Done reading file");
-			//alert("spliting complete");
-			// conn.on("open",()=>{
-			// 	console.log("yo peer connected")
-			// 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'>loading stream on other users devices</h5>";
-			// 	socket.emit("sendNextchunkemit");
-			// })
+			alert("spliting complete");
 			doneParsing = true
             return;
         }
@@ -225,7 +266,6 @@ function parseFile(file) {
     // now let's start the read with the first block
     chunkReaderBlock(offset, chunkSize, file);
 }
-
 
 socket.on("hosted", function(data){
 	myRoomId = data;
@@ -341,12 +381,9 @@ socket.on("showplayer2", (roomId)=>{
 	if(roomId == myRoomId && !isHost)
 	{
 		init();
-		socket.emit("ready2");
 		document.getElementById("player").style.display = "flex"
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
-		document.getElementById("my-video").style.display = "none"
-		//document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
-		//setTimeout(()=>{if(!isHost){listen()}}, 1000)
+		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
 	}
 });
