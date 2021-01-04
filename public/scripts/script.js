@@ -101,6 +101,7 @@ function addPeer(socket_id, am_initiator) {
 		var i = 0
 		socket.on("sendnextchunk", ()=>{
 			if(i < chunkArray.length){
+				console.log("chunk sent")
 				peers[socket_id].send(chunkArray[i])
 				i++
 			}
