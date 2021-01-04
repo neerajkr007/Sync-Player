@@ -13,7 +13,8 @@ var doneParsing = false
 let peers = {}
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
-	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp" ]}}
+	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp" ]}]
+}
 function maybeCreateStream(leftVideo) {
   if (stream) {
     return;
