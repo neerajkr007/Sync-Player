@@ -67,7 +67,7 @@ io.on('connection', function(socket){
     var player = Player(socket.id);
     PLAYER_LIST[socket.id] = player;
 
-    
+    socket.emit("mysocketid", socket.id);
     
 
     function callEventify(id){
@@ -209,6 +209,9 @@ io.on('connection', function(socket){
         peers[init_socket_id].emit('sendnextchunk')
     })
 
+    socket.on("chattoothersemit", (chat, id)=>{
+        io.sockets.emit("chatToOthers", player.roomId, chat, id, player.name);
+    });
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         socket.broadcast.emit('removePeer', socket.id)

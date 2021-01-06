@@ -3,6 +3,7 @@
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
+var mySocketId = socket.id;
 var isHost = false;
 var sessionType = ""
 var myFileSize = 0;
@@ -12,7 +13,9 @@ var chunkArray = []
 var blobArray = []
 var isplaying = false
 var doneParsing = false
+var test = true
 let peers = {}
+var d = new Date();
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -121,7 +124,7 @@ function addPeer(socket_id, am_initiator) {
 				isplaying = false
 			else 
 				isplaying = true
-			if(chunksRecieved%25 == 0 && firsttime)
+			if(chunksRecieved%20 == 0 && firsttime)
 			{
 				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 				console.log("all set to load")
@@ -162,6 +165,8 @@ function addPeer(socket_id, am_initiator) {
 
 function  loadVideo(e){
 	console.log("works");
+	document.getElementById("1").style.display = "none";
+	document.getElementById("myfile").style.display = "none";
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
@@ -170,13 +175,20 @@ function  loadVideo(e){
 	var myplayer = videojs("my-video");
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
-		alert("spliting files")
-		parseFile([file][0])
-		init()
-		if(isHost){
-			socket.emit("showplayer2emit");
+		if(sessionType === "stream")
+		{
+			alert("spliting files")
+			parseFile([file][0])
+			init()
+			if(isHost){
+				socket.emit("showplayer2emit");
+			}
+			socket.emit("ready", myFileSize);
 		}
-		socket.emit("ready", myFileSize);
+		else
+		{
+			socket.emit("ready", myFileSize);
+		}
 		
 	});
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
@@ -271,6 +283,31 @@ function parseFile(file) {
     chunkReaderBlock(offset, chunkSize, file);
 }
 
+function toggleChat(){
+	if(!test)
+	{
+		document.getElementById('chatBody').style.display='none'; 
+		document.getElementById('footer').style.display='none'; 
+		test=true
+	}
+	else
+	{
+		document.getElementById('chatBody').style.display='block'; 
+		document.getElementById('footer').style.display='block'; 
+		test=false
+	}
+}
+
+function sendChat(){
+	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p>'+document.getElementById("chatInput").value+'</p><p class="meta"><time datetime="2021">'+d.getHours()%12+':'+d.getMinutes()+':'+d.getSeconds() +'</time></p></div></div>'
+	socket.emit('chattoothersemit', document.getElementById("chatInput").value, mySocketId)
+	document.getElementById("chatInput").value = ""
+}
+
+socket.on("mysocketid", (id)=>{
+	mySocketId = id;
+})
+
 socket.on("hosted", function(data){
 	myRoomId = data;
 	isHost = true;
@@ -281,6 +318,7 @@ socket.on("hosted", function(data){
 	document.getElementById("gameId").innerHTML = "room id -  "+ data;
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> click go to load the player</h5>";
+	document.getElementById("chatbox").style.display = "block";
 });
 
 socket.on("joined", function(data){
@@ -292,6 +330,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
+	document.getElementById("chatbox").style.display = "block";
 	
 });
 
@@ -310,7 +349,7 @@ socket.on("updatePlayerList", (name, roomId)=>{
 	if(roomId == myRoomId)
 	{
 		var node = document.createElement("LI");   
-		node.innerHTML = "<li class='list-group-item' style='background: transparent;'>" + name +"</li>"                 // Append the text to <li>
+		node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
 		document.getElementById("playerList").appendChild(node);
 	}
 });
@@ -389,5 +428,12 @@ socket.on("showplayer2", (roomId)=>{
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
 		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
+	}
+});
+
+socket.on("chatToOthers", (roomId, chat, id, name)=>{
+	if(roomId == myRoomId && mySocketId !=id)
+	{
+		document.getElementById("chatBody").innerHTML += '<div> <i class="fas avatar fa-2x fa-user-circle" style="padding: 0;"></i><p class="d-inline-flex" style="color:#aaaaaa;">'+name+'</p><div class="row" style="padding-left: 30px;"><p>'+chat+'</p><br><p>'+d.getHours()%12+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div></div>'
 	}
 });
