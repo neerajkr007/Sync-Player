@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
-  <title>Welcome</title>
+  <title>Sync Player</title>
 </head>
 
 <body>
@@ -48,8 +48,8 @@
 
 
   <div class="container">
-    <div class="row mt-6">
-      <div class="col-md-4 text-center" style="background: transparent;">
+    <div id="roomdetails" class="row mt-6">
+      <div id="playerlist" class="col-md-4 text-center" style="background: transparent;">
         <ul id="playerList" class="list-group w-50">
           <li class="list-group-item" style="background: transparent;">users connected - </li>
         </ul>
@@ -76,6 +76,40 @@
         <button id="host" type="button" class="btn bt-lg btn-success"  data-toggle="modal" data-target="#Modal4">Host</button>
         <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
         <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
+      </div>
+      <div id="sessionTypeModal">
+        <div class="modal fade" id="Modal4" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="ModalLabel3">Session type</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="Radios" id="Radios1" value="load" checked>
+                  <label class="form-check-label" for="Radios1">
+                    users have their file and will load themselves
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="Radios" id="Radios2" value="stream">
+                  <label class="form-check-label" for="Radios2">
+                    users will stream from the host
+                  </label>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" id="sure" class="btn btn-primary" onClick="sendit(); $('#Modal4').modal('toggle')"
+                  data-dismiss="">Next</button>
+                <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div id="enterId">
         <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
@@ -113,40 +147,6 @@
         <script>document.getElementById("go").style.display="none";</script>
       </div>
     </div>
-    <div id="sessionTypeModal">
-      <div class="modal fade" id="Modal4" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="ModalLabel3">Session type</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="Radios" id="Radios1" value="load" checked>
-                <label class="form-check-label" for="Radios1">
-                  users have their file and will load themselves
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="Radios" id="Radios2" value="stream">
-                <label class="form-check-label" for="Radios2">
-                  users will stream from the host
-                </label>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" id="sure" class="btn btn-primary" onClick="sendit(); $('#Modal4').modal('toggle')"
-                data-dismiss="">Next</button>
-              <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     <div id="loadPlayerModal">
       <div class="modal fade" id="Modal3" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
         aria-hidden="true">
@@ -163,7 +163,7 @@
               <h7 class="">don't do this before all users have joined your room.</h3>
             </div>
             <div class="modal-footer">
-              <button type="button" id="sure" class="btn btn-primary" onClick='showPlayeremit();'
+              <button type="button" id="sure" class="btn btn-primary" onClick='showPlayeremit(); document.getElementById("go").style.display="none";'
                 data-dismiss="">sure, go ahead</button>
               <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
@@ -172,7 +172,7 @@
       </div>
     </div>
     <div id="player" class="row mt-6">
-      <div id = "test" class="col-md-8 offset-md-2">
+      <div class="col-md-8 offset-md-2">
         <h3 id="1">choose local file:</h3><br>
         <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
         <video
@@ -184,13 +184,16 @@
           data-setup='{"autoplay": false}'
         >
         </video><br><br><br>
-        <div> <h3 id="progress"> </h3></div>
         <script>
           document.getElementById("player").style.display = "none";
           const input = document.getElementById('myfile');
           input.addEventListener('change', loadVideo);
         </script>
+        <div> <h3 id="progress"> </h3></div>
       </div>
+    </div>
+    <div id="chatbox" class="fixed-bottom">
+      <div class="float-right mr-5 mb-5">yolo</div>
     </div>
   </div>
 
