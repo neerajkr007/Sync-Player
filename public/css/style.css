@@ -31,8 +31,7 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { 
     -webkit-appearance: none;
     -moz-appearance: none;
-    margin: 0; 
-    
+    margin: 0;
 }
 
 input[type=number]{
@@ -174,17 +173,16 @@ h4.card-title {
     position: relative;
     padding: 6px 8px;
     margin: 4px 0;
-    background-color: #f5f6f7;
     border-radius: 3px;
     font-weight: 100;
-    color: #9b9b9b
+    color: #9b9b9b;
 }
 
 .media>* {
     margin: 0 8px
 }
 
-.media-chat .media-body p.meta {
+.media-chat p.meta {
     background-color: transparent !important;
     padding: 0;
     opacity: .8
@@ -208,7 +206,8 @@ h4.card-title {
 }
 
 .media-meta-day::before {
-    margin-right: 16px
+    margin-right: 16px;
+    
 }
 
 .media-meta-day::before,

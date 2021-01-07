@@ -208,12 +208,15 @@ io.on('connection', function(socket){
     socket.on('sendnextchunkemit', init_socket_id => {
         peers[init_socket_id].emit('sendnextchunk')
     })
-
+    var test
     socket.on("chattoothersemit", (chat, id)=>{
+        test = id
         io.sockets.emit("chatToOthers", player.roomId, chat, id, player.name);
     });
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
+        io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
         socket.broadcast.emit('removePeer', socket.id)
         delete peers[socket.id]
         socket.leave(player.roomId);

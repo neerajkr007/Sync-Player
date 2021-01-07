@@ -299,9 +299,11 @@ function toggleChat(){
 }
 
 function sendChat(){
-	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p>'+document.getElementById("chatInput").value+'</p><p class="meta"><time datetime="2021">'+d.getHours()%12+':'+d.getMinutes()+':'+d.getSeconds() +'</time></p></div></div>'
+	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p>'+document.getElementById("chatInput").value+'</p><p class="meta" style="color:#aaaaaa !important; font-size: small !important;"><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</time></p></div></div>'
 	socket.emit('chattoothersemit', document.getElementById("chatInput").value, mySocketId)
+	//document.getElementById("chatBody").innerHTML += '<div class="row align-middle"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">LOLOL</p></div><div class="row media-chat media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+document.getElementById("chatInput").value+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div>'
 	document.getElementById("chatInput").value = ""
+	document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
 }
 
 socket.on("mysocketid", (id)=>{
@@ -434,6 +436,7 @@ socket.on("showplayer2", (roomId)=>{
 socket.on("chatToOthers", (roomId, chat, id, name)=>{
 	if(roomId == myRoomId && mySocketId !=id)
 	{
-		document.getElementById("chatBody").innerHTML += '<div> <i class="fas avatar fa-2x fa-user-circle" style="padding: 0;"></i><p class="d-inline-flex" style="color:#aaaaaa;">'+name+'</p><div class="row" style="padding-left: 30px;"><p>'+chat+'</p><br><p>'+d.getHours()%12+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div></div>'
+		document.getElementById("chatBody").innerHTML += '<div class="row align-middle"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div>'
+		document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
 	}
 });
