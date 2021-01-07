@@ -49,7 +49,7 @@
 
 
   <div class="container">
-    <div id="roomdetails" class="row mt-6" style="height: 350px;">
+    <div id="roomdetails" class="row mt-6">
       <div id="playerlist" class="col-md-4 text-center" style="background: transparent;">
         <ul id="playerList" class="list-group w-50">
           <li class="list-group-item" style="background: #404040 !important;">users connected - </li>
@@ -79,7 +79,35 @@
           </div>
         </div>
       </div>
-      <div id="chatbox" class="col-md-4 mt-4" >
+      
+      <div class="col-md-4 offset-md-4 text-center">
+        <button id="host" type="button" class="btn bt-lg btn-success"  data-toggle="modal" data-target="#Modal4">Host</button>
+        <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
+        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
+      </div>
+    </div>
+    <div  class="row">
+      <div id="player" class="col-md-8 mt-2">
+        <h3 id="1">choose local file:</h3><br>
+        <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
+        <video
+          id="my-video"
+          class="video-js"
+          controls
+          preload="auto"
+          fluid = "true"
+          data-setup='{"autoplay": false}'
+        >
+        </video>
+        <script>
+          document.getElementById("player").style.display = "none";
+          const input = document.getElementById('myfile');
+          input.addEventListener('change', loadVideo);
+        </script>
+        <div> <h3 id="progress"> </h3></div>
+      </div><br><br><br>
+      <div id="chatbox" class="fixed-bottom col-md-4 offset-md-8 mt-4 text-center" style=" padding-bottom: 30px !important; padding-right: 20px !important;">
+        <br><br><br><br>
         <div class="" id="page-content">
           <div>
               <div class="justify-content-center">
@@ -97,10 +125,10 @@
                                   <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 2px;"></div>
                               </div>
                           </div>
-                          <div id="footer" style="background-color: #404040 !important; border-top: #000000 !important;" class="publisher bt-1 border-light"> 
-                            <span class="avatar avatar-xs"><i class="fas fa-2x fa-user-circle"></i></span>
-                            <input id="chatInput" class="publisher-input" type="text" placeholder="Write something" style="color: #aaaaaa;"> 
-                            <span id="send" class="float-right"><a href="#" onClick="sendChat();" data-abc="true" style="color: aquamarine;"><i class="fas fa-paper-plane"></i></a></span>
+                          <div id="footer" style="background-color: #404040 !important; border-top: #000000 !important;" class=""> 
+                            <i class="float-left fas fa-2x fa-user-circle" style="padding-left: 20px;"></i>
+                            <input id="chatInput" class="publisher-input" type="text" placeholder="Write something" style="color: #aaaaaa; max-width: 60% !important;"> 
+                            <i id="send" class="float-right fas fa-1x fa-paper-plane" onClick="sendChat();"style="color: aquamarine; padding-right: 20px; padding-top: 8px;"></i>
                           </div>
                           <script>
                             var input2 = document.getElementById("chatInput");
@@ -122,33 +150,8 @@
         document.getElementById("chatBody").style.display = "none";
         document.getElementById("footer").style.display = "none";
       </script>
-      <div class="col-md-4 offset-md-4 text-center">
-        <button id="host" type="button" class="btn bt-lg btn-success"  data-toggle="modal" data-target="#Modal4">Host</button>
-        <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
-        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
-      </div>
     </div>
-    <div id="player" class="row text-left">
-      <div class="col-md-8 offset-md-2 mt-2">
-        <h3 id="1">choose local file:</h3><br>
-        <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
-        <video
-          id="my-video"
-          class="video-js"
-          controls
-          preload="auto"
-          fluid = "true"
-          data-setup='{"autoplay": false}'
-        >
-        </video>
-        <script>
-          document.getElementById("player").style.display = "none";
-          const input = document.getElementById('myfile');
-          input.addEventListener('change', loadVideo);
-        </script>
-        <div> <h3 id="progress"> </h3></div>
-      </div>
-    </div>
+    <br><br><br><br><br><br>
     <div id="sessionTypeModal">
       <div class="modal fade" id="Modal4" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
         aria-hidden="true">

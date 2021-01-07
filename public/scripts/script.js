@@ -15,7 +15,6 @@ var isplaying = false
 var doneParsing = false
 var test = true
 let peers = {}
-var d = new Date();
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -163,7 +162,7 @@ function addPeer(socket_id, am_initiator) {
     })
 }
 
-function  loadVideo(e){
+function loadVideo(e){
 	console.log("works");
 	document.getElementById("1").style.display = "none";
 	document.getElementById("myfile").style.display = "none";
@@ -222,6 +221,7 @@ function tryJoin(){
 function showPlayeremit(){
 	$('#Modal3').modal('toggle')
 	document.getElementById("go").style.display = "none";
+	document.getElementById("chatbox").setAttribute("class", "col-md-4 mt-4 text-center")
 	if(document.getElementById("Radios1").checked)
 	{
 		console.log("1")
@@ -299,7 +299,11 @@ function toggleChat(){
 }
 
 function sendChat(){
-	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p>'+document.getElementById("chatInput").value+'</p><p class="meta" style="color:#aaaaaa !important; font-size: small !important;"><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</time></p></div></div>'
+	var d = new Date();
+	var h = d.getHours()
+	var m = d.getMinutes()
+	var s = d.getSeconds()
+	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p>'+document.getElementById("chatInput").value+'</p><p class="meta" style="color:#aaaaaa !important; font-size: small !important;"><time datetime="2021">'+h+':'+m+':'+s+'</time></p></div></div>'
 	socket.emit('chattoothersemit', document.getElementById("chatInput").value, mySocketId)
 	//document.getElementById("chatBody").innerHTML += '<div class="row align-middle"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">LOLOL</p></div><div class="row media-chat media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+document.getElementById("chatInput").value+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div>'
 	document.getElementById("chatInput").value = ""
@@ -359,7 +363,7 @@ socket.on("updatePlayerList", (name, roomId)=>{
 socket.on("showPlayer", (roomId)=>{
 	if(roomId == myRoomId)
 	{
-		document.getElementById("player").style.display = "flex";
+		document.getElementById("player").style.display = "block";
 	}
 });
 
@@ -426,7 +430,7 @@ socket.on("showplayer2", (roomId)=>{
 	if(roomId == myRoomId && !isHost)
 	{
 		init();
-		document.getElementById("player").style.display = "flex"
+		document.getElementById("player").style.display = "block"
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
 		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
@@ -434,9 +438,15 @@ socket.on("showplayer2", (roomId)=>{
 });
 
 socket.on("chatToOthers", (roomId, chat, id, name)=>{
-	if(roomId == myRoomId && mySocketId !=id)
+	if(roomId == myRoomId && roomId != "" && mySocketId !=id)
 	{
-		document.getElementById("chatBody").innerHTML += '<div class="row align-middle"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div>'
+		if(test)
+			toggleChat()
+		var d = new Date();
+		var h = d.getHours()
+		var m = d.getMinutes()
+		var s = d.getSeconds()
+		document.getElementById("chatBody").innerHTML += '<div class="row"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+h+':'+m+':'+s+'</p></div>'
 		document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
 	}
 });
