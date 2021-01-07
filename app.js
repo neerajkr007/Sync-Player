@@ -214,6 +214,11 @@ io.on('connection', function(socket){
         io.sockets.emit("chatToOthers", player.roomId, chat, id, player.name);
     });
 
+    socket.on("chattoothersemit2", (id)=>{
+        test = id
+        io.sockets.emit("chatToOthers", player.roomId, player.name + " has joined the room", id, "");
+    });
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");

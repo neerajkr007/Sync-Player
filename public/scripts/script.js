@@ -337,7 +337,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
 	document.getElementById("chatbox").style.display = "block";
-	
+	socket.emit('chattoothersemit2', mySocketId)	
 });
 
 socket.on("notJoined", function(){
