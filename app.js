@@ -83,6 +83,7 @@ io.on('connection', function(socket){
           });
     }
 
+    
 
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
@@ -136,11 +137,7 @@ io.on('connection', function(socket){
     socket.on("ready", (size)=>{
         player.isReady = true;
         player.fileSize = size;
-        for(let id in peers) {
-            if(id === socket.id) continue
-            console.log('sending init receive to ' + socket.id)
-            peers[id].emit('initReceive', socket.id)
-        }
+        
         console.log("ready");
     });
 
@@ -218,6 +215,14 @@ io.on('connection', function(socket){
         test = id
         io.sockets.emit("chatToOthers", player.roomId, player.name + " has joined the room", id, "");
     });
+
+    socket.on("sendinitemit", ()=>{
+        for(let id in peers) {
+            if(id === socket.id) continue
+            console.log('sending init receive to ' + socket.id)
+            peers[id].emit('initReceive', socket.id)
+        }
+    })
 
     socket.on('disconnect',function(){
         console.log('socket disconnected ');

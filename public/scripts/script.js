@@ -9,6 +9,7 @@ var sessionType = ""
 var myFileSize = 0;
 var totalFileSize = 0;
 let stream
+let remoteStream
 var chunkArray = []
 var blobArray = []
 var isplaying = false
@@ -57,6 +58,7 @@ function sendit(){
 }
 
 function init() {
+	console.log("init called")
 
     socket.on('initReceive', socket_id => {
         console.log('INIT RECEIVE ' + socket_id)
@@ -88,7 +90,8 @@ function init() {
 
 function addPeer(socket_id, am_initiator) {
     peers[socket_id] = new SimplePeer({
-        initiator: am_initiator,
+		initiator: am_initiator,
+		stream: stream,
         config: configuration
     })
 
@@ -101,65 +104,74 @@ function addPeer(socket_id, am_initiator) {
 
     peers[socket_id].on('connect', () => {
 		console.log("connected")
-		socket.emit("sendnextchunkemit", myRoomId)
-		var i = 0
-		socket.on("sendnextchunk", ()=>{
-			if(i < chunkArray.length){
-				console.log("chunk sent")
-				peers[socket_id].send(chunkArray[i])
-				i++
-			}
-		})
-		var chunksRecieved = 0
-		var firsttime = true
-		peers[socket_id].on('data', data =>{
-			console.log('Received');
-			var myplayer = videojs("my-video");
-			blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
-			let blob = new Blob(blobArray,{'type':'video/mp4'});
-			chunksRecieved++;
-			let currentTime = myplayer.currentTime();
-			if(myplayer.paused()) 
-				isplaying = false
-			else 
-				isplaying = true
-			if(chunksRecieved%20 == 0 && firsttime)
-			{
-				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-				console.log("all set to load")
-				if(totalFileSize != 0)
-					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
-				myplayer.on('loadeddata', (e)=>{
-					myplayer.currentTime(currentTime);
-					if(isplaying)
-						myplayer.play();
-					else 
-						myplayer.pause();
-				});
-				if(firsttime){
-					socket.emit("ready2");
-					firsttime = false
+		if(sessionType === "stream"){
+			socket.emit("sendnextchunkemit", myRoomId)
+			var i = 0
+			socket.on("sendnextchunk", ()=>{
+				if(i < chunkArray.length){
+					console.log("chunk sent")
+					peers[socket_id].send(chunkArray[i])
+					i++
 				}
-				
-			}
-			else if(chunksRecieved%25 == 0 && !firsttime)
-			{
-				if(totalFileSize != 0)
-					document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
-				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-				console.log("all set to load")
-				myplayer.on('loadeddata', (e)=>{
-					myplayer.currentTime(currentTime);
-					if(isplaying)
-						myplayer.play();
-					else 
-						myplayer.pause();
-				});
-				console.log(blob)
-			}
-			socket.emit("sendnextchunkemit", myRoomId);
-		})
-    })
+			})
+			var chunksRecieved = 0
+			var firsttime = true
+			peers[socket_id].on('data', data =>{
+				console.log('Received');
+				var myplayer = videojs("my-video");
+				blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
+				let blob = new Blob(blobArray,{'type':'video/mp4'});
+				chunksRecieved++;
+				let currentTime = myplayer.currentTime();
+				if(myplayer.paused()) 
+					isplaying = false
+				else 
+					isplaying = true
+				if(chunksRecieved%20 == 0 && firsttime)
+				{
+					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+					console.log("all set to load")
+					if(totalFileSize != 0)
+						document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
+					myplayer.on('loadeddata', (e)=>{
+						myplayer.currentTime(currentTime);
+						if(isplaying)
+							myplayer.play();
+						else 
+							myplayer.pause();
+					});
+					if(firsttime){
+						socket.emit("ready2");
+						firsttime = false
+					}
+					
+				}
+				else if(chunksRecieved%25 == 0 && !firsttime)
+				{
+					if(totalFileSize != 0)
+						document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
+					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+					console.log("all set to load")
+					myplayer.on('loadeddata', (e)=>{
+						myplayer.currentTime(currentTime);
+						if(isplaying)
+							myplayer.play();
+						else 
+							myplayer.pause();
+					});
+					console.log(blob)
+				}
+				socket.emit("sendnextchunkemit", myRoomId);
+			})
+		}
+	})
+	
+	peers[socket_id].on('stream', (stream)=>{
+		let audio = document.createElement('audio')
+		audio.srcObject = stream
+		audio.play()
+		document.getElementById("voice").appendChild(audio)
+	})
 }
 
 function loadVideo(e){
@@ -303,11 +315,23 @@ function sendChat(){
 	var h = d.getHours()
 	var m = d.getMinutes()
 	var s = d.getSeconds()
-	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p>'+document.getElementById("chatInput").value+'</p><p class="meta" style="color:#aaaaaa !important; font-size: small !important;"><time datetime="2021">'+h+':'+m+':'+s+'</time></p></div></div>'
+	document.getElementById("chatBody").innerHTML += '<div class="media media-chat media-chat-reverse"><div class="media-body"><p style="max-width: 80% !important">'+document.getElementById("chatInput").value+'</p><p class="meta" style="color:#aaaaaa !important; font-size: small !important;"><time datetime="2021">'+h+':'+m+':'+s+'</time></p></div></div>'
 	socket.emit('chattoothersemit', document.getElementById("chatInput").value, mySocketId)
 	//document.getElementById("chatBody").innerHTML += '<div class="row align-middle"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">LOLOL</p></div><div class="row media-chat media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+document.getElementById("chatInput").value+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds() +'</p></div>'
 	document.getElementById("chatInput").value = ""
 	document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
+}
+
+
+function voice(){
+	navigator.mediaDevices.getUserMedia({
+		audio: true
+	  }).then(Stream => {
+		console.log('Received local stream');
+		stream = Stream
+		init()
+		socket.emit("sendinitemit")
+	}).catch(e => alert(`getusermedia error ${e.name}`))
 }
 
 socket.on("mysocketid", (id)=>{
