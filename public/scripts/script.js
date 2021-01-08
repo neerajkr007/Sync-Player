@@ -8,8 +8,6 @@ var isHost = false;
 var sessionType = ""
 var myFileSize = 0;
 var totalFileSize = 0;
-let stream
-let remoteStream
 var chunkArray = []
 var blobArray = []
 var isplaying = false
@@ -57,18 +55,18 @@ function sendit(){
 	}
 }
 
-function init() {
+function init(stream) {
 	console.log("init called")
 
     socket.on('initReceive', socket_id => {
         console.log('INIT RECEIVE ' + socket_id)
-        addPeer(socket_id, false)
+        addPeer(socket_id, false, stream)
         socket.emit('initSend', socket_id)
     })
 
     socket.on('initSend', socket_id => {
         console.log('INIT SEND ' + socket_id)
-        addPeer(socket_id, true)
+        addPeer(socket_id, true, stream)
     })
 
     socket.on('removePeer', socket_id => {
@@ -85,10 +83,11 @@ function init() {
 
     socket.on('signal', data => {
         peers[data.socket_id].signal(data.signal)
-    })
+	})
+	socket.emit("sendinitemit")
 }
 
-function addPeer(socket_id, am_initiator) {
+function addPeer(socket_id, am_initiator, stream) {
     peers[socket_id] = new SimplePeer({
 		initiator: am_initiator,
 		stream: stream,
@@ -326,12 +325,7 @@ function sendChat(){
 function voice(){
 	navigator.mediaDevices.getUserMedia({
 		audio: true
-	  }).then(Stream => {
-		console.log('Received local stream');
-		stream = Stream
-		init()
-		socket.emit("sendinitemit")
-	}).catch(e => alert(`getusermedia error ${e.name}`))
+	  }).then(init).catch(e => alert(`getusermedia error ${e.name}`))
 }
 
 socket.on("mysocketid", (id)=>{
