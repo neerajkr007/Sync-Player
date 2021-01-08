@@ -224,6 +224,13 @@ io.on('connection', function(socket){
         }
     })
 
+    socket.on("playAudioEmit", (id, n)=>{
+        if(n == 1)
+            io.sockets.emit("playAudio", player.roomId, id);
+        else if(n == 2)
+            io.sockets.emit("pauseAudio", player.roomId, id);
+    });
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");

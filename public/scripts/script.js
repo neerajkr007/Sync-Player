@@ -74,13 +74,6 @@ function init(stream) {
         //removePeer(socket_id)
     })
 
-    socket.on('disconnect', () => {
-        console.log('GOT DISCONNECTED')
-        for (let socket_id in peers) {
-            //removePeer(socket_id)
-        }
-    })
-
     socket.on('signal', data => {
         peers[data.socket_id].signal(data.signal)
 	})
@@ -166,10 +159,8 @@ function addPeer(socket_id, am_initiator, stream) {
 	})
 	
 	peers[socket_id].on('stream', (stream)=>{
-		let audio = document.createElement('audio')
+		let audio = document.getElementById("audioPlayer")
 		audio.srcObject = stream
-		audio.play()
-		document.getElementById("voice").appendChild(audio)
 	})
 }
 
@@ -189,7 +180,7 @@ function loadVideo(e){
 		{
 			alert("spliting files")
 			parseFile([file][0])
-			init()
+			//init()
 			if(isHost){
 				socket.emit("showplayer2emit");
 			}
@@ -321,11 +312,14 @@ function sendChat(){
 	document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
 }
 
-
 function voice(){
 	navigator.mediaDevices.getUserMedia({
 		audio: true
 	  }).then(init).catch(e => alert(`getusermedia error ${e.name}`))
+}
+
+function toggleVoice(n){
+	socket.emit("playAudioEmit", mySocketId, n)
 }
 
 socket.on("mysocketid", (id)=>{
@@ -343,6 +337,8 @@ socket.on("hosted", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> click go to load the player</h5>";
 	document.getElementById("chatbox").style.display = "block";
+	document.getElementById("voice").style.display= "block"
+	voice()
 });
 
 socket.on("joined", function(data){
@@ -355,7 +351,9 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
 	document.getElementById("chatbox").style.display = "block";
+	document.getElementById("voice").style.display= "block"
 	socket.emit('chattoothersemit2', mySocketId)	
+	voice()
 });
 
 socket.on("notJoined", function(){
@@ -447,7 +445,7 @@ socket.on("play", (roomId)=>{
 socket.on("showplayer2", (roomId)=>{
 	if(roomId == myRoomId && !isHost)
 	{
-		init();
+		//init();
 		document.getElementById("player").style.display = "block"
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
@@ -466,5 +464,19 @@ socket.on("chatToOthers", (roomId, chat, id, name)=>{
 		var s = d.getSeconds()
 		document.getElementById("chatBody").innerHTML += '<div class="row"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+h+':'+m+':'+s+'</p></div>'
 		document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
+	}
+});
+
+socket.on("playAudio", (roomId, id)=>{
+	if(roomId == myRoomId && id != mySocketId)
+	{
+		document.getElementById("audioPlayer").play()
+	}
+});
+
+socket.on("pauseAudio", (roomId, id)=>{
+	if(roomId == myRoomId && id != mySocketId)
+	{
+		document.getElementById("audioPlayer").pause()
 	}
 });

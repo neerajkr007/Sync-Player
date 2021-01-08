@@ -79,7 +79,11 @@
           </div>
         </div>
       </div>
-      
+      <div id="voice" class="col-md-4 mt-4 text-center">
+        <button id="micButton" style="background-color: transparent; border: 0;" onmousedown="toggleVoice(1)" onmouseup="toggleVoice(2)"><i class="fas fa-2x fa-microphone" ></i></button>
+        <audio id="audioPlayer"></audio>
+        <script>document.getElementById("voice").style.display="none"</script>
+      </div>
       <div class="col-md-4 offset-md-4 text-center">
         <button id="host" type="button" class="btn bt-lg btn-success"  data-toggle="modal" data-target="#Modal4">Host</button>
         <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
@@ -239,9 +243,7 @@
         </div>
       </div>
     </div>
-    <div id="voice">
-      <button class="btn btn-primary" onClick="voice();"> TEST</button>
-    </div>
+    
     
   </div>
   
