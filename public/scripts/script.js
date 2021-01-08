@@ -14,6 +14,7 @@ var isplaying = false
 var doneParsing = false
 var test = true
 let peers = {}
+var voiceOn = true
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -318,8 +319,19 @@ function voice(){
 	  }).then(init).catch(e => alert(`getusermedia error ${e.name}`))
 }
 
-function toggleVoice(n){
-	socket.emit("playAudioEmit", mySocketId, n)
+function toggleVoice(){
+	if(voiceOn)
+	{
+		socket.emit("playAudioEmit", mySocketId, 1)
+		voiceOn = false
+		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
+	}
+	else
+	{
+		socket.emit("playAudioEmit", mySocketId, 2)
+		voiceOn = true
+		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone" ></i>'
+	}
 }
 
 socket.on("mysocketid", (id)=>{
