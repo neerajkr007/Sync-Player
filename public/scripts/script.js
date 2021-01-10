@@ -289,6 +289,7 @@ function parseFile(file) {
 function toggleChat(){
 	if(!test)
 	{
+		document.getElementById("chatbox").clientWidth = (document.getElementById("container").clientWidth)*0.30 + "px"
 		document.getElementById('chatBody').style.display='none'; 
 		document.getElementById('footer').style.display='none'; 
 		test=true
