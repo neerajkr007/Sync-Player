@@ -326,13 +326,13 @@ function toggleVoice(){
 	{
 		socket.emit("playAudioEmit", mySocketId, 1)
 		voiceOn = false
-		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
+		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone" ></i>'
 	}
 	else
 	{
 		socket.emit("playAudioEmit", mySocketId, 2)
 		voiceOn = true
-		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone" ></i>'
+		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
 	}
 }
 
