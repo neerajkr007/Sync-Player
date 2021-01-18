@@ -1,6 +1,5 @@
 body{
-	background: rgb(2,0,36);
-	background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(205,2,204,1) 0%, rgba(0,212,255,1) 88%, rgba(255,255,255,1) 100%);
+	background: linear-gradient(to right top, #65dfc9, #6cdbeb);
 }
 .mt-6{
 	margin-top: 50px;
@@ -18,11 +17,6 @@ ul {
 	height: 250px;
 }
 
-.nav-bg-style{
-	border-bottom: 1px solid black;
-	background: rgb(2,0,36);
-	background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(205,2,204,1) 0%, rgba(0,212,255,1) 88%, rgba(255,255,255,1) 100%);
-}
 .darktheme{
 	background: rgb(44, 47, 51);
 }

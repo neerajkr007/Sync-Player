@@ -273,7 +273,7 @@ function parseFile(file) {
         if (offset >= fileSize) {
 			console.log("Done reading file");
 			alert("spliting complete");
-			for(var i = 0; i<20; i++)
+			for(var i = 0; i<10; i++)
 			{
 				socket.emit("test", {chunk: chunkArray[i]})
 				console.log("sent " + i)
@@ -528,7 +528,7 @@ socket.on("test2", data=>{
 			isplaying = false
 		else 
 			isplaying = true
-		if(firsttime && chunksRecieved == 20)
+		if(firsttime && chunksRecieved == 10)
 		{
 			var bloburl = URL.createObjectURL(blob)
 			console.log(bloburl)
