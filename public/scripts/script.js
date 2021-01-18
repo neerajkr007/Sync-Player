@@ -273,8 +273,11 @@ function parseFile(file) {
         if (offset >= fileSize) {
 			console.log("Done reading file");
 			alert("spliting complete");
-			for(var i = 0; i<10; i++)
+			for(var i = 0; i<20; i++)
+			{
 				socket.emit("test", {chunk: chunkArray[i]})
+				console.log("sent " + i)
+			}
 			doneParsing = true
             return;
         }
@@ -513,22 +516,23 @@ var firsttime = true
 socket.on("test2", data=>{
 	if(data.id == myRoomId && !isHost)
 	{
-		console.log('Received ' + chunksRecieved + 1);
-		console.log(data.chunk)
+		console.log('Received ' + chunksRecieved);
+		//console.log(data.chunk)
 		var myplayer = videojs("my-video");
 		blobArray.push(new Blob([new Uint8Array(data.chunk)],{'type':'video/mp4'}));
 		let blob = new Blob(blobArray,{'type':'video/mp4'});
-		console.log(blob)
+		//console.log(blob)
 		chunksRecieved++;
-		// let currentTime = myplayer.currentTime();
-		// if(myplayer.paused()) 
-		// 	isplaying = false
-		// else 
-		// 	isplaying = true
-		if(firsttime && chunksRecieved == 10)
+		let currentTime = myplayer.currentTime();
+		if(myplayer.paused()) 
+			isplaying = false
+		else 
+			isplaying = true
+		if(firsttime && chunksRecieved == 20)
 		{
 			var bloburl = URL.createObjectURL(blob)
 			console.log(bloburl)
+			//document.getElementById("my-video_html5_api").src=bloburl
 			myplayer.src({type: 'video/mp4', src: bloburl});
 			console.log("all set to load")
 			myplayer.on('loadeddata', (e)=>{
