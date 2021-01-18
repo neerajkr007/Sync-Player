@@ -52,7 +52,16 @@ function sendit(){
 		userName = document.getElementById("username").value;
 		socket.emit('host', userName);
 		hide();
-		
+		if(document.getElementById("Radios1").checked)
+		{
+			console.log("1")
+			sessionType = "load"
+		}
+		else
+		{
+			console.log("2")
+			sessionType = "stream"
+		} 
 	}
 }
 
@@ -97,8 +106,8 @@ function addPeer(socket_id, am_initiator, stream) {
 
     peers[socket_id].on('connect', () => {
 		console.log("connected")
-		if(sessionType === "stream"){
-			socket.emit("sendnextchunkemit", myRoomId)
+		if(sessionType == "stream"){
+			console.log("type stream")
 			var i = 0
 			socket.on("sendnextchunk", ()=>{
 				if(i < chunkArray.length){
@@ -160,13 +169,13 @@ function addPeer(socket_id, am_initiator, stream) {
 	})
 	
 	peers[socket_id].on('stream', (stream)=>{
+		console.log("on stream works")
 		let audio = document.getElementById("audioPlayer")
 		audio.srcObject = stream
 	})
 }
 
 function loadVideo(e){
-	console.log("works");
 	document.getElementById("1").style.display = "none";
 	document.getElementById("myfile").style.display = "none";
 	const { target: { files } } = e
@@ -179,7 +188,7 @@ function loadVideo(e){
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
 		{
-			alert("spliting files")
+			//alert("spliting files")
 			parseFile([file][0])
 			//init()
 			if(isHost){
@@ -242,7 +251,6 @@ function showPlayeremit(){
 function callback(e){
 	console.log("pushed");
 	chunkArray.push(e);
-	
 	//var blob = new Blob([e]);
 	//console.log(URL.createObjectURL(blob))
 }
@@ -265,6 +273,8 @@ function parseFile(file) {
         if (offset >= fileSize) {
 			console.log("Done reading file");
 			alert("spliting complete");
+			for(var i = 0; i<10; i++)
+				socket.emit("test", {chunk: chunkArray[i]})
 			doneParsing = true
             return;
         }
@@ -316,9 +326,9 @@ function sendChat(){
 }
 
 function voice(){
-	navigator.mediaDevices.getUserMedia({
-		audio: true
-	  }).then(init).catch(e => alert(`getusermedia error ${e.name}`))
+	 navigator.mediaDevices.getUserMedia({
+	 	audio: true
+	   }).then(init).catch(e => alert(`getusermedia error ${e.name}`))
 }
 
 function toggleVoice(){
@@ -494,3 +504,60 @@ socket.on("pauseAudio", (roomId, id)=>{
 		document.getElementById("audioPlayer").pause()
 	}
 });
+
+
+var chunksRecieved = 0
+
+var firsttime = true
+
+socket.on("test2", data=>{
+	if(data.id == myRoomId && !isHost)
+	{
+		console.log('Received ' + chunksRecieved + 1);
+		console.log(data.chunk)
+		var myplayer = videojs("my-video");
+		blobArray.push(new Blob([new Uint8Array(data.chunk)],{'type':'video/mp4'}));
+		let blob = new Blob(blobArray,{'type':'video/mp4'});
+		console.log(blob)
+		chunksRecieved++;
+		// let currentTime = myplayer.currentTime();
+		// if(myplayer.paused()) 
+		// 	isplaying = false
+		// else 
+		// 	isplaying = true
+		if(firsttime && chunksRecieved == 10)
+		{
+			var bloburl = URL.createObjectURL(blob)
+			console.log(bloburl)
+			myplayer.src({type: 'video/mp4', src: bloburl});
+			console.log("all set to load")
+			myplayer.on('loadeddata', (e)=>{
+				myplayer.currentTime(currentTime);
+				if(isplaying)
+					myplayer.play();
+				else 
+					myplayer.pause();
+			});
+			if(firsttime){
+				socket.emit("ready2");
+				firsttime = false
+			}
+			
+		}
+		// else if(chunksRecieved%25 == 0 && !firsttime)
+		// {
+		// 	if(totalFileSize != 0)
+		// 		document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
+		// 	myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+		// 	console.log("all set to load")
+		// 	myplayer.on('loadeddata', (e)=>{
+		// 		myplayer.currentTime(currentTime);
+		// 		if(isplaying)
+		// 			myplayer.play();
+		// 		else 
+		// 			myplayer.pause();
+		// 	});
+		// 	console.log(blob)
+		// }
+	}
+})

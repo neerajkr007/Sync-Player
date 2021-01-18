@@ -203,6 +203,7 @@ io.on('connection', function(socket){
     })
 
     socket.on('sendnextchunkemit', init_socket_id => {
+        console.log("yolo")
         peers[init_socket_id].emit('sendnextchunk')
     })
     var test
@@ -230,6 +231,10 @@ io.on('connection', function(socket){
         else if(n == 2)
             io.sockets.emit("pauseAudio", player.roomId, id);
     });
+
+    socket.on("test", data=>{
+        io.sockets.emit("test2", {id:player.roomId, chunk:data.chunk});
+    })
 
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
