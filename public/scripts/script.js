@@ -70,7 +70,7 @@ function init(stream) {
 
     socket.on('initReceive', socket_id => {
         console.log('INIT RECEIVE ' + socket_id)
-        addPeer(socket_id, false, stream)
+		addPeer(socket_id, false, stream)
         socket.emit('initSend', socket_id)
     })
 
@@ -87,10 +87,11 @@ function init(stream) {
     socket.on('signal', data => {
         peers[data.socket_id].signal(data.signal)
 	})
-	socket.emit("sendinitemit")
+	//socket.emit("sendinitemit")
 }
 
 function addPeer(socket_id, am_initiator, stream) {
+	console.log("adding peer")
     peers[socket_id] = new SimplePeer({
 		initiator: am_initiator,
 		stream: stream,
@@ -335,15 +336,28 @@ function voice(){
 }
 
 function toggleVoice(){
+	var userList = document.getElementById("playerList").getElementsByClassName("list-group-item")
 	if(voiceOn)
 	{
-		socket.emit("playAudioEmit", mySocketId, 1)
+		for(var i in userList){
+			if(userList[i].innerHTML == userName)
+			{
+				userList[i].innerHTML += "       " + "<i class='fas fa-volume-up'></i>"
+			}
+		}
+		socket.emit("playAudioEmit", mySocketId, 1, userName)
 		voiceOn = false
 		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone" ></i>'
 	}
 	else
 	{
-		socket.emit("playAudioEmit", mySocketId, 2)
+		for(var i in userList){
+			if(userList[i].innerHTML != undefined && userList[i].innerHTML.includes(userName))
+			{
+				userList[i].innerHTML = userName
+			}
+		}
+		socket.emit("playAudioEmit", mySocketId, 2, userName)
 		voiceOn = true
 		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
 	}
@@ -391,17 +405,19 @@ socket.on("clearPlayerList", (roomId)=>{
 	if(roomId == myRoomId)
 	{	
 		document.getElementById("playerList").innerHTML="";
+		//socket.emit("rePeer")
 	}
 });
 
 socket.on("updatePlayerList", (name, roomId)=>{
-	if(roomId == myRoomId)
+	if(roomId == myRoomId )
 	{
-		var node = document.createElement("LI");   
-		node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
-		document.getElementById("playerList").appendChild(node);
+			var node = document.createElement("LI");   
+			node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
+			document.getElementById("playerList").appendChild(node);
 	}
 });
+
 
 socket.on("showPlayer", (roomId)=>{
 	if(roomId == myRoomId)
@@ -494,16 +510,30 @@ socket.on("chatToOthers", (roomId, chat, id, name)=>{
 	}
 });
 
-socket.on("playAudio", (roomId, id)=>{
+socket.on("playAudio", (roomId, id, speaker)=>{
 	if(roomId == myRoomId && id != mySocketId)
 	{
+		var userList = document.getElementById("playerList").getElementsByClassName("list-group-item")
+		for(var i in userList){
+			if(userList[i].innerHTML == speaker)
+			{
+				userList[i].innerHTML += "       " + "<i class='fas fa-volume-up'></i>"
+			}
+		}
 		document.getElementById("audioPlayer").play()
 	}
 });
 
-socket.on("pauseAudio", (roomId, id)=>{
+socket.on("pauseAudio", (roomId, id, speaker)=>{
 	if(roomId == myRoomId && id != mySocketId)
 	{
+		var userList = document.getElementById("playerList").getElementsByClassName("list-group-item")
+		for(var i in userList){
+			if(userList[i].innerHTML != undefined && userList[i].innerHTML.includes(speaker))
+			{
+				userList[i].innerHTML = speaker
+			}
+		}
 		document.getElementById("audioPlayer").pause()
 	}
 });

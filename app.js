@@ -63,12 +63,10 @@ io.on('connection', function(socket){
     socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
     console.log(socket.id);
     SOCKET_LIST[socket.id] = socket;
-    peers[socket.id] = socket
+    
     var player = Player(socket.id);
     PLAYER_LIST[socket.id] = player;
-
     socket.emit("mysocketid", socket.id);
-    
 
     function callEventify(id){
         eventify(ROOM_LIST[id], function(updatedArr) {
@@ -83,7 +81,6 @@ io.on('connection', function(socket){
           });
     }
 
-    
 
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
@@ -95,6 +92,7 @@ io.on('connection', function(socket){
         player.hostNumber = numberOfHosts;
         //console.log(player.name);
         socket.adapter.rooms.get(player.id).size;
+        peers[socket.id] = socket
         //ROOM_LIST[0][0] = player;
         
         //console.log(ROOM_LIST[numberOfHosts][0])
@@ -114,8 +112,9 @@ io.on('connection', function(socket){
                 player.hostNumber = PLAYER_LIST[i].hostNumber;
                 //console.log(socket);
                 callEventify(player.hostNumber);
+                peers[socket.id] = socket
                 socket.emit("joined", player.roomId);
-                updatePlayerList();
+                setTimeout(()=>{updatePlayerList();}, 1000)
                 return true;   
             }  
         }
@@ -124,7 +123,20 @@ io.on('connection', function(socket){
 
     function updatePlayerList(){
         ROOM_LIST[player.hostNumber].push(player);
+        for(let id in peers) {
+            if(id === socket.id) continue
+            console.log('sending init receive to ' + socket.id)
+            peers[id].emit('initReceive', socket.id)
+        }
     }
+
+    socket.on("rePeer", ()=>{
+        for(let id in peers) {
+            if(id === socket.id) continue
+            console.log('sending init receive to ' + socket.id)
+            peers[id].emit('initReceive', socket.id)
+        }
+    })
 
     socket.on("showPlayeremit1", ()=>{
         io.sockets.emit("showPlayer", player.roomId);
@@ -189,7 +201,7 @@ io.on('connection', function(socket){
     });
 
     socket.on('signal', data => {
-        console.log('sending signal from ' + socket.id + ' to ', data)
+        //console.log('sending signal from ' + socket.id + ' to ', data)
         if(!peers[data.socket_id])return
         peers[data.socket_id].emit('signal', {
             socket_id: socket.id,
@@ -218,6 +230,7 @@ io.on('connection', function(socket){
     });
 
     socket.on("sendinitemit", ()=>{
+        console.log(player.name)
         for(let id in peers) {
             if(id === socket.id) continue
             console.log('sending init receive to ' + socket.id)
@@ -225,11 +238,11 @@ io.on('connection', function(socket){
         }
     })
 
-    socket.on("playAudioEmit", (id, n)=>{
+    socket.on("playAudioEmit", (id, n, speaker)=>{
         if(n == 1)
-            io.sockets.emit("playAudio", player.roomId, id);
+            io.sockets.emit("playAudio", player.roomId, id, speaker);
         else if(n == 2)
-            io.sockets.emit("pauseAudio", player.roomId, id);
+            io.sockets.emit("pauseAudio", player.roomId, id, speaker);
     });
 
     socket.on("test", data=>{
