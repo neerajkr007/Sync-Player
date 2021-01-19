@@ -363,7 +363,7 @@ socket.on("hosted", function(data){
 	document.getElementById("gameId").innerHTML = "room id -  "+ data;
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> click go to load the player</h5>";
-	document.getElementById("chatbox").style.display = "block";
+	document.getElementById("chatbox").style.display = "flex";
 	document.getElementById("voice").style.display= "block"
 	voice()
 });
@@ -377,7 +377,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
-	document.getElementById("chatbox").style.display = "block";
+	document.getElementById("chatbox").style.display = "flex";
 	document.getElementById("voice").style.display= "block"
 	socket.emit('chattoothersemit2', mySocketId)	
 	voice()
