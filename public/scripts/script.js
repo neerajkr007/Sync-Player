@@ -15,6 +15,7 @@ var doneParsing = false
 var test = true
 let peers = {}
 var voiceOn = true
+var stream
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -65,7 +66,7 @@ function sendit(){
 	}
 }
 
-function init(stream) {
+function init() {
 	console.log("init called")
 
     socket.on('initReceive', socket_id => {
@@ -334,7 +335,7 @@ function sendChat(){
 function voice(){
 	 navigator.mediaDevices.getUserMedia({
 	 	audio: true
-	   }).then(init).catch(e => alert(`getusermedia error ${e.name}`))
+	   }).then((_stream)=>{stream = _stream}).catch(e => alert(`getusermedia error ${e.name}`))
 }
 
 function toggleVoice(){
@@ -370,6 +371,7 @@ socket.on("mysocketid", (id)=>{
 })
 
 socket.on("hosted", function(data){
+	init()
 	myRoomId = data;
 	isHost = true;
 	document.getElementById("playerList").style.display = "inline-flex";
@@ -385,6 +387,7 @@ socket.on("hosted", function(data){
 });
 
 socket.on("joined", function(data){
+	init()
 	document.getElementById("playerList").style.display = "inline-flex";
 	myRoomId = data;
 	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
