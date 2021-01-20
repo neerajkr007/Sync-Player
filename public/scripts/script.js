@@ -171,8 +171,10 @@ function addPeer(socket_id, am_initiator, stream) {
 	
 	peers[socket_id].on('stream', (stream)=>{
 		console.log("on stream works")
-		let audio = document.getElementById("audioPlayer")
-		audio.srcObject = stream
+		let newAud = document.createElement('audio');
+        newAud.srcObject = stream;
+        newAud.id = socket_id;
+		document.getElementById("audioPlayer").appendChild(newAud);
 	})
 }
 
@@ -520,7 +522,7 @@ socket.on("playAudio", (roomId, id, speaker)=>{
 				userList[i].innerHTML += "       " + "<i class='fas fa-volume-up'></i>"
 			}
 		}
-		document.getElementById("audioPlayer").play()
+		document.getElementById(id).play()
 	}
 });
 
@@ -534,7 +536,7 @@ socket.on("pauseAudio", (roomId, id, speaker)=>{
 				userList[i].innerHTML = speaker
 			}
 		}
-		document.getElementById("audioPlayer").pause()
+		document.getElementById(id).pause()
 	}
 });
 

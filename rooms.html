@@ -81,7 +81,7 @@
       </div>
       <div id="voice" class="col-md-4 mt-4 text-center">
         <button id="micButton" style="background-color: transparent; border: 0;" onClick="toggleVoice()"><i class="fas fa-2x fa-microphone-slash" ></i></button>
-        <audio id="audioPlayer"></audio>
+        <div id="audioPlayer"></div>
         <script>document.getElementById("voice").style.display="none"</script>
       </div>
       <div class="col-md-4 offset-md-4 text-center">
@@ -109,7 +109,7 @@
           input.addEventListener('change', loadVideo);
         </script>
         <div> <h3 id="progress"> </h3></div>
-      </div><br><br><br>
+      </div><br>
       <div id="chatbox" class="col-md-4 offset-md-8 mt-6 rounded" style="display: flex; align-items: flex-end; justify-content:flex-end; padding-top: 30vh;">
         <br><br><br><br>
         <div class="" id="page-content">
