@@ -1,5 +1,8 @@
 const express = require('express');
 const app = express();
+const fs = require('fs')
+const path = require('path')
+var http = require('http')
 const serv = require('http').createServer(app);
  
 
@@ -16,13 +19,10 @@ app.get('/index.html', (req, res) =>
 app.get('/rooms.html', (req, res) =>
 {
     res.sendFile(__dirname + '/rooms.html');
+    
 }); 
 
-app.get('/main.html', (req, res) =>
-{
-    res.sendFile(__dirname + '/main.html');
-});  
- 
+
 app.use(express.static(__dirname + '/public'));
 
 serv.listen(process.env.PORT || 3000); 

@@ -1,5 +1,4 @@
 
-
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
@@ -15,7 +14,6 @@ var doneParsing = false
 var test = true
 let peers = {}
 var voiceOn = true
-var stream
 var micWorking = true
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
@@ -189,6 +187,10 @@ function loadVideo(e){
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
 	var myplayer = videojs("my-video");
+	var filetest = e.target.files[0];
+	var stream = ss.createStream();
+	ss(socket).emit('file', stream, {size: filetest.size});
+    ss.createBlobReadStream(filetest).pipe(stream);
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
