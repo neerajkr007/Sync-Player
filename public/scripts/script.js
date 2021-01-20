@@ -16,6 +16,7 @@ var test = true
 let peers = {}
 var voiceOn = true
 var stream
+var micWorking = true
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -335,34 +336,36 @@ function sendChat(){
 function voice(){
 	 navigator.mediaDevices.getUserMedia({
 	 	audio: true
-	   }).then((_stream)=>{stream = _stream}).catch(e => alert(`getusermedia error ${e.name}`))
+	   }).then((_stream)=>{stream = _stream}).catch(e => {alert(`getusermedia error ${e.name}`); micWorking = false})
 }
 
 function toggleVoice(){
 	var userList = document.getElementById("playerList").getElementsByClassName("list-group-item")
-	if(voiceOn)
-	{
-		for(var i in userList){
-			if(userList[i].innerHTML == userName)
-			{
-				userList[i].innerHTML += "       " + "<i class='fas fa-volume-up'></i>"
+	if(micWorking)
+		{if(voiceOn)
+		{
+			for(var i in userList){
+				if(userList[i].innerHTML == userName)
+				{
+					userList[i].innerHTML += "       " + "<i class='fas fa-volume-up'></i>"
+				}
 			}
+			socket.emit("playAudioEmit", mySocketId, 1, userName)
+			voiceOn = false
+			document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone" ></i>'
 		}
-		socket.emit("playAudioEmit", mySocketId, 1, userName)
-		voiceOn = false
-		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone" ></i>'
-	}
-	else
-	{
-		for(var i in userList){
-			if(userList[i].innerHTML != undefined && userList[i].innerHTML.includes(userName))
-			{
-				userList[i].innerHTML = userName
+		else
+		{
+			for(var i in userList){
+				if(userList[i].innerHTML != undefined && userList[i].innerHTML.includes(userName))
+				{
+					userList[i].innerHTML = userName
+				}
 			}
+			socket.emit("playAudioEmit", mySocketId, 2, userName)
+			voiceOn = true
+			document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
 		}
-		socket.emit("playAudioEmit", mySocketId, 2, userName)
-		voiceOn = true
-		document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
 	}
 }
 
@@ -525,7 +528,12 @@ socket.on("playAudio", (roomId, id, speaker)=>{
 				userList[i].innerHTML += "       " + "<i class='fas fa-volume-up'></i>"
 			}
 		}
-		document.getElementById(id).play()
+		try{
+			document.getElementById(id).play()
+		}
+		catch(e){
+			console.log("their mic is not working")
+		}
 	}
 });
 
@@ -539,7 +547,10 @@ socket.on("pauseAudio", (roomId, id, speaker)=>{
 				userList[i].innerHTML = speaker
 			}
 		}
-		document.getElementById(id).pause()
+		try{
+			document.getElementById(id).pause()
+		}
+		catch(e){}
 	}
 });
 

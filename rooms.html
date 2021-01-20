@@ -87,7 +87,7 @@
       <div class="col-md-4 offset-md-4 text-center">
         <button id="host" type="button" class="btn bt-lg btn-success"  data-toggle="modal" data-target="#Modal4">Host</button>
         <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
-        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
+        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2" onmouseup="setTimeout(()=>{document.getElementById('enteredId').focus()},500)">Join</button>
       </div>
     </div>
     <div  class="row">
@@ -111,7 +111,7 @@
         <div> <h3 id="progress"> </h3></div>
       </div><br>
       <div id="chatbox" class="col-md-4 offset-md-8 mt-6 rounded" style="display: flex; align-items: flex-end; justify-content:flex-end; padding-top: 30vh;">
-        <br><br><br><br>
+        <br><br>
         <div class="" id="page-content">
           <div>
               <div class="justify-content-center">
@@ -208,7 +208,7 @@
                           font-size: medium;
                           color: black;
                           height: auto;
-                          width: auto;">
+                          width: auto;" autofocus>
             </div>
             <div class="modal-footer">
               <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin(); hide();'
@@ -219,6 +219,16 @@
         </div>
       </div>
     </div>
+    <script>
+      var input2 = document.getElementById("enteredId");
+      input2.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+          event.preventDefault();
+          tryJoin(); 
+          hide();
+        }
+      });
+    </script>
     <div id="loadPlayerModal">
       <div class="modal fade" id="Modal3" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
         aria-hidden="true">
