@@ -1,4 +1,3 @@
-const { on } = require("nodemon");
 
 const socket = io.connect();
 var userName ="";
