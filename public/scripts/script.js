@@ -106,7 +106,7 @@ function addPeer(socket_id, am_initiator, stream) {
 		peers[socket_id].on('data', data =>{
 				console.log('Received');
 				if(once){
-					alert("started to buffer the stream, please wait");
+					//alert("started to buffer the stream, please wait");
 					once = false
 				}
 				var myplayer = videojs("my-video");
@@ -118,7 +118,7 @@ function addPeer(socket_id, am_initiator, stream) {
 					isplaying = false
 				else 
 					isplaying = true
-				var buff = Math.ceil(60*numberofchunks/vidLen)
+				var buff = Math.ceil(70*numberofchunks/vidLen)
 				if(chunksRecieved == buff && firsttime)
 				{
 					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
@@ -131,7 +131,7 @@ function addPeer(socket_id, am_initiator, stream) {
 							myplayer.play();
 						else 
 							myplayer.pause();
-						alert("stream loaded, ask the host to start");
+						//alert("stream loaded, ask the host to start");
 					});
 					if(firsttime){
 						socket.emit("ready2");
@@ -159,7 +159,6 @@ function addPeer(socket_id, am_initiator, stream) {
 		{
 			var i = 0
 			var once = true
-			setTimeout(() => {
 				setInterval(() => {
 					
 					// if(once){
@@ -189,7 +188,6 @@ function addPeer(socket_id, am_initiator, stream) {
 							myplayer.pause();
 					});
 				}, 60000);
-			}, 40000);
 		}
 	})
 	
@@ -319,7 +317,6 @@ function parseFile(file) {
         }
         if (offset >= fileSize) {
 			console.log("Done reading file");
-			alert("spliting complete");
 			doneParsing = true
 			//numberofchunks = chunkArray.length
 			//socket.emit("numberofchunks", numberofchunks, time)
