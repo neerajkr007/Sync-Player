@@ -178,14 +178,14 @@ function addPeer(socket_id, am_initiator, stream) {
 					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 					console.log(isplaying)
 					console.log("all set to load")
-					if(totalFileSize != 0)
+					//if(totalFileSize != 0)
 						//document.getElementById("progress").innerHTML = blob.size%totalFileSize*100 + " %"
 					myplayer.on('loadeddata', (e)=>{
 						myplayer.currentTime(currentTime);
 						if(isplaying)
 							myplayer.play();
 						else 
-							myplayer.pause();
+							myplayer.play();
 					});
 				}, 60000);
 		}
