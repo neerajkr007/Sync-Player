@@ -146,10 +146,14 @@ io.on('connection', function(socket){
         socket.emit("showPlayer", player.roomId);
     });
 
-    socket.on("ready", (size)=>{
+    socket.on("ready", (size, _isHost, time)=>{
         player.isReady = true;
         player.fileSize = size;
-        
+        console.log(_isHost)
+        if(_isHost){
+            var data = Math.ceil(size/262144)
+            io.sockets.emit("numberofchunks", data, time, player.roomId)
+        }
         console.log("ready");
     });
 
@@ -246,10 +250,6 @@ io.on('connection', function(socket){
 
     socket.on("test", data=>{
         io.sockets.emit("test2", {id:player.roomId, chunk:data.chunk});
-    })
-
-    socket.on("numberofchunks", (data, time)=>{
-        io.sockets.emit("numberofchunks", data, time, player.roomId)
     })
 
     socket.on('disconnect',function(){
