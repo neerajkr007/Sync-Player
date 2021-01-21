@@ -162,13 +162,13 @@ function addPeer(socket_id, am_initiator, stream) {
 			setTimeout(() => {
 				setInterval(() => {
 					
-					if(once){
-						once = false
-					}
-					else{
-						blobArray.splice(30*i, 30)
-						i++
-					}
+					// if(once){
+					// 	once = false
+					// }
+					// else{
+					// 	blobArray.splice(30*i, 30)
+					// 	i++
+					// }
 					let blob = new Blob(blobArray,{'type':'video/mp4'});
 					let myplayer = videojs("my-video")
 					let currentTime = myplayer.currentTime();
