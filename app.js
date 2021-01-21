@@ -103,12 +103,6 @@ io.on('connection', function(socket){
         numberOfHosts++;
     }); 
 
-    ss(socket).on("file", stream=>{
-        console.log("on file ?")
-        stream.pipe(fs.createWriteStream('video.mp4'));
-        
-    })
-
     socket.on("tryJoin", (id, name) => {
         for(var i in PLAYER_LIST){  
             if(id == PLAYER_LIST[i].id){
@@ -221,7 +215,6 @@ io.on('connection', function(socket){
     })
 
     socket.on('sendnextchunkemit', init_socket_id => {
-        console.log("yolo")
         peers[init_socket_id].emit('sendnextchunk')
     })
     var test
