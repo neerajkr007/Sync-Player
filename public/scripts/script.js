@@ -1,3 +1,4 @@
+const { on } = require("nodemon");
 
 const socket = io.connect();
 var userName ="";
@@ -102,8 +103,13 @@ function addPeer(socket_id, am_initiator, stream) {
 		}
 		var chunksRecieved = 0
 		var firsttime = true
+		var once = true
 		peers[socket_id].on('data', data =>{
 				console.log('Received');
+				if(once){
+					alert("started to buffer the stream, please wait");
+					once = false
+				}
 				var myplayer = videojs("my-video");
 				blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
 				let blob = new Blob(blobArray,{'type':'video/mp4'});
@@ -113,6 +119,7 @@ function addPeer(socket_id, am_initiator, stream) {
 					isplaying = false
 				else 
 					isplaying = true
+				console.log(numberofchunks)
 				var buff = Math.ceil(60*numberofchunks/vidLen)
 				if(chunksRecieved == buff && firsttime)
 				{
@@ -126,6 +133,7 @@ function addPeer(socket_id, am_initiator, stream) {
 							myplayer.play();
 						else 
 							myplayer.pause();
+						alert("stream loaded, ask the host to start");
 					});
 					if(firsttime){
 						socket.emit("ready2");
@@ -151,8 +159,12 @@ function addPeer(socket_id, am_initiator, stream) {
 		})
 		if(!isHost)
 		{
+			var i = 0
 			setTimeout(() => {
 				setInterval(() => {
+					
+					blobArray.splice(30*i, 30)
+					i++
 					let blob = new Blob(blobArray,{'type':'video/mp4'});
 					let myplayer = videojs("my-video")
 					let currentTime = myplayer.currentTime();
@@ -173,7 +185,7 @@ function addPeer(socket_id, am_initiator, stream) {
 							myplayer.pause();
 					});
 				}, 60000);
-			}, 50000);
+			}, 40000);
 		}
 	})
 	
@@ -278,16 +290,10 @@ function showPlayeremit(){
 		socket.emit("showPlayeremit2");
 	} 
 }
- 
-var once = true
 
 function callback(e){
 	//console.log("pushed");
 	chunkArray.push(e);
-	if(once){
-		socket.emit("sendnextchunkemit", mySocketId)
-		once = false
-	}
 	//var blob = new Blob([e]);
 	//console.log(URL.createObjectURL(blob))
 }
@@ -597,6 +603,8 @@ socket.on("numberofchunks", (data, time, id)=>{
 	{
 		numberofchunks = data
 		vidLen = time
+		if(isHost)
+			socket.emit("sendnextchunkemit", myRoomId)
 	}
 })
 // socket.on("test2", data=>{
