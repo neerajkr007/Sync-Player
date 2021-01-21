@@ -15,6 +15,8 @@ var test = true
 let peers = {}
 var voiceOn = true
 var micWorking = true
+var numberofchunks = 0
+var vidLen = 0
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -143,7 +145,6 @@ function addPeer(socket_id, am_initiator, stream) {
 						else 
 							myplayer.pause();
 					});
-					console.log(blob)
 				}
 				socket.emit("sendnextchunkemit", myRoomId);
 		})
@@ -190,8 +191,9 @@ function loadVideo(e){
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
 		{
+			vidLen = myplayer.duration();
 			//alert("spliting files")
-			parseFile([file][0])
+			parseFile([file][0], vidLen)
 			//init()
 			if(isHost){
 				socket.emit("showplayer2emit");
@@ -261,7 +263,7 @@ function callback(e){
 	//console.log(URL.createObjectURL(blob))
 }
 
-function parseFile(file) {
+function parseFile(file, time) {
     var fileSize   = file.size;
     var chunkSize  = 262144; // bytes
     var offset     = 0;
@@ -280,6 +282,8 @@ function parseFile(file) {
 			console.log("Done reading file");
 			alert("spliting complete");
 			doneParsing = true
+			numberofchunks = chunkArray.length
+			socket.emit("numberofchunks", numberofchunks, time)
             return;
         }
 
@@ -559,7 +563,13 @@ socket.on("pauseAudio", (roomId, id, speaker)=>{
 	}
 });
 
-
+socket.on("numberofchunks", (data, time, id)=>{
+	if(id == myRoomId)
+	{
+		numberofchunks = data
+		vidLen = time
+	}
+})
 // socket.on("test2", data=>{
 // 	if(data.id == myRoomId && !isHost)
 // 	{
