@@ -36,12 +36,10 @@ function sendit(){
 		hide();
 		if(document.getElementById("Radios1").checked)
 		{
-			console.log("1")
 			sessionType = "load"
 		}
 		else
 		{
-			console.log("2")
 			sessionType = "stream"
 		} 
 	}
@@ -118,7 +116,7 @@ function addPeer(socket_id, am_initiator, stream) {
 					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 					console.log("all set to load")
 					if(totalFileSize != 0)
-						document.getElementById("progress").innerHTML = blob.size/totalFileSize*100
+						document.getElementById("progress").innerHTML = blob.size%totalFileSize*100 + " %"
 					myplayer.on('loadeddata', (e)=>{
 						myplayer.currentTime(currentTime);
 						if(isplaying)
@@ -162,6 +160,11 @@ function addPeer(socket_id, am_initiator, stream) {
 function loadVideo(e){
 	document.getElementById("1").style.display = "none";
 	document.getElementById("myfile").style.display = "none";
+
+	document.getElementById("chatbox").setAttribute("style", "")
+	var i = document.getElementById("my-video").offsetTop - document.getElementById("page-content").offsetTop
+	document.getElementById("page-content").setAttribute("style", "padding-top: " + i + "px;")
+
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
@@ -232,16 +235,14 @@ function tryJoin(){
 function showPlayeremit(){
 	$('#Modal3').modal('toggle')
 	document.getElementById("go").style.display = "none";
-	document.getElementById("chatbox").setAttribute("class", "col-md-4 mt-4 text-center")
+	
 	if(document.getElementById("Radios1").checked)
 	{
-		console.log("1")
 		sessionType = "load"
 		socket.emit("showPlayeremit1");
 	}
 	else
 	{
-		console.log("2")
 		sessionType = "stream"
 		socket.emit("showPlayeremit2");
 	} 
@@ -427,6 +428,10 @@ socket.on("showPlayer", (roomId)=>{
 	if(roomId == myRoomId)
 	{
 		document.getElementById("player").style.display = "block";
+		document.getElementById("chatbox").setAttribute("class", "col-md-4 mt-2 text-center")
+		document.getElementById("chatbox").setAttribute("style", "")
+		var i = document.getElementById("my-video").offsetTop - document.getElementById("page-content").offsetTop
+		document.getElementById("page-content").setAttribute("style", "padding-top: " + i + "px;")
 	}
 });
 
@@ -497,6 +502,10 @@ socket.on("showplayer2", (roomId)=>{
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
 		document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
+		document.getElementById("chatbox").setAttribute("class", "col-md-4 mt-2 text-center")
+		document.getElementById("chatbox").setAttribute("style", "")
+		var i = document.getElementById("my-video").offsetTop - document.getElementById("page-content").offsetTop
+		document.getElementById("page-content").setAttribute("style", "padding-top: " + i + "px;")
 	}
 });
 
