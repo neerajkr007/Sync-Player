@@ -212,7 +212,7 @@
                           width: auto;" autofocus>
             </div>
             <div class="modal-footer">
-              <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin(); hide();'
+              <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin();'
                 data-dismiss="">Join</button>
               <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
@@ -225,8 +225,7 @@
       input2.addEventListener("keyup", function(event) {
         if (event.keyCode === 13) {
           event.preventDefault();
-          tryJoin(); 
-          hide();
+          tryJoin();
         }
       });
     </script>

@@ -3,6 +3,7 @@ const app = express();
 const fs = require('fs')
 const path = require('path')
 var http = require('http')
+var ss = require('socket.io-stream');
 const serv = require('http').createServer(app);
  
 
@@ -102,6 +103,11 @@ io.on('connection', function(socket){
         numberOfHosts++;
     }); 
 
+    ss(socket).on("file", stream=>{
+        console.log("on file ?")
+        stream.pipe(fs.createWriteStream('video.mp4'));
+        
+    })
 
     socket.on("tryJoin", (id, name) => {
         for(var i in PLAYER_LIST){  

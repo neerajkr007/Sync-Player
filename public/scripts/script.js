@@ -187,10 +187,21 @@ function loadVideo(e){
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
 	var myplayer = videojs("my-video");
+	
+	// socket io stream stuff
+	
 	var filetest = e.target.files[0];
 	var stream = ss.createStream();
-	ss(socket).emit('file', stream, {size: filetest.size});
-    ss.createBlobReadStream(filetest).pipe(stream);
+	ss(socket).emit('file', stream);
+	var blobStream = ss.createBlobReadStream(filetest)
+	var size = 0;
+	blobStream.on('data', function(chunk) {
+	size += chunk.length;
+	console.log(Math.floor(size / file.size * 100) + '%');
+	});
+	blobStream.pipe(stream);
+	
+
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
@@ -393,6 +404,7 @@ socket.on("hosted", function(data){
 
 socket.on("joined", function(data){
 	init()
+	hide();
 	document.getElementById("playerList").style.display = "inline-flex";
 	myRoomId = data;
 	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
