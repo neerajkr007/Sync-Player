@@ -118,7 +118,6 @@ function addPeer(socket_id, am_initiator, stream) {
 					isplaying = false
 				else 
 					isplaying = true
-				console.log(numberofchunks)
 				var buff = Math.ceil(60*numberofchunks/vidLen)
 				if(chunksRecieved == buff && firsttime)
 				{
@@ -159,11 +158,17 @@ function addPeer(socket_id, am_initiator, stream) {
 		if(!isHost)
 		{
 			var i = 0
+			var once = true
 			setTimeout(() => {
 				setInterval(() => {
 					
-					blobArray.splice(30*i, 30)
-					i++
+					if(once){
+						once = false
+					}
+					else{
+						blobArray.splice(30*i, 30)
+						i++
+					}
 					let blob = new Blob(blobArray,{'type':'video/mp4'});
 					let myplayer = videojs("my-video")
 					let currentTime = myplayer.currentTime();
