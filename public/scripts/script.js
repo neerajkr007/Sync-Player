@@ -124,7 +124,7 @@ function addPeer(socket_id, am_initiator, stream) {
 					isplaying = false
 				else 
 					isplaying = true
-				buff = Math.ceil(30*numberofchunks/vidLen)
+				buff = Math.ceil(60*numberofchunks/vidLen)
 				
 				if(chunksRecieved == buff && firsttime && buff != 0)
 				{
@@ -147,13 +147,9 @@ function addPeer(socket_id, am_initiator, stream) {
 						firsttime = false
 					}
 				}
-				if(15000 <= n - timenow && n - timenow <= 17000)
+				if(30000 <= n - timenow && n - timenow <= 33000)
 				{
 					timenow = n
-					if(myplayer.paused()) 
-						isplaying = false
-					else 
-						isplaying = true
 					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 					console.log("loaded")
 					document.querySelector('video').addEventListener('loadeddata', function once() {
@@ -643,7 +639,6 @@ socket.on("numberofchunks", (data, time, id)=>{
 	{
 		numberofchunks = data
 		vidLen = time
-		console.log("works1 ?")
 		if(isHost)
 			socket.emit("sendnextchunkemit", myRoomId)
 	}
