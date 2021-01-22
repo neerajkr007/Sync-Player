@@ -112,7 +112,6 @@ function addPeer(socket_id, am_initiator, stream) {
 			var n = d.getTime();
 				console.log('Received');
 				if(once){
-					timenow = n
 					once = false
 				}
 				var myplayer = videojs("my-video");
@@ -128,7 +127,6 @@ function addPeer(socket_id, am_initiator, stream) {
 				
 				if(chunksRecieved == buff && firsttime && buff != 0)
 				{
-					i++
 					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 					console.log("all set to load")
 					if(totalFileSize != 0)
@@ -140,22 +138,24 @@ function addPeer(socket_id, am_initiator, stream) {
 							myplayer.play();
 						else 
 							myplayer.pause();
-						//alert("stream loaded, ask the host to start");
+						alert("stream loaded, ask the host to start");
 					});
 					if(firsttime){
 						socket.emit("ready2");
 						firsttime = false
 					}
+					timenow = n
 				}
 				if(30000 <= n - timenow && n - timenow <= 33000)
 				{
 					timenow = n
 					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 					console.log("loaded")
+					var c = d.getTime()
 					document.querySelector('video').addEventListener('loadeddata', function once() {
 						document.querySelector('video').removeEventListener('loadeddata', once)
-						myplayer.currentTime(currentTime);
-						console.log(isplaying)
+						var e = d.getTime()
+						myplayer.currentTime(currentTime + (e-c)/1000);
 						if (isplaying) {
 							myplayer.play();
 							console.log("playing")
