@@ -106,10 +106,13 @@ function addPeer(socket_id, am_initiator, stream) {
 		var once = true
 		var buff = 0
 		var i = 1
+		var timenow = 0
 		peers[socket_id].on('data', data =>{
+			var d = new Date();
+			var n = d.getTime();
 				console.log('Received');
 				if(once){
-					//alert("started to buffer the stream, please wait");
+					timenow = n
 					once = false
 				}
 				var myplayer = videojs("my-video");
@@ -121,7 +124,7 @@ function addPeer(socket_id, am_initiator, stream) {
 					isplaying = false
 				else 
 					isplaying = true
-				buff = Math.ceil(60*numberofchunks/vidLen)
+				buff = Math.ceil(30*numberofchunks/vidLen)
 				
 				if(chunksRecieved == buff && firsttime && buff != 0)
 				{
@@ -144,10 +147,13 @@ function addPeer(socket_id, am_initiator, stream) {
 						firsttime = false
 					}
 				}
-				if(chunksRecieved == buff*i)
+				if(15000 <= n - timenow && n - timenow <= 17000)
 				{
-					console.log(buff*i)
-					i++
+					timenow = n
+					if(myplayer.paused()) 
+						isplaying = false
+					else 
+						isplaying = true
 					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 					console.log("loaded")
 					document.querySelector('video').addEventListener('loadeddata', function once() {
@@ -168,6 +174,22 @@ function addPeer(socket_id, am_initiator, stream) {
 				if(chunksRecieved == numberofchunks){
 					console.log("done recieving")
 					doneSending = true
+					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+					console.log("loaded")
+					document.querySelector('video').addEventListener('loadeddata', function once() {
+						document.querySelector('video').removeEventListener('loadeddata', once)
+						myplayer.currentTime(currentTime);
+						console.log(isplaying)
+						if (isplaying) {
+							myplayer.play();
+							console.log("playing")
+						}
+						else {
+							myplayer.pause();
+							console.log("paused")
+						}
+
+					});
 				}
 				socket.emit("sendnextchunkemit", myRoomId);
 		})
