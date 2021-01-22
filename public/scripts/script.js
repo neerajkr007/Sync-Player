@@ -92,12 +92,12 @@ function addPeer(socket_id, am_initiator, stream) {
     peers[socket_id].on('connect', () => {
 		console.log("connected")
 		if(sessionType == "stream"){
-			var i = 0
+			var j = 0
 			socket.on("sendnextchunk", ()=>{
-				if(i < chunkArray.length){
+				if(j < chunkArray.length){
 					console.log("chunk sent")
-					peers[socket_id].send(chunkArray[i])
-					i++
+					peers[socket_id].send(chunkArray[j])
+					j++
 				}
 			})
 		}
@@ -105,6 +105,7 @@ function addPeer(socket_id, am_initiator, stream) {
 		var firsttime = true
 		var once = true
 		var buff = 0
+		var i = 1
 		peers[socket_id].on('data', data =>{
 				console.log('Received');
 				if(once){
@@ -121,7 +122,7 @@ function addPeer(socket_id, am_initiator, stream) {
 				else 
 					isplaying = true
 				buff = Math.ceil(60*numberofchunks/vidLen)
-				var i = 1
+				
 				if(chunksRecieved == buff && firsttime && buff != 0)
 				{
 					i++
@@ -142,24 +143,28 @@ function addPeer(socket_id, am_initiator, stream) {
 						socket.emit("ready2");
 						firsttime = false
 					}
-					
 				}
-				else if(chunksRecieved == (buff*i) && !firsttime)
+				if(chunksRecieved == buff*i)
 				{
+					console.log(buff*i)
 					i++
-					//if(totalFileSize != 0)
-						//document.getElementById("progress").innerHTML = blob.size/totalFileSize*100 + " %"
-					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-					console.log("all set to load 2")
-					myplayer.on('loadeddata', (e)=>{
+					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+					console.log("loaded")
+					document.querySelector('video').addEventListener('loadeddata', function once() {
+						document.querySelector('video').removeEventListener('loadeddata', once)
 						myplayer.currentTime(currentTime);
-						if(isplaying)
+						console.log(isplaying)
+						if (isplaying) {
 							myplayer.play();
-						else 
+							console.log("playing")
+						}
+						else {
 							myplayer.pause();
+							console.log("paused")
+						}
+
 					});
 				}
-
 				if(chunksRecieved == numberofchunks){
 					console.log("done recieving")
 					doneSending = true
@@ -212,8 +217,8 @@ function addPeer(socket_id, am_initiator, stream) {
 }
 
 function loadVideo(e){
-	document.getElementById("1").style.display = "none";
-	document.getElementById("myfile").style.display = "none";
+	//document.getElementById("1").style.display = "none";
+	//document.getElementById("myfile").style.display = "none";
 
 	document.getElementById("chatbox").setAttribute("style", "")
 	var i = document.getElementById("my-video").offsetTop - document.getElementById("page-content").offsetTop
@@ -616,6 +621,7 @@ socket.on("numberofchunks", (data, time, id)=>{
 	{
 		numberofchunks = data
 		vidLen = time
+		console.log("works1 ?")
 		if(isHost)
 			socket.emit("sendnextchunkemit", myRoomId)
 	}

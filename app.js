@@ -149,7 +149,6 @@ io.on('connection', function(socket){
     socket.on("ready", (size, _isHost, time)=>{
         player.isReady = true;
         player.fileSize = size;
-        console.log(_isHost)
         if(_isHost){
             var data = Math.ceil(size/262144)
             io.sockets.emit("numberofchunks", data, time, player.roomId)
