@@ -138,8 +138,8 @@ function addPeer(socket_id, am_initiator, stream) {
 							myplayer.play();
 						else 
 							myplayer.pause();
-						alert("stream loaded, ask the host to start");
 					});
+					alert("stream loaded, ask the host to start");
 					if(firsttime){
 						socket.emit("ready2");
 						firsttime = false
