@@ -87,7 +87,13 @@ function addPeer(socket_id, am_initiator, stream) {
             signal: data,
             socket_id: socket_id
         })
-    })
+	})
+	
+	peer.on('error', (err) => {
+		console.log(err)
+		alert("couldnt connect to host");
+	})
+
     peers[socket_id].on('connect', () => {
 		console.log("connected")
 		socket.emit("sendplayerlist")
