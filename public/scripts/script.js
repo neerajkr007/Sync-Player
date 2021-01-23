@@ -107,11 +107,14 @@ function addPeer(socket_id, am_initiator, stream) {
 		var buff = 0
 		var i = 1
 		var timenow = 0
+		var yeet = true
 		peers[socket_id].on('data', data =>{
 			var d = new Date();
 			var n = d.getTime();
 				console.log('Received');
-				if(once){
+				if(once)
+				{
+					alert("starting to load stream, please wait");
 					once = false
 				}
 				var myplayer = videojs("my-video");
@@ -130,7 +133,7 @@ function addPeer(socket_id, am_initiator, stream) {
 					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 					console.log("all set to load")
 					if(totalFileSize != 0)
-						//document.getElementById("progress").innerHTML = blob.size%totalFileSize*100 + " %"
+						document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
 					document.querySelector('video').addEventListener('loadeddata', function once (){
 						document.querySelector('video').removeEventListener('loadeddata', once)
 						myplayer.currentTime(currentTime);
@@ -151,11 +154,20 @@ function addPeer(socket_id, am_initiator, stream) {
 					timenow = n
 					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 					console.log("loaded")
-					var c = d.getTime()
+					if(totalFileSize != 0)
+						document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
 					document.querySelector('video').addEventListener('loadeddata', function once() {
 						document.querySelector('video').removeEventListener('loadeddata', once)
-						var e = d.getTime()
-						myplayer.currentTime(currentTime + (e-c)/1000);
+						if(yeet)
+						{
+							myplayer.currentTime(currentTime);
+							yeet = false
+						}
+						else{
+							myplayer.currentTime(currentTime + 1);
+							yeet = true
+						}
+						
 						if (isplaying) {
 							myplayer.play();
 							console.log("playing")
@@ -189,41 +201,6 @@ function addPeer(socket_id, am_initiator, stream) {
 				}
 				socket.emit("sendnextchunkemit", myRoomId);
 		})
-		// if(!isHost)
-		// {
-			
-		// 	var i = 0
-		// 	var once = true
-		// 		setInterval(() => {
-		// 			var myplayer = videojs("my-video")
-		// 			if(!firsttime && !doneSending){
-		// 				if(myplayer.paused()) 
-		// 					isplaying = false
-		// 				else 
-		// 					isplaying = true
-		// 				console.log("test1")
-		// 				let blob = new Blob(blobArray,{'type':'video/mp4'});
-		// 				let currentTime = myplayer.currentTime();
-		// 				myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-		// 				console.log("loaded")
-		// 				document.querySelector('video').addEventListener('loadeddata', function once (){
-		// 					document.querySelector('video').removeEventListener('loadeddata', once)
-		// 					myplayer.currentTime(currentTime);
-		// 						console.log(isplaying)
-		// 						if(isplaying){
-		// 							myplayer.play();
-		// 							console.log("playing")
-		// 						}
-		// 						else {
-		// 							myplayer.pause();
-		// 							console.log("paused")
-		// 						}
-							
-		// 				});
-		// 			}
-					
-		// 		}, 5000);
-		// }
 	})
 	
 	peers[socket_id].on('stream', (stream)=>{
