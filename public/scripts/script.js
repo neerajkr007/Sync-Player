@@ -89,7 +89,7 @@ function addPeer(socket_id, am_initiator, stream) {
         })
 	})
 	
-	peer.on('error', (err) => {
+	peers[socket_id].on('error', (err) => {
 		console.log(err)
 		alert("couldnt connect to host");
 	})
