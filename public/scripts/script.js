@@ -91,7 +91,10 @@ function addPeer(socket_id, am_initiator, stream) {
 	
 	peers[socket_id].on('error', (err) => {
 		console.log(err)
-		alert("couldnt connect to host");
+		if(!isHost){
+			alert("couldnt connect to host");
+			location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
+		}
 	})
 
     peers[socket_id].on('connect', () => {
