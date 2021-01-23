@@ -71,13 +71,23 @@ io.on('connection', function(socket){
 
     function callEventify(id){
         eventify(ROOM_LIST[id], function(updatedArr) {
-            //if(updatedArr.length>1){
-                io.sockets.emit("clearPlayerList", updatedArr[0].roomId);
-                io.sockets.emit("updatePlayerList", "connected users -", updatedArr[0].roomId)
-                for(var i = 0; i<updatedArr.length; i++){
-                    io.sockets.emit("updatePlayerList", updatedArr[i].name, updatedArr[i].roomId)
+            
+            socket.on("sendplayerlist", ()=>{
+                if(updatedArr.length>1){
+                    io.sockets.emit("clearPlayerList", updatedArr[0].roomId);
+                    io.sockets.emit("updatePlayerList", "connected users -", updatedArr[0].roomId)
+                    for(var i = 0; i<updatedArr.length; i++){
+                        io.sockets.emit("updatePlayerList", updatedArr[i].name, updatedArr[i].roomId)
+                    }
                 }
-            //}
+                });
+            if(updatedArr.length == 1){
+                io.sockets.emit("clearPlayerListHost", updatedArr[0].roomId);
+                io.sockets.emit("updatePlayerListHost", "connected users -", updatedArr[0].roomId)
+                for(var i = 0; i<updatedArr.length; i++){
+                    io.sockets.emit("updatePlayerListHost", updatedArr[i].name, updatedArr[i].roomId)
+                }
+            }
             //io.sockets.emit("updatePlayerList", updatedArr[updatedArr.length - 1].name, updatedArr[updatedArr.length - 1].roomId)
           });
     }
@@ -123,20 +133,12 @@ io.on('connection', function(socket){
 
     function updatePlayerList(){
         ROOM_LIST[player.hostNumber].push(player);
-        for(let id in peers) {
-            if(id === socket.id) continue
+        for(let _id = 0;_id < ROOM_LIST[player.hostNumber].length; _id++) {
+            if(ROOM_LIST[player.hostNumber][_id].id == socket.id) continue
             console.log('sending init receive to ' + socket.id)
-            peers[id].emit('initReceive', socket.id)
+            peers[ROOM_LIST[player.hostNumber][_id].id].emit('initReceive', socket.id)
         }
     }
-
-    socket.on("rePeer", ()=>{
-        for(let id in peers) {
-            if(id === socket.id) continue
-            console.log('sending init receive to ' + socket.id)
-            peers[id].emit('initReceive', socket.id)
-        }
-    })
 
     socket.on("showPlayeremit1", ()=>{
         io.sockets.emit("showPlayer", player.roomId);

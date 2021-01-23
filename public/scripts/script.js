@@ -73,7 +73,7 @@ function init() {
 	//socket.emit("sendinitemit")
 }
 
-
+let once2 = true
 function addPeer(socket_id, am_initiator, stream) {
 	console.log("adding peer")
     peers[socket_id] = new SimplePeer({
@@ -88,9 +88,29 @@ function addPeer(socket_id, am_initiator, stream) {
             socket_id: socket_id
         })
     })
-
     peers[socket_id].on('connect', () => {
 		console.log("connected")
+		socket.emit("sendplayerlist")
+		if(once2){
+			socket.on("clearPlayerList", (roomId)=>{
+				if(roomId == myRoomId)
+				{	
+					document.getElementById("playerList").innerHTML="";
+					//socket.emit("rePeer")
+				}
+			});
+			
+			socket.on("updatePlayerList", (name, roomId)=>{
+				if(roomId == myRoomId )
+				{
+						var node = document.createElement("LI");   
+						node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
+						document.getElementById("playerList").appendChild(node);
+				}
+			});
+			once2 = false
+		}
+		
 		if(sessionType == "stream"){
 			var j = 0
 			socket.on("sendnextchunk", ()=>{
@@ -458,24 +478,6 @@ socket.on("notJoined", function(){
 	alert("id incorrect !");
 });
 
-socket.on("clearPlayerList", (roomId)=>{
-	if(roomId == myRoomId)
-	{	
-		document.getElementById("playerList").innerHTML="";
-		//socket.emit("rePeer")
-	}
-});
-
-socket.on("updatePlayerList", (name, roomId)=>{
-	if(roomId == myRoomId )
-	{
-			var node = document.createElement("LI");   
-			node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
-			document.getElementById("playerList").appendChild(node);
-	}
-});
-
-
 socket.on("showPlayer", (roomId)=>{
 	if(roomId == myRoomId)
 	{
@@ -620,6 +622,23 @@ socket.on("numberofchunks", (data, time, id)=>{
 			socket.emit("sendnextchunkemit", myRoomId)
 	}
 })
+
+socket.on("clearPlayerListHost", (roomId)=>{
+	if(roomId == myRoomId)
+	{	
+		document.getElementById("playerList").innerHTML="";
+		//socket.emit("rePeer")
+	}
+});
+
+socket.on("updatePlayerListHost", (name, roomId)=>{
+	if(roomId == myRoomId )
+	{
+			var node = document.createElement("LI");   
+			node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
+			document.getElementById("playerList").appendChild(node);
+	}
+});
 // socket.on("test2", data=>{
 // 	if(data.id == myRoomId && !isHost)
 // 	{
