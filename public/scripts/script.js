@@ -90,8 +90,8 @@ function addPeer(socket_id, am_initiator, stream) {
 	})
 	
 	peers[socket_id].on('error', (err) => {
-		console.log(err)
-		socket.emit("cantConnect", socket_id)
+		console.log(err + " " + socket_id)
+		//socket.emit("cantConnect", socket_id)
 	})
 
     peers[socket_id].on('connect', () => {
@@ -140,7 +140,7 @@ function addPeer(socket_id, am_initiator, stream) {
 				console.log('Received from '+socket_id);
 				if(once)
 				{
-					alert("starting to load stream, please wait");
+					//alert("starting to load stream, please wait");
 					once = false
 				}
 				var myplayer = videojs("my-video");
@@ -168,7 +168,7 @@ function addPeer(socket_id, am_initiator, stream) {
 						else 
 							myplayer.pause();
 					});
-					alert("stream loaded, ask the host to start");
+					//alert("stream loaded, ask the host to start");
 					if(firsttime){
 						socket.emit("ready2");
 						firsttime = false
