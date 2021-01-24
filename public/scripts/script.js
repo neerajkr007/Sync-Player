@@ -1,4 +1,4 @@
-
+const fs = require('fs')
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
@@ -102,7 +102,6 @@ function addPeer(socket_id, am_initiator, stream) {
 				if(roomId == myRoomId)
 				{	
 					document.getElementById("playerList").innerHTML="";
-					//socket.emit("rePeer")
 				}
 			});
 			
