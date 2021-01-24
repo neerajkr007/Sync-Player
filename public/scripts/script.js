@@ -1,4 +1,5 @@
 
+const fs = require('fs')
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
