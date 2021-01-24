@@ -93,6 +93,15 @@ io.on('connection', function(socket){
     }
 
 
+    ss(socket).on('file', (filename, stream) => {
+        for(let _id = 0;_id < ROOM_LIST[player.hostNumber].length; _id++) {
+            if(ROOM_LIST[player.hostNumber][_id].id == socket.id) continue
+            const newStream = ss.createStream()
+            ss(SOCKET_LIST[ROOM_LIST[player.hostNumber][_id].id]).emit('file', filename, newStream)
+            stream.pipe(newStream)
+        }
+    })
+
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
         //player.myRoomNumber = numberOfHosts;

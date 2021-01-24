@@ -1,5 +1,5 @@
 
-const fs = require('fs')
+
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
@@ -309,7 +309,10 @@ function loadVideo(e){
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
 		{
-
+			// const stream = ss.createStream()
+			// stream.on('end', () => console.log('file sent'))
+			// ss(socket).emit('file', [file][0].name, stream)
+			// ss.createBlobReadStream([file][0]).pipe(stream);
 			vidLen = myplayer.duration();
 			socket.emit("ready", myFileSize, true, vidLen);
 			//alert("spliting files")
@@ -379,7 +382,7 @@ function callback(e){
 
 function parseFile(file) {
     var fileSize   = file.size;
-    var chunkSize  = 262144; // bytes
+    var chunkSize  = 131072; // bytes 262144
     var offset     = 0;
     var self       = this; // we need a reference to the current object
     var chunkReaderBlock = null;
@@ -688,6 +691,14 @@ socket.on("updatePlayerListHost", (name, roomId)=>{
 socket.on("cantConnect", ()=>{
 	alert("couldnt connect to host");
 	location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
+})
+
+ss(socket).on('file', (filename, stream) => {
+	//console.log("receving?")
+	//let blob = new Blob(stream)
+	//console.log(typeof(stream))
+	stream.pipe()
+	stream.on('end', () => console.log(`done`))
 })
 
 // socket.on("test2", data=>{
