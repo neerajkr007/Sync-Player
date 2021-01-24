@@ -91,14 +91,11 @@ function addPeer(socket_id, am_initiator, stream) {
 	
 	peers[socket_id].on('error', (err) => {
 		console.log(err)
-		if(!isHost){
-			alert("couldnt connect to host");
-			location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
-		}
+		socket.emit("cantConnect", socket_id)
 	})
 
     peers[socket_id].on('connect', () => {
-		console.log("connected")
+		console.log("connected to " + socket_id)
 		socket.emit("sendplayerlist")
 		if(once2){
 			socket.on("clearPlayerList", (roomId)=>{
@@ -124,7 +121,7 @@ function addPeer(socket_id, am_initiator, stream) {
 			var j = 0
 			socket.on("sendnextchunk", ()=>{
 				if(j < chunkArray.length){
-					console.log("chunk sent")
+					console.log("chunk sent to "+socket_id)
 					peers[socket_id].send(chunkArray[j])
 					j++
 				}
@@ -140,7 +137,7 @@ function addPeer(socket_id, am_initiator, stream) {
 		peers[socket_id].on('data', data =>{
 			var d = new Date();
 			var n = d.getTime();
-				console.log('Received');
+				console.log('Received from '+socket_id);
 				if(once)
 				{
 					alert("starting to load stream, please wait");
@@ -648,6 +645,12 @@ socket.on("updatePlayerListHost", (name, roomId)=>{
 			document.getElementById("playerList").appendChild(node);
 	}
 });
+
+socket.on("cantConnect", ()=>{
+	alert("couldnt connect to host");
+	location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
+})
+
 // socket.on("test2", data=>{
 // 	if(data.id == myRoomId && !isHost)
 // 	{

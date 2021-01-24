@@ -253,6 +253,10 @@ io.on('connection', function(socket){
         io.sockets.emit("test2", {id:player.roomId, chunk:data.chunk});
     })
 
+    socket.on("cantConnect", data=>{
+        peers[data].emit("cantConnect");
+    })
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
