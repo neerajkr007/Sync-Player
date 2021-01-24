@@ -4,20 +4,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
-  <title>Welcome</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io-stream/0.9.1/socket.io-stream.min.js"></script>
+  <script src="https://kit.fontawesome.com/5c50a4aeb8.js" crossorigin="anonymous"></script>
+  <title>Sync Player</title>
 </head>
 
 <body>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
   <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" href="/css/style.css">
   <script src="/scripts/script.js"></script>
 
-
-  <nav class="navbar navbar-expand-lg navbar-light bg-light nav-bg-style">
+  <nav class="navbar navbar-expand-lg navbar-light" style="border-bottom: 1px solid black;">
     <a class="navbar-brand" href="index.html">SyncPlayer</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,15 +48,15 @@
   </nav>
 
 
-  <div class="container">
-    <div class="row mt-6">
-      <div class="col-md-4 text-center" style="background: transparent;">
+  <div id="container" class="container">
+    <div id="roomdetails" class="row mt-6">
+      <div id="playerlist" class="col-md-4 text-center rounded" style="background: transparent;">
         <ul id="playerList" class="list-group w-50">
-          <li class="list-group-item" style="background: transparent;">users connected - </li>
+          <li class="list-group-item" style="background: #404040 !important;">users connected - </li>
         </ul>
         <script>document.getElementById("playerList").style.display = "none";</script>
       </div>
-      <div class="col-md-4  text-center">
+      <div id="waiting" class="col-md-4 mt-4 text-center">
         <h4 id="gameId" class="display-5 "></h4>
         <h5 id="waitingMsg"></h5>
         <div id="nameField">
@@ -69,48 +72,162 @@
           </div>
           <br>
         </div>
+        <div id="go" class="row mt-6">
+          <div class="col-md-4 offset-md-4 text-center">
+            <button class="btn btn-success" data-toggle="modal" data-target="#Modal3">Go</button>
+            <script>document.getElementById("go").style.display="none";</script>
+          </div>
+        </div>
+      </div>
+      <div id="voice" class="col-md-4 mt-4 text-center">
+        <button id="micButton" style="background-color: transparent; border: 0;" onClick="toggleVoice()"><i class="fas fa-2x fa-microphone-slash" ></i></button>
+        <div id="audioPlayer"></div>
+        <script>document.getElementById("voice").style.display="none"</script>
       </div>
       <div class="col-md-4 offset-md-4 text-center">
-        <button id="host" type="button" class="btn bt-lg btn-success" onClick="sendit();">Host</button>
+        <button id="host" type="button" class="btn bt-lg btn-success"  data-toggle="modal" data-target="#Modal4">Host</button>
         <span class="mr-5"></span><span class="mr-5"></span><span class="mr-5"></span>
-        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2">Join</button>
+        <button id="join" type="button" class="btn bt-lg btn-success" data-toggle="modal" data-target="#exampleModal2" onmouseup="setTimeout(()=>{document.getElementById('enteredId').focus()},500)">Join</button>
       </div>
-      <div id="enterId">
-        <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-          aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel2">Enter game id</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
+    </div>
+    <div  class="row">
+      <div id="player" class="col-md-8 mt-2">
+        <h3 id="1">choose local file:</h3><br>
+        <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
+        <video
+          id="my-video"
+          class="video-js"
+          controls
+          preload="auto"
+          fluid = "true"
+          data-setup='{"autoplay": false}'
+        >
+        </video>
+        <script>
+          document.getElementById("player").style.display = "none";
+          const input = document.getElementById('myfile');
+          input.addEventListener('change', loadVideo);
+        </script>
+        <div> <h3 id="progress"> </h3></div>
+      </div>
+      <div id="chatbox" class="col-md-4 offset-md-8 mt-6 rounded" style="display: flex; align-items: flex-end; justify-content:flex-end; padding-top: 30vh;">
+        <br><br>
+        <div class="" id="page-content">
+          <div>
+              <div class="justify-content-center">
+                  <div>
+                      <div class="card card-bordered" style="background-color: #404040 !important;"> 
+                          <div class="card-header rounded-top">
+                                <button class="card-title" onClick="toggleChat();" style="background: transparent; outline: none !important;"><strong style="color: #aaaaaa;">Chat</strong></button> 
+                                <button class="btn btn-xs btn-secondary" data-abc="true" onClick="toggleChat();"><strong>-</strong></button>
+                          </div>
+                          <div id="chatBody" class="ps-container ps-theme-default ps-active-y" style="overflow-y: scroll !important; height: 180px;">
+                              <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;">
+                                  <div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+                              </div>
+                              <div class="ps-scrollbar-y-rail" style="top: 0px; height: 0px; right: 2px;">
+                                  <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 2px;"></div>
+                              </div>
+                          </div>
+                          <div id="footer" style="background-color: #404040 !important; border-top: #000000 !important;" class=""> 
+                            <i class="float-left fas fa-2x fa-user-circle" style="padding-left: 20px;"></i>
+                            <input id="chatInput" class="publisher-input" type="text" placeholder="Write something" style="color: #aaaaaa; max-width: 60% !important;"> 
+                            <i id="send" class="float-right fas fa-1x fa-paper-plane" onClick="sendChat();"style="color: aquamarine; padding-right: 20px; padding-top: 8px;"></i>
+                          </div>
+                          <script>
+                            var input2 = document.getElementById("chatInput");
+                            input2.addEventListener("keyup", function(event) {
+                              if (event.keyCode === 13) {
+                                event.preventDefault();
+                                sendChat();
+                              }
+                            });
+                          </script>
+                      </div>
+                  </div>
               </div>
-              <div class="modal-body">
-                <label for="enteredId">Id - </label>
-                <input type="number" id="enteredId" style="border: solid thin;
-                            margin: auto;
-                            font-size: medium;
-                            color: black;
-                            height: auto;
-                            width: auto;">
+          </div>
+        </div>
+      </div>
+      <script>
+        document.getElementById("chatbox").style.display = "none";
+        document.getElementById("chatBody").style.display = "none";
+        document.getElementById("footer").style.display = "none";
+      </script>
+    </div>
+    <br><br><br><br><br><br>
+    <div id="sessionTypeModal">
+      <div class="modal fade" id="Modal4" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="ModalLabel3">Session type</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="Radios" id="Radios1" value="load" checked>
+                <label class="form-check-label" for="Radios1">
+                  users have their file and will load themselves
+                </label>
               </div>
-              <div class="modal-footer">
-                <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin(); hide();'
-                  data-dismiss="">Join</button>
-                <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="Radios" id="Radios2" value="stream">
+                <label class="form-check-label" for="Radios2">
+                  users will stream from the host
+                </label>
               </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="sure" class="btn btn-primary" onClick="sendit(); $('#Modal4').modal('toggle')"
+                data-dismiss="">Next</button>
+              <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div id="go" class="row mt-6">
-      <div class="col-md-4 offset-md-4 text-center">
-        <button class="btn btn-success" data-toggle="modal" data-target="#Modal3">Go</button>
-        <script>document.getElementById("go").style.display="none";</script>
+    <div id="enterId">
+      <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel2">Enter game id</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <label for="enteredId">Id - </label>
+              <input type="number" id="enteredId" style="border: solid thin;
+                          margin: auto;
+                          font-size: medium;
+                          color: black;
+                          height: auto;
+                          width: auto;" autofocus>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="join" class="btn btn-secondary" onClick='tryJoin();'
+                data-dismiss="">Join</button>
+              <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    <script>
+      var input2 = document.getElementById("enteredId");
+      input2.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+          event.preventDefault();
+          tryJoin();
+        }
+      });
+    </script>
     <div id="loadPlayerModal">
       <div class="modal fade" id="Modal3" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
         aria-hidden="true">
@@ -127,7 +244,7 @@
               <h7 class="">don't do this before all users have joined your room.</h3>
             </div>
             <div class="modal-footer">
-              <button type="button" id="sure" class="btn btn-primary" onClick='showPlayeremit();'
+              <button type="button" id="sure" class="btn btn-primary" onClick='showPlayeremit(); document.getElementById("go").style.display="none";'
                 data-dismiss="">sure, go ahead</button>
               <button type="button" id="cancel" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
@@ -135,30 +252,10 @@
         </div>
       </div>
     </div>
-    <div id="player" class="row mt-6">
-      <div class="col-md-8 offset-md-2">
-        <h3>choose local file:</h3><br>
-        <input type="file" id="myfile" name="myfile" accept="video/*" /><br><br>
-        <video
-          id="my-video"
-          class="video-js"
-          controls
-          preload="auto"
-          height="auto"
-          width="350"
-          data-setup='{"autoplay": false}'
-        >
-        </video><br><br><br>
-        <div> <h3> </h3></div>
-        <script>
-          document.getElementById("player").style.display = "none";
-          const input = document.getElementById('myfile');
-          input.addEventListener('change', loadVideo);
-        </script>
-      </div>
-      
-    </div>
+    
+    
   </div>
+  
 
 
   <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>

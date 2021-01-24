@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const fs = require('fs')
+const path = require('path')
+var http = require('http')
+var ss = require('socket.io-stream');
 const serv = require('http').createServer(app);
  
 
@@ -16,13 +20,10 @@ app.get('/index.html', (req, res) =>
 app.get('/rooms.html', (req, res) =>
 {
     res.sendFile(__dirname + '/rooms.html');
+    
 }); 
 
-app.get('/main.html', (req, res) =>
-{
-    res.sendFile(__dirname + '/main.html');
-});  
- 
+
 app.use(express.static(__dirname + '/public'));
 
 serv.listen(process.env.PORT || 3000); 
@@ -50,7 +51,7 @@ var Player = function(id){
     return self;
 }
 var numberOfHosts = 0;
-
+peers = {}
 var eventify = function(arr, callback) {
     arr.push = function(e) {
         Array.prototype.push.call(arr, e);
@@ -63,23 +64,43 @@ io.on('connection', function(socket){
     socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
     console.log(socket.id);
     SOCKET_LIST[socket.id] = socket;
+    
     var player = Player(socket.id);
     PLAYER_LIST[socket.id] = player;
-    
+    socket.emit("mysocketid", socket.id);
 
     function callEventify(id){
         eventify(ROOM_LIST[id], function(updatedArr) {
-            //if(updatedArr.length>1){
-                io.sockets.emit("clearPlayerList", updatedArr[0].roomId);
-                io.sockets.emit("updatePlayerList", "connected users -", updatedArr[0].roomId)
-                for(var i = 0; i<updatedArr.length; i++){
-                    io.sockets.emit("updatePlayerList", updatedArr[i].name, updatedArr[i].roomId)
+            
+            socket.on("sendplayerlist", ()=>{
+                if(updatedArr.length>1){
+                    io.sockets.emit("clearPlayerList", updatedArr[0].roomId);
+                    io.sockets.emit("updatePlayerList", "connected users -", updatedArr[0].roomId)
+                    for(var i = 0; i<updatedArr.length; i++){
+                        io.sockets.emit("updatePlayerList", updatedArr[i].name, updatedArr[i].roomId)
+                    }
                 }
-            //}
+                });
+            if(updatedArr.length == 1){
+                io.sockets.emit("clearPlayerListHost", updatedArr[0].roomId);
+                io.sockets.emit("updatePlayerListHost", "connected users -", updatedArr[0].roomId)
+                for(var i = 0; i<updatedArr.length; i++){
+                    io.sockets.emit("updatePlayerListHost", updatedArr[i].name, updatedArr[i].roomId)
+                }
+            }
             //io.sockets.emit("updatePlayerList", updatedArr[updatedArr.length - 1].name, updatedArr[updatedArr.length - 1].roomId)
           });
     }
 
+
+    ss(socket).on('file', (filename, stream) => {
+        for(let _id = 0;_id < ROOM_LIST[player.hostNumber].length; _id++) {
+            if(ROOM_LIST[player.hostNumber][_id].id == socket.id) continue
+            const newStream = ss.createStream()
+            ss(SOCKET_LIST[ROOM_LIST[player.hostNumber][_id].id]).emit('file', filename, newStream)
+            stream.pipe(newStream)
+        }
+    })
 
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
@@ -91,6 +112,7 @@ io.on('connection', function(socket){
         player.hostNumber = numberOfHosts;
         //console.log(player.name);
         socket.adapter.rooms.get(player.id).size;
+        peers[socket.id] = socket
         //ROOM_LIST[0][0] = player;
         
         //console.log(ROOM_LIST[numberOfHosts][0])
@@ -99,7 +121,6 @@ io.on('connection', function(socket){
         updatePlayerList();
         numberOfHosts++;
     }); 
-
 
     socket.on("tryJoin", (id, name) => {
         for(var i in PLAYER_LIST){  
@@ -110,8 +131,9 @@ io.on('connection', function(socket){
                 player.hostNumber = PLAYER_LIST[i].hostNumber;
                 //console.log(socket);
                 callEventify(player.hostNumber);
+                peers[socket.id] = socket
                 socket.emit("joined", player.roomId);
-                updatePlayerList();
+                setTimeout(()=>{updatePlayerList();}, 1000)
                 return true;   
             }  
         }
@@ -120,38 +142,57 @@ io.on('connection', function(socket){
 
     function updatePlayerList(){
         ROOM_LIST[player.hostNumber].push(player);
+        for(let _id = 0;_id < ROOM_LIST[player.hostNumber].length; _id++) {
+            if(ROOM_LIST[player.hostNumber][_id].id == socket.id) continue
+            console.log('sending init receive to ' + socket.id)
+            peers[ROOM_LIST[player.hostNumber][_id].id].emit('initReceive', socket.id)
+        }
     }
 
-    socket.on("showPlayeremit", ()=>{
+    socket.on("showPlayeremit1", ()=>{
         io.sockets.emit("showPlayer", player.roomId);
-        //console.log(io.in(String(player.roomId)).emit("showPlayer"))
-        //for(var i in PLAYER_LIST)
-        //{
-            //if(player.roomId == PLAYER_LIST[i].roomId)
-            //{
-                //io.to(PLAYER_LIST[i].id).emit("showPlayer")
-            //}
-        //}
-        //io.sockets.emit("showPlayer");
     });
 
-    socket.on("ready", (size)=>{
+    socket.on("showPlayeremit2", ()=>{
+        socket.emit("showPlayer", player.roomId);
+    });
+
+    socket.on("ready", (size, _isHost, time)=>{
         player.isReady = true;
         player.fileSize = size;
+        if(_isHost){
+            var data = Math.ceil(size/262144)
+            io.sockets.emit("numberofchunks", data, time, player.roomId)
+        }
         console.log("ready");
     });
 
-    socket.on("playvideo?", (roomID, size)=>{
+    socket.on("ready2", ()=>{
+        player.isReady = true;
+        console.log("ready");
+    });
+
+    socket.on("playvideo?", (roomID, size, type)=>{
         for(var i in PLAYER_LIST)
         {
             if(roomID == PLAYER_LIST[i].roomId) 
             {
-                if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
-                    alert("not ready or wrong size");
-                    return false;
+                if(type === "load"){
+                    if(!PLAYER_LIST[i].isReady || PLAYER_LIST[i].fileSize != size){
+                        alert("not ready or wrong size");
+                        return false;
+                    }
                 }
+                else{
+                    if(!PLAYER_LIST[i].isReady){
+                        //alert("not ready or wrong size");
+                        //return false;
+                    }
+                }
+                
             }
         }
+        io.sockets.emit("fileSize", size, player.roomId);
         io.sockets.emit("playVideo", player.roomId);
     });
 
@@ -163,8 +204,73 @@ io.on('connection', function(socket){
         io.sockets.emit("play", player.roomId);
     });
 
+    socket.on("sendNextchunkemit", ()=>{
+        //console.log("recieved")
+        io.sockets.emit("sendNextchunk", player.roomId);
+    });
+
+    socket.on("showplayer2emit", ()=>{
+        //console.log("recieved")
+        io.sockets.emit("showplayer2", player.roomId);
+    });
+
+    socket.on('signal', data => {
+        //console.log('sending signal from ' + socket.id + ' to ', data)
+        if(!peers[data.socket_id])return
+        peers[data.socket_id].emit('signal', {
+            socket_id: socket.id,
+            signal: data.signal
+        })
+    })
+
+    socket.on('initSend', init_socket_id => {
+        console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
+        peers[init_socket_id].emit('initSend', socket.id)
+    })
+
+    socket.on('sendnextchunkemit', init_socket_id => {
+        peers[init_socket_id].emit('sendnextchunk')
+    })
+    var test
+    socket.on("chattoothersemit", (chat, id)=>{
+        test = id
+        io.sockets.emit("chatToOthers", player.roomId, chat, id, player.name);
+    });
+
+    socket.on("chattoothersemit2", (id)=>{
+        test = id
+        io.sockets.emit("chatToOthers", player.roomId, player.name + " has joined the room", id, "");
+    });
+
+    socket.on("sendinitemit", ()=>{
+        console.log(player.name)
+        for(let id in peers) {
+            if(id === socket.id) continue
+            console.log('sending init receive to ' + socket.id)
+            peers[id].emit('initReceive', socket.id)
+        }
+    })
+
+    socket.on("playAudioEmit", (id, n, speaker)=>{
+        if(n == 1)
+            io.sockets.emit("playAudio", player.roomId, id, speaker);
+        else if(n == 2)
+            io.sockets.emit("pauseAudio", player.roomId, id, speaker);
+    });
+
+    socket.on("test", data=>{
+        io.sockets.emit("test2", {id:player.roomId, chunk:data.chunk});
+    })
+
+    socket.on("cantConnect", data=>{
+        peers[data].emit("cantConnect");
+    })
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
+        io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
+        socket.broadcast.emit('removePeer', socket.id)
+        delete peers[socket.id]
         socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  
         delete PLAYER_LIST[socket.id];
@@ -172,8 +278,11 @@ io.on('connection', function(socket){
             if(player == ROOM_LIST[player.hostNumber][i])
             {
                 ROOM_LIST[player.hostNumber].splice(i, 1);
-                io.sockets.emit("clearPlayerList", ROOM_LIST[player.hostNumber][0].roomId);
-                io.sockets.emit("updatePlayerList", "connected users -", ROOM_LIST[player.hostNumber][0].roomId)
+                if(ROOM_LIST[player.hostNumber].length != 0)
+                {
+                    io.sockets.emit("clearPlayerList", ROOM_LIST[player.hostNumber][0].roomId);
+                    io.sockets.emit("updatePlayerList", "connected users -", ROOM_LIST[player.hostNumber][0].roomId)
+                }
                 for(var i = 0; i<ROOM_LIST[player.hostNumber].length; i++){
                     io.sockets.emit("updatePlayerList", ROOM_LIST[player.hostNumber][i].name, ROOM_LIST[player.hostNumber][i].roomId)
                 }
