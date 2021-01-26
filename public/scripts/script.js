@@ -95,6 +95,13 @@ function addPeer(socket_id, am_initiator, stream) {
 		//socket.emit("cantConnect", socket_id)
 	})
 
+	peers[socket_id].on('stream', (stream)=>{
+		let newAud = document.createElement('audio');
+        newAud.srcObject = stream;
+        newAud.id = socket_id;
+		document.getElementById("audioPlayer").appendChild(newAud);
+	})
+
     peers[socket_id].on('connect', () => {
 		console.log("connected to " + socket_id)
 		socket.emit("sendplayerlist")
@@ -139,141 +146,154 @@ function addPeer(socket_id, am_initiator, stream) {
 			buff = Math.ceil(15*numberofchunks/vidLen)
 		else
 			buff = Math.ceil(60*numberofchunks/vidLen)
-		peers[socket_id].on('data', data =>{
-			var d = new Date();
-			var n = d.getTime();
-				console.log('Received from '+socket_id);
-				if(once)
-				{
-					//alert("starting to load stream, please wait");
-					once = false
-				}
-				var myplayer = videojs("my-video");
-				blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
-				let blob = new Blob(blobArray,{'type':'video/mp4'});
-				chunksRecieved++;
-				let currentTime = myplayer.currentTime();
-				if(myplayer.paused()) 
-					isplaying = false
-				else 
-					isplaying = true
+		if(!isHost){	
+			var mediaSource = new MediaSource();
+			var myplayer = videojs("my-video");
+			myplayer.src({type: 'video/mp4', src: URL.createObjectURL(mediaSource)});
+			mediaSource.addEventListener('sourceopen', function() {
+				var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.64000d,mp4a.40.2"');
+				peers[socket_id].on('data', data =>{
+					console.log('Received from '+socket_id);
+					console.log(data)
+					//let blob = new Blob([new Uint8Array(data)],{'type':'video/mp4'});
+					//console.log(blob)
+					sourceBuffer.appendBuffer(data)
+					socket.emit("sendnextchunkemit", myRoomId);
+				})
+			})
+			mediaSource.addEventListener('sourceended', function() {
+				console.log('MediaSource readyState: ' + this.readyState);
+			}, false);
+			
+		}
+		//peers[socket_id].on('data', data =>{
+			//var d = new Date();
+			//var n = d.getTime();
+				//console.log('Received from '+socket_id);
 				
-				if(chunksRecieved == buff && firsttime && buff != 0)
-				{
-					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-					console.log("all set to load")
-					if(totalFileSize != 0)
-						document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
-					document.querySelector('video').addEventListener('loadeddata', function once (){
-						document.querySelector('video').removeEventListener('loadeddata', once)
-						myplayer.currentTime(currentTime);
-						if(isplaying)
-							myplayer.play();
-						else 
-							myplayer.pause();
-					});
-					//alert("stream loaded, ask the host to start");
-					if(firsttime){
-						socket.emit("ready2");
-						firsttime = false
-					}
-					timenow = n
-				}
-				if(vidLen<60){
-					if(5000 <= n - timenow && n - timenow <= 7000)
-					{
-						timenow = n
-						myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
-						console.log("loaded")
-						if(totalFileSize != 0)
-							document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
-						document.querySelector('video').addEventListener('loadeddata', function once() {
-							document.querySelector('video').removeEventListener('loadeddata', once)
-							if(yeet%3 != 0)
-							{
-								myplayer.currentTime(currentTime);
-								yeet++;
-							}
-							else{
-								myplayer.currentTime(currentTime + 1);
-								yeet++;
-							}
-							
-							if (isplaying) {
-								myplayer.play();
-								console.log("playing")
-							}
-							else {
-								myplayer.pause();
-								console.log("paused")
-							}
 
-						});
-					}
-				}
-				else{
-					if(30000 <= n - timenow && n - timenow <= 33000)
-					{
-						timenow = n
-						myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
-						console.log("loaded")
-						if(totalFileSize != 0)
-							document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
-						document.querySelector('video').addEventListener('loadeddata', function once() {
-							document.querySelector('video').removeEventListener('loadeddata', once)
-							if(yeet%3 != 0)
-							{
-								myplayer.currentTime(currentTime);
-								yeet++;
-							}
-							else{
-								myplayer.currentTime(currentTime + 1);
-								yeet++;
-							}
-							
-							if (isplaying) {
-								myplayer.play();
-								console.log("playing")
-							}
-							else {
-								myplayer.pause();
-								console.log("paused")
-							}
 
-						});
-					}
-				}
+				// var myplayer = videojs("my-video");
+				//blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
+				// let blob = new Blob(blobArray,{'type':'video/mp4'});
+				// chunksRecieved++;
+				// let currentTime = myplayer.currentTime();
+				// if(myplayer.paused()) 
+				// 	isplaying = false
+				// else 
+				// 	isplaying = true
 				
-				if(chunksRecieved == numberofchunks){
-					console.log("done recieving")
-					doneSending = true
-					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
-					console.log("loaded")
-					document.querySelector('video').addEventListener('loadeddata', function once() {
-						document.querySelector('video').removeEventListener('loadeddata', once)
-						myplayer.currentTime(currentTime);
-						console.log(isplaying)
-						if (isplaying) {
-							myplayer.play();
-							console.log("playing")
-						}
-						else {
-							myplayer.pause();
-							console.log("paused")
-						}
+				// if(chunksRecieved == buff && firsttime && buff != 0)
+				// {
+				// 	myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+				// 	console.log("all set to load")
+				// 	if(totalFileSize != 0)
+				// 		document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+				// 	document.querySelector('video').addEventListener('loadeddata', function once (){
+				// 		document.querySelector('video').removeEventListener('loadeddata', once)
+				// 		myplayer.currentTime(currentTime);
+				// 		if(isplaying)
+				// 			myplayer.play();
+				// 		else 
+				// 			myplayer.pause();
+				// 	});
+				// 	//alert("stream loaded, ask the host to start");
+				// 	if(firsttime){
+				// 		socket.emit("ready2");
+				// 		firsttime = false
+				// 	}
+				// 	timenow = n
+				// }
+				// if(vidLen<60){
+				// 	if(5000 <= n - timenow && n - timenow <= 7000)
+				// 	{
+				// 		timenow = n
+				// 		myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+				// 		console.log("loaded")
+				// 		if(totalFileSize != 0)
+				// 			document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+				// 		document.querySelector('video').addEventListener('loadeddata', function once() {
+				// 			document.querySelector('video').removeEventListener('loadeddata', once)
+				// 			if(yeet%3 != 0)
+				// 			{
+				// 				myplayer.currentTime(currentTime);
+				// 				yeet++;
+				// 			}
+				// 			else{
+				// 				myplayer.currentTime(currentTime + 1);
+				// 				yeet++;
+				// 			}
+							
+				// 			if (isplaying) {
+				// 				myplayer.play();
+				// 				console.log("playing")
+				// 			}
+				// 			else {
+				// 				myplayer.pause();
+				// 				console.log("paused")
+				// 			}
 
-					});
-				}
-				socket.emit("sendnextchunkemit", myRoomId);
-		})
+				// 		});
+				// 	}
+				// }
+				// else{
+				// 	if(30000 <= n - timenow && n - timenow <= 33000)
+				// 	{
+				// 		timenow = n
+				// 		myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+				// 		console.log("loaded")
+				// 		if(totalFileSize != 0)
+				// 			document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+				// 		document.querySelector('video').addEventListener('loadeddata', function once() {
+				// 			document.querySelector('video').removeEventListener('loadeddata', once)
+				// 			if(yeet%3 != 0)
+				// 			{
+				// 				myplayer.currentTime(currentTime);
+				// 				yeet++;
+				// 			}
+				// 			else{
+				// 				myplayer.currentTime(currentTime + 1);
+				// 				yeet++;
+				// 			}
+							
+				// 			if (isplaying) {
+				// 				myplayer.play();
+				// 				console.log("playing")
+				// 			}
+				// 			else {
+				// 				myplayer.pause();
+				// 				console.log("paused")
+				// 			}
+
+				// 		});
+				// 	}
+				// }
+				
+				// if(chunksRecieved == numberofchunks){
+				// 	console.log("done recieving")
+				// 	doneSending = true
+				// 	myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+				// 	console.log("loaded")
+				// 	document.querySelector('video').addEventListener('loadeddata', function once() {
+				// 		document.querySelector('video').removeEventListener('loadeddata', once)
+				// 		myplayer.currentTime(currentTime);
+				// 		console.log(isplaying)
+				// 		if (isplaying) {
+				// 			myplayer.play();
+				// 			console.log("playing")
+				// 		}
+				// 		else {
+				// 			myplayer.pause();
+				// 			console.log("paused")
+				// 		}
+
+				// 	});
+				// }
+				//socket.emit("sendnextchunkemit", myRoomId);
+		//})
 	})
 	
-	peers[socket_id].on('stream', (stream)=>{
-		let newAud = document.createElement('audio');
-        newAud.srcObject = stream;
-        newAud.id = socket_id;
-		document.getElementById("audioPlayer").appendChild(newAud);
-	})
+	
 }
 
 function loadVideo(e){
@@ -289,34 +309,40 @@ function loadVideo(e){
 	myFileSize = [file][0].size;
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
+	parseFile([file][0])
 	var myplayer = videojs("my-video");
-	
-	// socket io stream stuff
-	
-	// var filetest = e.target.files[0];
-	// var stream = ss.createStream();
-	// ss(socket).emit('file', stream);
-	// var blobStream = ss.createBlobReadStream(filetest)
-	// var size = 0;
-	// blobStream.on('data', function(chunk) {
-	// size += chunk.length;
-	// console.log(Math.floor(size / file.size * 100) + '%');
-	// });
-	// blobStream.pipe(stream);
-	
+	var mediaSource = new MediaSource();
+	myplayer.src({type: 'video/mp4', src: URL.createObjectURL(mediaSource)});
+	mediaSource.addEventListener('sourceopen', function() {
+		var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.64000d,mp4a.40.2"');
+		console.log('Received from ');
+				//let blob = new Blob([new Uint8Array(data)],{'type':'video/mp4'});
+		console.log(chunkArray[0])
+		console.log(new Uint8Array(chunkArray[0]))
+		sourceBuffer.appendBuffer(new Uint8Array(chunkArray[0]))
+					//socket.emit("sendnextchunkemit", myRoomId);
+	})
+	mediaSource.addEventListener('sourceended', function() {
+	console.log('MediaSource readyState: ' + this.readyState);
+	}, false);
 
-	myplayer.src({type: 'video/mp4', src: blobURL});
+	//myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
 		{
-			// const stream = ss.createStream()
-			// stream.on('end', () => console.log('file sent'))
-			// ss(socket).emit('file', [file][0].name, stream)
-			// ss.createBlobReadStream([file][0]).pipe(stream);
 			vidLen = myplayer.duration();
 			socket.emit("ready", myFileSize, true, vidLen);
 			//alert("spliting files")
-			parseFile([file][0])
+
+
+			// worker partr
+			// var worker = new Worker('worker.js');
+			// worker.addEventListener('message', (e)=>{
+			// 	console.log("pushed")
+			// })
+
+
+			
 			//init()
 			if(isHost){
 				socket.emit("showplayer2emit");
