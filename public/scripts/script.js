@@ -131,11 +131,11 @@ function init() {
 				var firsttime = true
 				var once = true
 				var timenow = 0
-				var yeet = 1
+				var diff = 0
 				
 				
 				conn.on('data', data =>{
-					var d = new Date();
+					let d = new Date();
 					var n = d.getTime();
 						console.log('Received from '+socket_id);
 						if(once)
@@ -148,10 +148,7 @@ function init() {
 						let blob = new Blob(blobArray,{'type':'video/mp4'});
 						chunksRecieved++;
 						let currentTime = myplayer.currentTime();
-						if(myplayer.paused()) 
-							isplaying = false
-						else 
-							isplaying = true
+						
 						if(chunksRecieved == buff && firsttime && buff != 0)
 						{
 							myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
@@ -177,22 +174,17 @@ function init() {
 							if(5000 <= n - timenow && n - timenow <= 7000)
 							{
 								timenow = n
+								if(myplayer.paused()) 
+									isplaying = false
+								else 
+									isplaying = true
 								myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 								console.log("loaded")
 								//if(totalFileSize != 0)
 									//document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
 								document.querySelector('video').addEventListener('loadeddata', function once() {
 									document.querySelector('video').removeEventListener('loadeddata', once)
-									if(yeet%3 != 0)
-									{
-										myplayer.currentTime(currentTime);
-										yeet++;
-									}
-									else{
-										myplayer.currentTime(currentTime + 1);
-										yeet++;
-									}
-									
+									myplayer.currentTime(currentTime);
 									if (isplaying) {
 										myplayer.play();
 										console.log("playing")
@@ -209,22 +201,30 @@ function init() {
 							if(30000 <= n - timenow && n - timenow <= 33000)
 							{
 								timenow = n
+								let d = new Date();
+								var o = d.getTime();
+								if(myplayer.paused()) 
+									isplaying = false
+								else 
+									isplaying = true
 								myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 								console.log("loaded")
 								//if(totalFileSize != 0)
 									//document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
 								document.querySelector('video').addEventListener('loadeddata', function once() {
 									document.querySelector('video').removeEventListener('loadeddata', once)
-									if(yeet%3 != 0)
-									{
-										myplayer.currentTime(currentTime);
-										yeet++;
+									let d = new Date();
+									var p = d.getTime();
+									diff += (p-o)
+									console.log(diff)
+									if(diff > 1000){
+										myplayer.currentTime(currentTime + 1);
+										console.log("1 sec yeeted")
+										diff = 0
 									}
 									else{
-										myplayer.currentTime(currentTime + 1);
-										yeet++;
+										myplayer.currentTime(currentTime);
 									}
-									
 									if (isplaying) {
 										myplayer.play();
 										console.log("playing")
