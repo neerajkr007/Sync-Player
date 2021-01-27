@@ -323,25 +323,65 @@ function loadVideo(e){
 	const { target: { files } } = e
 	const [file] = files
 	myFileSize = [file][0].size;
+	//parseFile([file][0])
+	var mp4 = null
 	var blob = new Blob([file], { type: 'video/mp4' })
-	var blobURL = URL.createObjectURL(blob)
+	//var blobURL = URL.createObjectURL(blob)
 	var myplayer = videojs("my-video");
-	
-	// socket io stream stuff
-	
-	// var filetest = e.target.files[0];
-	// var stream = ss.createStream();
-	// ss(socket).emit('file', stream);
-	// var blobStream = ss.createBlobReadStream(filetest)
-	// var size = 0;
-	// blobStream.on('data', function(chunk) {
-	// size += chunk.length;
-	// console.log(Math.floor(size / file.size * 100) + '%');
-	// });
-	// blobStream.pipe(stream);
-	
+    
+	var mediaSource = new MediaSource();
+	myplayer.src({type: 'video/mp4', src: URL.createObjectURL(mediaSource)});
+	//myplayer.src({type: 'video/mp4', src: blobURL});
 
-	myplayer.src({type: 'video/mp4', src: blobURL});
+	mediaSource.addEventListener('sourceopen', function() {
+		var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42c01e, mp4a.40.2"');
+		console.log(sourceBuffer);
+		console.log("Creating MP4Box file with parameter: "+false);
+		mp4 = MP4Box.createFile(false);
+		mp4.onError = function(e) { console.log(e); };
+		mp4.onReady = function(info) {
+		if (true) {
+			console.log("Sample batch size: "+(+1000));
+			for (var i = 0; i < info.tracks.length; i++) {
+			var track = info.tracks[i];
+			mp4.setSegmentOptions(info.tracks[i].id, null, { nbSamples: +1000 } );
+			}
+			mp4.initializeSegmentation();
+		}
+		mp4.start();
+		};
+
+		mp4.onSegment = function (id, user, buffer, sampleNum, is_last) {
+		console.log("Received"+(is_last?" last":"")+" segment on track "+id+" with sample up to "+sampleNum);
+		if (true) {
+			var test = mp4.releaseUsedSamples(id, sampleNum);
+			console.log(test)
+		}
+		if (is_last) {
+			}
+		console.log(buffer)
+		//sourceBuffer.appendBuffer(new Uint8Array(buffer))
+		}
+		var offset = 0;
+		if ([file][0]) {
+			var reader = [file][0].stream().getReader();
+			reader.read().then(function getNextChunk({done, value}) {
+			if (done) {
+				mp4.flush();
+				console.log("done");
+				return;
+			}
+	
+			var copy = value.buffer;
+			copy.fileStart = offset;
+			offset += value.length;
+	
+			mp4.appendBuffer(copy);
+			return reader.read().then(getNextChunk);
+			});
+		}
+		
+	});
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
 		{
@@ -352,7 +392,7 @@ function loadVideo(e){
 			vidLen = myplayer.duration();
 			socket.emit("ready", myFileSize, true, vidLen);
 			//alert("spliting files")
-			parseFile([file][0])
+			//parseFile([file][0])
 			//init()
 			if(isHost){
 				socket.emit("showplayer2emit");
@@ -523,7 +563,7 @@ socket.on("mysocketid", (id)=>{
 })
 
 socket.on("hosted", function(data){
-	init()
+	//init()
 	myRoomId = data;
 	isHost = true;
 	document.getElementById("playerList").style.display = "inline-flex";
@@ -708,8 +748,8 @@ socket.on("numberofchunks", (data, time, id)=>{
 		console.log(buff)
 		console.log(numberofchunks)
 		console.log(vidLen)
-		if(isHost)
-			socket.emit("sendnextchunkemit", myRoomId)
+		//if(isHost)
+			//socket.emit("sendnextchunkemit", myRoomId)
 	}
 })
 
