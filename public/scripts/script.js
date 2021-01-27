@@ -53,9 +53,10 @@ function sendit(){
 function init() {
 	console.log("init called")
 	let once2 = true
+	let once3 = true
     socket.on('initReceive', socket_id => {
 		console.log('INIT RECEIVE ' + socket_id)
-		peers[socket_id] = new Peer();
+		peers[socket_id] = new Peer(configuration);
 		
 		peers[socket_id].on('open', function(id) {
 			socket.emit('initSend', socket_id, id)
@@ -102,10 +103,17 @@ function init() {
 
     socket.on('initSend', (socket_id, ida) => {
 		console.log('INIT SEND ' + socket_id)
-		peers[socket_id] = new Peer();
+		peers[socket_id] = new Peer(configuration);
 		peers[socket_id].on('open', function(id) {
 			var conn = peers[socket_id].connect(ida);
 			conn.on('open', function() {
+				if(once3){
+					document.getElementById("msg").innerHTML = "connected"
+					document.getElementById("spinner").style.display = "none"
+					setTimeout(()=>{$('#connectingModal').modal('toggle')}, 1000)
+					once3 = false
+				}
+				
 				console.log("connected "+socket_id)
 				socket.emit("sendplayerlist")
 				if(once2){
@@ -129,7 +137,7 @@ function init() {
 				}
 				var chunksRecieved = 0
 				var firsttime = true
-				var once = true
+				let once = true
 				var timenow = 0
 				var diff = 0
 				
@@ -140,15 +148,15 @@ function init() {
 						console.log('Received from '+socket_id);
 						if(once)
 						{
-							//alert("starting to load stream, please wait");
+							$('#streamStatusModal').modal('toggle')
 							once = false
+							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
 						}
 						var myplayer = videojs("my-video");
 						blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
 						let blob = new Blob(blobArray,{'type':'video/mp4'});
 						chunksRecieved++;
 						let currentTime = myplayer.currentTime();
-						
 						if(chunksRecieved == buff && firsttime && buff != 0)
 						{
 							myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
@@ -169,9 +177,12 @@ function init() {
 								firsttime = false
 							}
 							timenow = n
+							document.getElementById("status").innerHTML = "stream loaded, ask host to start"
+							$('#streamStatusModal').modal('toggle')
+							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
 						}
 						if(vidLen<60){
-							if(5000 <= n - timenow && n - timenow <= 7000)
+							if(10000 <= n - timenow && n - timenow <= 11000)
 							{
 								timenow = n
 								if(myplayer.paused()) 
@@ -515,6 +526,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
+	$('#connectingModal').modal('toggle')
 	document.getElementById("chatbox").style.display = "flex";
 	document.getElementById("voice").style.display= "block"
 	socket.emit('chattoothersemit2', mySocketId)	
@@ -619,7 +631,7 @@ socket.on("chatToOthers", (roomId, chat, id, name)=>{
 		var h = d.getHours()
 		var m = d.getMinutes()
 		var s = d.getSeconds()
-		document.getElementById("chatBody").innerHTML += '<div class="row"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+h+':'+m+':'+s+'</p></div>'
+		document.getElementById("chatBody").innerHTML += '<div class="row"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:30px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+h+':'+m+':'+s+'</p></div>'
 		document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
 	}
 });
