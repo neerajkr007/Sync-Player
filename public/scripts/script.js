@@ -22,7 +22,7 @@ var doneSending = false
 var buff = 0
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
-	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+	'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
 	{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
 		credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
 		urls: [       
@@ -56,7 +56,17 @@ function init() {
 	let once3 = true
     socket.on('initReceive', socket_id => {
 		console.log('INIT RECEIVE ' + socket_id)
-		peers[socket_id] = new Peer(configuration);
+		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+			{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
+				credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
+				urls: [       
+					"turn:bn-turn1.xirsys.com:80?transport=udp",       
+					"turn:bn-turn1.xirsys.com:3478?transport=udp",       
+					"turn:bn-turn1.xirsys.com:80?transport=tcp",       
+					"turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+					"turns:bn-turn1.xirsys.com:443?transport=tcp",       
+					"turns:bn-turn1.xirsys.com:5349?transport=tcp"   ]}]
+		}});
 		
 		peers[socket_id].on('open', function(id) {
 			socket.emit('initSend', socket_id, id)
@@ -103,7 +113,17 @@ function init() {
 
     socket.on('initSend', (socket_id, ida) => {
 		console.log('INIT SEND ' + socket_id)
-		peers[socket_id] = new Peer(configuration);
+		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+		{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
+			credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
+			urls: [       
+				"turn:bn-turn1.xirsys.com:80?transport=udp",       
+				"turn:bn-turn1.xirsys.com:3478?transport=udp",       
+				"turn:bn-turn1.xirsys.com:80?transport=tcp",       
+				"turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+				"turns:bn-turn1.xirsys.com:443?transport=tcp",       
+				"turns:bn-turn1.xirsys.com:5349?transport=tcp"   ]}]
+		}});
 		peers[socket_id].on('open', function(id) {
 			var conn = peers[socket_id].connect(ida);
 			conn.on('open', function() {
