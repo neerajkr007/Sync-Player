@@ -53,7 +53,6 @@ function sendit(){
 function init() {
 	console.log("init called")
 	let once2 = true
-	let once3 = true
     socket.on('initReceive', socket_id => {
 		console.log('INIT RECEIVE ' + socket_id)
 		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -98,7 +97,7 @@ function init() {
 				if(sessionType == "stream" && isHost){
 					var j = 0
 					socket.on("sendnextchunk", ()=>{
-						if(j < chunkArray.length){
+						if(j < chunkArray.length && !peers[socket_id].destroyed){
 							console.log("chunk sent to "+socket_id)
 							conn.send(chunkArray[j])
 							j++
@@ -127,16 +126,12 @@ function init() {
 		peers[socket_id].on('open', function(id) {
 			var conn = peers[socket_id].connect(ida);
 			conn.on('open', function() {
-				if(once3){
-					document.getElementById("msg").innerHTML = "connected"
-					document.getElementById("spinner").style.display = "none"
-					setTimeout(()=>{$('#connectingModal').modal('toggle')}, 1000)
-					once3 = false
-				}
-				
 				console.log("connected "+socket_id)
 				socket.emit("sendplayerlist")
 				if(once2){
+					document.getElementById("msg").innerHTML = "connected"
+					document.getElementById("spinner").style.display = "none"
+					setTimeout(()=>{$('#connectingModal').modal('toggle')}, 1000)
 					socket.on("clearPlayerList", (roomId)=>{
 						if(roomId == myRoomId)
 						{	
@@ -158,6 +153,7 @@ function init() {
 				var chunksRecieved = 0
 				var firsttime = true
 				let once = true
+				let once3 = false
 				var timenow = 0
 				var diff = 0
 				
@@ -181,8 +177,8 @@ function init() {
 						{
 							myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 							console.log("all set to load")
-							if(totalFileSize != 0)
-								document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+							//if(totalFileSize != 0)
+								//document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
 							document.querySelector('video').addEventListener('loadeddata', function once (){
 								document.querySelector('video').removeEventListener('loadeddata', once)
 								myplayer.currentTime(currentTime);
@@ -200,6 +196,10 @@ function init() {
 							document.getElementById("status").innerHTML = "stream loaded, ask host to start"
 							$('#streamStatusModal').modal('toggle')
 							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
+							once3 = true
+						}
+						if(once3){
+							//blobArray.shift();
 						}
 						if(vidLen<60){
 							if(10000 <= n - timenow && n - timenow <= 11000)
@@ -296,9 +296,12 @@ function init() {
 		
     })
 
-    socket.on('removePeer', socket_id => {
-        console.log('removing peer ' + socket_id)
-        //removePeer(socket_id)
+    socket.on('removePeer', (socket_id, id) => {
+		if(id == myRoomId){
+			peers[socket_id].destroy();
+			console.log(peers[socket_id].destroyed + " " + socket_id)
+        	console.log('removing peer ' + socket_id)
+		}
     })
 }
 

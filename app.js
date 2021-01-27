@@ -249,7 +249,7 @@ io.on('connection', function(socket){
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
-        socket.broadcast.emit('removePeer', socket.id)
+        io.sockets.emit('removePeer', socket.id, player.roomId)
         delete peers[socket.id]
         socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  
