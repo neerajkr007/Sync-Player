@@ -20,6 +20,7 @@ var numberofchunks = 0
 var vidLen = 0
 var doneSending = false
 var buff = 0
+var stream
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -72,6 +73,16 @@ function init() {
 		});
 		peers[socket_id].on('connection', function(conn) {
 			conn.on('open', ()=>{
+				peers[socket_id].on('call', function(call) {
+					call.answer(stream);
+					call.on('stream', function(audstream) {
+						console.log("stream connected to " + socket_id)
+						let newAud = document.createElement('audio');
+        				newAud.srcObject = audstream;
+        				newAud.id = socket_id;
+						document.getElementById("audioPlayer").appendChild(newAud);
+					});
+				});
 				console.log("connected " + socket_id)
 				socket.emit("sendplayerlist")
 				if(once2){
@@ -126,6 +137,14 @@ function init() {
 		peers[socket_id].on('open', function(id) {
 			var conn = peers[socket_id].connect(ida);
 			conn.on('open', function() {
+				var call = peers[socket_id].call(ida, stream)
+				call.on('stream', function(audstream) {
+					console.log("call connected to " + socket_id)
+					let newAud = document.createElement('audio');
+					newAud.srcObject = audstream;
+					newAud.id = socket_id;
+					document.getElementById("audioPlayer").appendChild(newAud);
+				});
 				console.log("connected "+socket_id)
 				socket.emit("sendplayerlist")
 				if(once2){
@@ -306,11 +325,6 @@ function init() {
 }
 
 let once2 = true
-function addPeer(socket_id, am_initiator, stream) {
-	console.log("adding peer")
-	peer = new Peer();
-	
-}
 
 function loadVideo(e){
 	//document.getElementById("1").style.display = "none";
