@@ -194,6 +194,10 @@ function init() {
 						let currentTime = myplayer.currentTime();
 						if(chunksRecieved == buff && firsttime && buff != 0)
 						{
+							if(myplayer.paused()) 
+									isplaying = false
+								else 
+									isplaying = true
 							myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 							console.log("all set to load")
 							//if(totalFileSize != 0)
@@ -291,6 +295,10 @@ function init() {
 						if(chunksRecieved == numberofchunks){
 							console.log("done recieving")
 							doneSending = true
+							if(myplayer.paused()) 
+								isplaying = false
+							else 
+								isplaying = true
 							myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
 							console.log("loaded")
 							document.querySelector('video').addEventListener('loadeddata', function once() {
