@@ -332,35 +332,36 @@ function loadVideo(e){
 	var mediaSource = new MediaSource();
 	myplayer.src({type: 'video/mp4', src: URL.createObjectURL(mediaSource)});
 	//myplayer.src({type: 'video/mp4', src: blobURL});
-
+	var sourceBuffer = null
+	var tempbuff = []
 	mediaSource.addEventListener('sourceopen', function() {
-		var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42c01e, mp4a.40.2"');
-		console.log(sourceBuffer);
+		
 		console.log("Creating MP4Box file with parameter: "+false);
 		mp4 = MP4Box.createFile(false);
 		mp4.onError = function(e) { console.log(e); };
 		mp4.onReady = function(info) {
-		if (true) {
-			console.log("Sample batch size: "+(+1000));
-			for (var i = 0; i < info.tracks.length; i++) {
-			var track = info.tracks[i];
-			mp4.setSegmentOptions(info.tracks[i].id, null, { nbSamples: +1000 } );
+			console.log(info.mime)
+			sourceBuffer = mediaSource.addSourceBuffer(info.mime);
+			console.log(sourceBuffer);
+			if (true) {
+				console.log("Sample batch size: "+(+1000));
+				for (var i = 0; i < info.tracks.length; i++) {
+				var track = info.tracks[i];
+				mp4.setSegmentOptions(info.tracks[i].id, null, { nbSamples: +1000 } );
+				}
+				mp4.initializeSegmentation();
 			}
-			mp4.initializeSegmentation();
-		}
-		mp4.start();
+			mp4.start();
 		};
-
 		mp4.onSegment = function (id, user, buffer, sampleNum, is_last) {
 		console.log("Received"+(is_last?" last":"")+" segment on track "+id+" with sample up to "+sampleNum);
 		if (true) {
-			var test = mp4.releaseUsedSamples(id, sampleNum);
-			console.log(test)
+			mp4.releaseUsedSamples(id, sampleNum);
 		}
 		if (is_last) {
 			}
-		console.log(buffer)
-		//sourceBuffer.appendBuffer(new Uint8Array(buffer))
+		//console.log(buffer)
+		tempbuff.push(buffer)
 		}
 		var offset = 0;
 		if ([file][0]) {
@@ -369,6 +370,8 @@ function loadVideo(e){
 			if (done) {
 				mp4.flush();
 				console.log("done");
+				sourceBuffer.appendBuffer(new Uint8Array(tempbuff))
+				console.log("loaded ?")
 				return;
 			}
 	
