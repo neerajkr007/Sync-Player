@@ -211,6 +211,11 @@ io.on('connection', function(socket){
     socket.on('sendnextchunkemit', init_socket_id => {
         peers[init_socket_id].emit('sendnextchunk')
     })
+
+    socket.on('sendnextchunkemit2', (init_socket_id, chunk) => {
+        peers[init_socket_id].emit('sendnextchunk2', chunk)
+    })
+
     var test
     socket.on("chattoothersemit", (chat, id)=>{
         test = id
@@ -244,6 +249,10 @@ io.on('connection', function(socket){
 
     socket.on("cantConnect", data=>{
         peers[data].emit("cantConnect");
+    })
+
+    socket.on("seeked", (time)=>{
+            io.sockets.emit('seeked', time, player.roomId)
     })
 
     socket.on('disconnect',function(){

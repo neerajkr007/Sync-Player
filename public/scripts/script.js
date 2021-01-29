@@ -104,13 +104,21 @@ function init() {
 					});
 					once2 = false
 				}
-
+				
 				if(sessionType == "stream" && isHost){
 					var j = 0
 					socket.on("sendnextchunk", ()=>{
 						if(j < chunkArray.length && !peers[socket_id].destroyed){
 							console.log("chunk sent to "+socket_id)
-							conn.send(chunkArray[j])
+							conn.send({chunk: chunkArray[j], testi: false})
+							j++
+						}
+					})
+					socket.on("sendnextchunk2", (newJ)=>{
+						j = newJ
+						if(j < chunkArray.length && !peers[socket_id].destroyed){
+							console.log("chunk 2 sent to "+socket_id)
+							conn.send({chunk: chunkArray[j], testi: true})
 							j++
 						}
 					})
@@ -172,32 +180,32 @@ function init() {
 				var chunksRecieved = 0
 				var firsttime = true
 				let once = true
-				let once3 = false
+				let once3 = true
 				var timenow = 0
 				var diff = 0
-				
-				
-				conn.on('data', data =>{
+				let i = 0
+				var isSeeked = false
+				var newTime
+				conn.on('data', (data) =>{
 					let d = new Date();
 					var n = d.getTime();
 						console.log('Received from '+socket_id);
-						if(once)
-						{
-							$('#streamStatusModal').modal('toggle')
-							once = false
-							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
-						}
 						var myplayer = videojs("my-video");
-						blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
-						let blob = new Blob(blobArray,{'type':'video/mp4'});
-						chunksRecieved++;
 						let currentTime = myplayer.currentTime();
+						
+						blobArray.push(new Blob([new Uint8Array(data.chunk)],{'type':'video/mp4'}));
+						let blob = new Blob(blobArray,{'type':'video/mp4'});
+						if(data.testi)
+						{
+							
+						}
+						chunksRecieved++;
 						if(chunksRecieved == buff && firsttime && buff != 0)
 						{
 							if(myplayer.paused()) 
-									isplaying = false
-								else 
-									isplaying = true
+								isplaying = false
+							else 
+								isplaying = true
 							myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
 							console.log("all set to load")
 							//if(totalFileSize != 0)
@@ -219,10 +227,6 @@ function init() {
 							document.getElementById("status").innerHTML = "stream loaded, ask host to start"
 							$('#streamStatusModal').modal('toggle')
 							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
-							once3 = true
-						}
-						if(once3){
-							//blobArray.shift();
 						}
 						if(vidLen<60){
 							if(10000 <= n - timenow && n - timenow <= 11000)
@@ -254,6 +258,10 @@ function init() {
 						else{
 							if(30000 <= n - timenow && n - timenow <= 33000)
 							{
+								let temp = Math.ceil((myplayer.currentTime()-5)*numberofchunks/vidLen)
+								console.log(temp+" temp")
+								console.log((myplayer.currentTime()-5)+" time -5")
+								blobArray.splice(1, temp)
 								timenow = n
 								let d = new Date();
 								var o = d.getTime();
@@ -291,7 +299,6 @@ function init() {
 								});
 							}
 						}
-						
 						if(chunksRecieved == numberofchunks){
 							console.log("done recieving")
 							doneSending = true
@@ -316,7 +323,31 @@ function init() {
 
 							});
 						}
-						socket.emit("sendnextchunkemit", myRoomId);
+						if(once)
+						{
+							$('#streamStatusModal').modal('toggle')
+							once = false
+							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
+							socket.on("seeked", (timetoseek, room)=>{
+								if(myRoomId == room && !isHost)
+								{
+									newTime = timetoseek
+									currentTime = timetoseek
+									chunksRecieved = Math.floor(newTime*numberofchunks/vidLen) - 1
+									console.log(timetoseek+" is time to seek")
+									timenow = n
+									isSeeked = true
+								}
+							})
+						}
+						if(!isSeeked)
+						{
+							socket.emit("sendnextchunkemit", myRoomId);
+						}
+						if(isSeeked){
+							socket.emit("sendnextchunkemit2", myRoomId, chunksRecieved);
+							isSeeked = false
+						}
 					})
 			});
 		});
@@ -348,21 +379,6 @@ function loadVideo(e){
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
 	var myplayer = videojs("my-video");
-	
-	// socket io stream stuff
-	
-	// var filetest = e.target.files[0];
-	// var stream = ss.createStream();
-	// ss(socket).emit('file', stream);
-	// var blobStream = ss.createBlobReadStream(filetest)
-	// var size = 0;
-	// blobStream.on('data', function(chunk) {
-	// size += chunk.length;
-	// console.log(Math.floor(size / file.size * 100) + '%');
-	// });
-	// blobStream.pipe(stream);
-	
-
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
@@ -387,6 +403,10 @@ function loadVideo(e){
 		}
 		
 	});
+	myplayer.on("seeked", ()=>{
+		console.log("paused at "+myplayer.currentTime())
+		//socket.emit("seeked", myplayer.currentTime())
+	})
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(!isHost){
 		playButton.style.display = "none";
