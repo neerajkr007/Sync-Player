@@ -3,7 +3,6 @@ const app = express();
 const fs = require('fs')
 const path = require('path')
 var http = require('http')
-var ss = require('socket.io-stream');
 const serv = require('http').createServer(app);
  
 
@@ -91,16 +90,6 @@ io.on('connection', function(socket){
             //io.sockets.emit("updatePlayerList", updatedArr[updatedArr.length - 1].name, updatedArr[updatedArr.length - 1].roomId)
           });
     }
-
-
-    ss(socket).on('file', (filename, stream) => {
-        for(let _id = 0;_id < ROOM_LIST[player.hostNumber].length; _id++) {
-            if(ROOM_LIST[player.hostNumber][_id].id == socket.id) continue
-            const newStream = ss.createStream()
-            ss(SOCKET_LIST[ROOM_LIST[player.hostNumber][_id].id]).emit('file', filename, newStream)
-            stream.pipe(newStream)
-        }
-    })
 
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
@@ -214,23 +203,19 @@ io.on('connection', function(socket){
         io.sockets.emit("showplayer2", player.roomId);
     });
 
-    socket.on('signal', data => {
-        //console.log('sending signal from ' + socket.id + ' to ', data)
-        if(!peers[data.socket_id])return
-        peers[data.socket_id].emit('signal', {
-            socket_id: socket.id,
-            signal: data.signal
-        })
-    })
-
-    socket.on('initSend', init_socket_id => {
+    socket.on('initSend', (init_socket_id, id) => {
         console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
-        peers[init_socket_id].emit('initSend', socket.id)
+        peers[init_socket_id].emit('initSend', socket.id, id)
     })
 
     socket.on('sendnextchunkemit', init_socket_id => {
         peers[init_socket_id].emit('sendnextchunk')
     })
+
+    socket.on('sendnextchunkemit2', (init_socket_id, chunk) => {
+        peers[init_socket_id].emit('sendnextchunk2', chunk)
+    })
+
     var test
     socket.on("chattoothersemit", (chat, id)=>{
         test = id
@@ -266,10 +251,14 @@ io.on('connection', function(socket){
         peers[data].emit("cantConnect");
     })
 
+    socket.on("seeked", (time)=>{
+            io.sockets.emit('seeked', time, player.roomId)
+    })
+
     socket.on('disconnect',function(){
         console.log('socket disconnected ');
         io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
-        socket.broadcast.emit('removePeer', socket.id)
+        io.sockets.emit('removePeer', socket.id, player.roomId)
         delete peers[socket.id]
         socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  

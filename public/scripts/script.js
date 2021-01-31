@@ -18,10 +18,12 @@ var voiceOn = true
 var micWorking = true
 var numberofchunks = 0
 var vidLen = 0
-doneSending = false
+var doneSending = false
+var buff = 0
+var stream
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
-	iceServers: [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+	'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
 	{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
 		credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
 		urls: [       
@@ -51,230 +53,317 @@ function sendit(){
 
 function init() {
 	console.log("init called")
-
+	let once2 = true
     socket.on('initReceive', socket_id => {
-        console.log('INIT RECEIVE ' + socket_id)
-		addPeer(socket_id, false, stream)
-        socket.emit('initSend', socket_id)
+		console.log('INIT RECEIVE ' + socket_id)
+		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+			{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
+				credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
+				urls: [       
+					"turn:bn-turn1.xirsys.com:80?transport=udp",       
+					"turn:bn-turn1.xirsys.com:3478?transport=udp",       
+					"turn:bn-turn1.xirsys.com:80?transport=tcp",       
+					"turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+					"turns:bn-turn1.xirsys.com:443?transport=tcp",       
+					"turns:bn-turn1.xirsys.com:5349?transport=tcp"   ]}]
+		}});
+		
+		peers[socket_id].on('open', function(id) {
+			socket.emit('initSend', socket_id, id)
+		});
+		peers[socket_id].on('connection', function(conn) {
+			conn.on('open', ()=>{
+				peers[socket_id].on('call', function(call) {
+					call.answer(stream);
+					call.on('stream', function(audstream) {
+						console.log("stream connected to " + socket_id)
+						let newAud = document.createElement('audio');
+        				newAud.srcObject = audstream;
+        				newAud.id = socket_id;
+						document.getElementById("audioPlayer").appendChild(newAud);
+					});
+				});
+				console.log("connected " + socket_id)
+				socket.emit("sendplayerlist")
+				if(once2){
+					socket.on("clearPlayerList", (roomId)=>{
+						if(roomId == myRoomId)
+						{	
+							document.getElementById("playerList").innerHTML="";
+							//socket.emit("rePeer")
+						}
+					});
+					
+					socket.on("updatePlayerList", (name, roomId)=>{
+						if(roomId == myRoomId )
+						{
+								var node = document.createElement("LI");   
+								node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
+								document.getElementById("playerList").appendChild(node);
+						}
+					});
+					once2 = false
+				}
+				
+				if(sessionType == "stream" && isHost){
+					var j = 0
+					socket.on("sendnextchunk", ()=>{
+						if(j < chunkArray.length && !peers[socket_id].destroyed){
+							console.log("chunk sent to "+socket_id)
+							conn.send({chunk: chunkArray[j], testi: false})
+							j++
+						}
+					})
+					socket.on("sendnextchunk2", (newJ)=>{
+						j = newJ
+						if(j < chunkArray.length && !peers[socket_id].destroyed){
+							console.log("chunk 2 sent to "+socket_id)
+							conn.send({chunk: chunkArray[j], testi: true})
+							j++
+						}
+					})
+				}
+				
+			});
+		});
+        
     })
 
-    socket.on('initSend', socket_id => {
-        console.log('INIT SEND ' + socket_id)
-        addPeer(socket_id, true, stream)
+    socket.on('initSend', (socket_id, ida) => {
+		console.log('INIT SEND ' + socket_id)
+		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+		{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
+			credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
+			urls: [       
+				"turn:bn-turn1.xirsys.com:80?transport=udp",       
+				"turn:bn-turn1.xirsys.com:3478?transport=udp",       
+				"turn:bn-turn1.xirsys.com:80?transport=tcp",       
+				"turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+				"turns:bn-turn1.xirsys.com:443?transport=tcp",       
+				"turns:bn-turn1.xirsys.com:5349?transport=tcp"   ]}]
+		}});
+		peers[socket_id].on('open', function(id) {
+			var conn = peers[socket_id].connect(ida);
+			conn.on('open', function() {
+				var call = peers[socket_id].call(ida, stream)
+				call.on('stream', function(audstream) {
+					console.log("call connected to " + socket_id)
+					let newAud = document.createElement('audio');
+					newAud.srcObject = audstream;
+					newAud.id = socket_id;
+					document.getElementById("audioPlayer").appendChild(newAud);
+				});
+				console.log("connected "+socket_id)
+				socket.emit("sendplayerlist")
+				if(once2){
+					document.getElementById("msg").innerHTML = "connected"
+					document.getElementById("spinner").style.display = "none"
+					setTimeout(()=>{$('#connectingModal').modal('toggle')}, 1000)
+					socket.on("clearPlayerList", (roomId)=>{
+						if(roomId == myRoomId)
+						{	
+							document.getElementById("playerList").innerHTML="";
+							//socket.emit("rePeer")
+						}
+					});
+					
+					socket.on("updatePlayerList", (name, roomId)=>{
+						if(roomId == myRoomId )
+						{
+								var node = document.createElement("LI");   
+								node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
+								document.getElementById("playerList").appendChild(node);
+						}
+					});
+					once2 = false
+				}
+				var chunksRecieved = 0
+				var firsttime = true
+				let once = true
+				let once3 = true
+				var timenow = 0
+				var diff = 0
+				let i = 0
+				var isSeeked = false
+				var newTime
+				conn.on('data', (data) =>{
+					let d = new Date();
+					var n = d.getTime();
+						console.log('Received from '+socket_id);
+						var myplayer = videojs("my-video");
+						let currentTime = myplayer.currentTime();
+						
+						blobArray.push(new Blob([new Uint8Array(data.chunk)],{'type':'video/mp4'}));
+						let blob = new Blob(blobArray,{'type':'video/mp4'});
+						if(data.testi)
+						{
+							
+						}
+						chunksRecieved++;
+						if(chunksRecieved == buff && firsttime && buff != 0)
+						{
+							if(myplayer.paused()) 
+								isplaying = false
+							else 
+								isplaying = true
+							myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
+							console.log("all set to load")
+							//if(totalFileSize != 0)
+								//document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+							document.querySelector('video').addEventListener('loadeddata', function once (){
+								document.querySelector('video').removeEventListener('loadeddata', once)
+								myplayer.currentTime(currentTime);
+								if(isplaying)
+									myplayer.play();
+								else 
+									myplayer.pause();
+							});
+							//alert("stream loaded, ask the host to start");
+							if(firsttime){
+								socket.emit("ready2");
+								firsttime = false
+							}
+							timenow = n
+							document.getElementById("status").innerHTML = "stream loaded, ask host to start"
+							$('#streamStatusModal').modal('toggle')
+							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
+						}
+						if(vidLen<60){
+							if(10000 <= n - timenow && n - timenow <= 11000)
+							{
+								timenow = n
+								if(myplayer.paused()) 
+									isplaying = false
+								else 
+									isplaying = true
+								myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+								console.log("loaded")
+								//if(totalFileSize != 0)
+									//document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+								document.querySelector('video').addEventListener('loadeddata', function once() {
+									document.querySelector('video').removeEventListener('loadeddata', once)
+									myplayer.currentTime(currentTime);
+									if (isplaying) {
+										myplayer.play();
+										console.log("playing")
+									}
+									else {
+										myplayer.pause();
+										console.log("paused")
+									}
+
+								});
+							}
+						}
+						else{
+							if(30000 <= n - timenow && n - timenow <= 33000)
+							{
+								let temp = Math.ceil((myplayer.currentTime()-5)*numberofchunks/vidLen)
+								console.log(temp+" temp")
+								console.log((myplayer.currentTime()-5)+" time -5")
+								blobArray.splice(1, temp)
+								timenow = n
+								let d = new Date();
+								var o = d.getTime();
+								if(myplayer.paused()) 
+									isplaying = false
+								else 
+									isplaying = true
+								myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+								console.log("loaded")
+								//if(totalFileSize != 0)
+									//document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
+								document.querySelector('video').addEventListener('loadeddata', function once() {
+									document.querySelector('video').removeEventListener('loadeddata', once)
+									let d = new Date();
+									var p = d.getTime();
+									diff += (p-o)
+									console.log(diff)
+									if(diff > 1000){
+										myplayer.currentTime(currentTime + 1);
+										console.log("1 sec yeeted")
+										diff = 0
+									}
+									else{
+										myplayer.currentTime(currentTime);
+									}
+									if (isplaying) {
+										myplayer.play();
+										console.log("playing")
+									}
+									else {
+										myplayer.pause();
+										console.log("paused")
+									}
+
+								});
+							}
+						}
+						if(chunksRecieved == numberofchunks){
+							console.log("done recieving")
+							doneSending = true
+							if(myplayer.paused()) 
+								isplaying = false
+							else 
+								isplaying = true
+							myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
+							console.log("loaded")
+							document.querySelector('video').addEventListener('loadeddata', function once() {
+								document.querySelector('video').removeEventListener('loadeddata', once)
+								myplayer.currentTime(currentTime);
+								console.log(isplaying)
+								if (isplaying) {
+									myplayer.play();
+									console.log("playing")
+								}
+								else {
+									myplayer.pause();
+									console.log("paused")
+								}
+
+							});
+						}
+						if(once)
+						{
+							$('#streamStatusModal').modal('toggle')
+							once = false
+							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
+							socket.on("seeked", (timetoseek, room)=>{
+								if(myRoomId == room && !isHost)
+								{
+									newTime = timetoseek
+									currentTime = timetoseek
+									chunksRecieved = Math.floor(newTime*numberofchunks/vidLen) - 1
+									console.log(timetoseek+" is time to seek")
+									timenow = n
+									isSeeked = true
+								}
+							})
+						}
+						if(!isSeeked)
+						{
+							socket.emit("sendnextchunkemit", myRoomId);
+						}
+						if(isSeeked){
+							socket.emit("sendnextchunkemit2", myRoomId, chunksRecieved);
+							isSeeked = false
+						}
+					})
+			});
+		});
+		
     })
 
-    socket.on('removePeer', socket_id => {
-        console.log('removing peer ' + socket_id)
-        //removePeer(socket_id)
+    socket.on('removePeer', (socket_id, id) => {
+		if(id == myRoomId){
+			peers[socket_id].destroy();
+			console.log(peers[socket_id].destroyed + " " + socket_id)
+        	console.log('removing peer ' + socket_id)
+		}
     })
-
-    socket.on('signal', data => {
-        peers[data.socket_id].signal(data.signal)
-	})
-	//socket.emit("sendinitemit")
 }
 
 let once2 = true
-function addPeer(socket_id, am_initiator, stream) {
-	console.log("adding peer")
-    peers[socket_id] = new SimplePeer({
-		initiator: am_initiator,
-		stream: stream,
-        config: configuration
-    })
-
-    peers[socket_id].on('signal', data => {
-        socket.emit('signal', {
-            signal: data,
-            socket_id: socket_id
-        })
-	})
-	
-	peers[socket_id].on('error', (err) => {
-		console.log(err + " " + socket_id)
-		//socket.emit("cantConnect", socket_id)
-	})
-
-    peers[socket_id].on('connect', () => {
-		console.log("connected to " + socket_id)
-		socket.emit("sendplayerlist")
-		if(once2){
-			socket.on("clearPlayerList", (roomId)=>{
-				if(roomId == myRoomId)
-				{	
-					document.getElementById("playerList").innerHTML="";
-					//socket.emit("rePeer")
-				}
-			});
-			
-			socket.on("updatePlayerList", (name, roomId)=>{
-				if(roomId == myRoomId )
-				{
-						var node = document.createElement("LI");   
-						node.innerHTML = "<li class='list-group-item' style='background: #404040; color: #AAAAAA'>" + name +"</li>"                 // Append the text to <li>
-						document.getElementById("playerList").appendChild(node);
-				}
-			});
-			once2 = false
-		}
-		
-		if(sessionType == "stream"){
-			var j = 0
-			socket.on("sendnextchunk", ()=>{
-				if(j < chunkArray.length){
-					console.log("chunk sent to "+socket_id)
-					peers[socket_id].send(chunkArray[j])
-					j++
-				}
-			})
-		}
-		var chunksRecieved = 0
-		var firsttime = true
-		var once = true
-		var buff = 0
-		var i = 1
-		var timenow = 0
-		var yeet = 1
-		if(vidLen<60)
-			buff = Math.ceil(15*numberofchunks/vidLen)
-		else
-			buff = Math.ceil(60*numberofchunks/vidLen)
-		peers[socket_id].on('data', data =>{
-			var d = new Date();
-			var n = d.getTime();
-				console.log('Received from '+socket_id);
-				if(once)
-				{
-					//alert("starting to load stream, please wait");
-					once = false
-				}
-				var myplayer = videojs("my-video");
-				blobArray.push(new Blob([new Uint8Array(data)],{'type':'video/mp4'}));
-				let blob = new Blob(blobArray,{'type':'video/mp4'});
-				chunksRecieved++;
-				let currentTime = myplayer.currentTime();
-				if(myplayer.paused()) 
-					isplaying = false
-				else 
-					isplaying = true
-				
-				if(chunksRecieved == buff && firsttime && buff != 0)
-				{
-					myplayer.src({type: 'video/mp4', src: URL.createObjectURL(blob)});
-					console.log("all set to load")
-					if(totalFileSize != 0)
-						document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
-					document.querySelector('video').addEventListener('loadeddata', function once (){
-						document.querySelector('video').removeEventListener('loadeddata', once)
-						myplayer.currentTime(currentTime);
-						if(isplaying)
-							myplayer.play();
-						else 
-							myplayer.pause();
-					});
-					//alert("stream loaded, ask the host to start");
-					if(firsttime){
-						socket.emit("ready2");
-						firsttime = false
-					}
-					timenow = n
-				}
-				if(vidLen<60){
-					if(5000 <= n - timenow && n - timenow <= 7000)
-					{
-						timenow = n
-						myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
-						console.log("loaded")
-						if(totalFileSize != 0)
-							document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
-						document.querySelector('video').addEventListener('loadeddata', function once() {
-							document.querySelector('video').removeEventListener('loadeddata', once)
-							if(yeet%3 != 0)
-							{
-								myplayer.currentTime(currentTime);
-								yeet++;
-							}
-							else{
-								myplayer.currentTime(currentTime + 1);
-								yeet++;
-							}
-							
-							if (isplaying) {
-								myplayer.play();
-								console.log("playing")
-							}
-							else {
-								myplayer.pause();
-								console.log("paused")
-							}
-
-						});
-					}
-				}
-				else{
-					if(30000 <= n - timenow && n - timenow <= 33000)
-					{
-						timenow = n
-						myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
-						console.log("loaded")
-						if(totalFileSize != 0)
-							document.getElementById("progress").innerHTML = Math.round(blob.size%totalFileSize*100) + " %"
-						document.querySelector('video').addEventListener('loadeddata', function once() {
-							document.querySelector('video').removeEventListener('loadeddata', once)
-							if(yeet%3 != 0)
-							{
-								myplayer.currentTime(currentTime);
-								yeet++;
-							}
-							else{
-								myplayer.currentTime(currentTime + 1);
-								yeet++;
-							}
-							
-							if (isplaying) {
-								myplayer.play();
-								console.log("playing")
-							}
-							else {
-								myplayer.pause();
-								console.log("paused")
-							}
-
-						});
-					}
-				}
-				
-				if(chunksRecieved == numberofchunks){
-					console.log("done recieving")
-					doneSending = true
-					myplayer.src({ type: 'video/mp4', src: URL.createObjectURL(blob) });
-					console.log("loaded")
-					document.querySelector('video').addEventListener('loadeddata', function once() {
-						document.querySelector('video').removeEventListener('loadeddata', once)
-						myplayer.currentTime(currentTime);
-						console.log(isplaying)
-						if (isplaying) {
-							myplayer.play();
-							console.log("playing")
-						}
-						else {
-							myplayer.pause();
-							console.log("paused")
-						}
-
-					});
-				}
-				socket.emit("sendnextchunkemit", myRoomId);
-		})
-	})
-	
-	peers[socket_id].on('stream', (stream)=>{
-		let newAud = document.createElement('audio');
-        newAud.srcObject = stream;
-        newAud.id = socket_id;
-		document.getElementById("audioPlayer").appendChild(newAud);
-	})
-}
 
 function loadVideo(e){
 	//document.getElementById("1").style.display = "none";
@@ -290,21 +379,6 @@ function loadVideo(e){
 	var blob = new Blob([file], { type: 'video/mp4' })
 	var blobURL = URL.createObjectURL(blob)
 	var myplayer = videojs("my-video");
-	
-	// socket io stream stuff
-	
-	// var filetest = e.target.files[0];
-	// var stream = ss.createStream();
-	// ss(socket).emit('file', stream);
-	// var blobStream = ss.createBlobReadStream(filetest)
-	// var size = 0;
-	// blobStream.on('data', function(chunk) {
-	// size += chunk.length;
-	// console.log(Math.floor(size / file.size * 100) + '%');
-	// });
-	// blobStream.pipe(stream);
-	
-
 	myplayer.src({type: 'video/mp4', src: blobURL});
 	myplayer.on('loadeddata', (e)=>{
 		if(sessionType === "stream")
@@ -329,6 +403,10 @@ function loadVideo(e){
 		}
 		
 	});
+	myplayer.on("seeked", ()=>{
+		console.log("paused at "+myplayer.currentTime())
+		//socket.emit("seeked", myplayer.currentTime())
+	})
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(!isHost){
 		playButton.style.display = "none";
@@ -374,15 +452,12 @@ function showPlayeremit(){
 }
 
 function callback(e){
-	//console.log("pushed");
 	chunkArray.push(e);
-	//var blob = new Blob([e]);
-	//console.log(URL.createObjectURL(blob))
 }
 
 function parseFile(file) {
     var fileSize   = file.size;
-    var chunkSize  = 131072; // bytes 262144
+    var chunkSize  = 262144; // bytes 262144
     var offset     = 0;
     var self       = this; // we need a reference to the current object
     var chunkReaderBlock = null;
@@ -516,6 +591,7 @@ socket.on("joined", function(data){
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
+	$('#connectingModal').modal('toggle')
 	document.getElementById("chatbox").style.display = "flex";
 	document.getElementById("voice").style.display= "block"
 	socket.emit('chattoothersemit2', mySocketId)	
@@ -620,7 +696,7 @@ socket.on("chatToOthers", (roomId, chat, id, name)=>{
 		var h = d.getHours()
 		var m = d.getMinutes()
 		var s = d.getSeconds()
-		document.getElementById("chatBody").innerHTML += '<div class="row"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:50px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+h+':'+m+':'+s+'</p></div>'
+		document.getElementById("chatBody").innerHTML += '<div class="row"> <i class="fas avatar fa-2x fa-user-circle" style="padding-left:30px !important"></i><p class="d-inline-flex" style="color:#aaaaaa; padding-left:30px !important">'+name+'</p></div><div class="row media-body" style="padding-left:30px !important;"><p style="background-color: #212121; color: #9b9b9b; position: relative;padding: 6px 8px;margin: 4px 0;border-radius: 3px;font-weight: 100; max-width: 80%;">'+chat+'</p><p class="ml-1 mt-5 meta" style="color: #aaaaaa; font-size: x-small; margin-top:7% !important"; margin-bottom:0% !important><time datetime="2021">'+h+':'+m+':'+s+'</p></div>'
 		document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight
 	}
 });
@@ -666,6 +742,14 @@ socket.on("numberofchunks", (data, time, id)=>{
 	{
 		numberofchunks = data
 		vidLen = time
+		console.log(data + " " + time)
+		if(vidLen<60)
+			buff = Math.ceil(15*numberofchunks/vidLen)
+		else
+			buff = Math.ceil(60*numberofchunks/vidLen)
+		console.log(buff)
+		console.log(numberofchunks)
+		console.log(vidLen)
 		if(isHost)
 			socket.emit("sendnextchunkemit", myRoomId)
 	}
@@ -693,13 +777,6 @@ socket.on("cantConnect", ()=>{
 	location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
 })
 
-ss(socket).on('file', (filename, stream) => {
-	//console.log("receving?")
-	//let blob = new Blob(stream)
-	//console.log(typeof(stream))
-	stream.pipe()
-	stream.on('end', () => console.log(`done`))
-})
 
 // socket.on("test2", data=>{
 // 	if(data.id == myRoomId && !isHost)
