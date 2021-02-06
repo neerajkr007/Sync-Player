@@ -328,17 +328,7 @@ function init() {
 							$('#streamStatusModal').modal('toggle')
 							once = false
 							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
-							socket.on("seeked", (timetoseek, room)=>{
-								if(myRoomId == room && !isHost)
-								{
-									newTime = timetoseek
-									currentTime = timetoseek
-									chunksRecieved = Math.floor(newTime*numberofchunks/vidLen) - 1
-									console.log(timetoseek+" is time to seek")
-									timenow = n
-									isSeeked = true
-								}
-							})
+							
 						}
 						if(!isSeeked)
 						{
@@ -403,14 +393,17 @@ function loadVideo(e){
 		}
 		
 	});
-	myplayer.on("seeked", ()=>{
-		console.log("paused at "+myplayer.currentTime())
-		//socket.emit("seeked", myplayer.currentTime())
-	})
+	if(isHost)
+	{
+		myplayer.on("seeked", ()=>{
+			console.log("paused at "+myplayer.currentTime())
+			socket.emit("seeked", myplayer.currentTime())
+		})
+	}
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(!isHost){
 		playButton.style.display = "none";
-		myplayer.controls(false);
+		//myplayer.controls(false);
 	}
 	else{
 		var video = document.querySelector('video');
@@ -640,11 +633,10 @@ socket.on("fileSize", (size, roomId)=>{
 	}
 });
 
-socket.on("pause", (roomId, time)=>{
+socket.on("pause", (roomId)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
-		myplayer.currentTime(time);
 		myplayer.pause();
 		if(isHost){
 			var video = document.querySelector('video');
@@ -665,8 +657,7 @@ socket.on("play", (roomId)=>{
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
 				video.removeEventListener('pause', once)
-				var time = myplayer.currentTime();
-				socket.emit("pauseEmit", time);
+				socket.emit("pauseEmit");
 			});
 		}
 	}
@@ -775,6 +766,20 @@ socket.on("updatePlayerListHost", (name, roomId)=>{
 socket.on("cantConnect", ()=>{
 	alert("couldnt connect to host");
 	location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
+})
+
+socket.on("seeked", (timetoseek, room)=>{
+	if(myRoomId == room && !isHost)
+	{
+		var myplayer = videojs("my-video");
+		myplayer.currentTime(timetoseek);
+		//newTime = timetoseek
+		//currentTime = timetoseek
+		//chunksRecieved = Math.floor(newTime*numberofchunks/vidLen) - 1
+		//console.log(timetoseek+" is time to seek")
+		//timenow = n
+		//isSeeked = true
+	}
 })
 
 
