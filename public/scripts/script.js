@@ -633,11 +633,12 @@ socket.on("fileSize", (size, roomId)=>{
 	}
 });
 
-socket.on("pause", (roomId)=>{
+socket.on("pause", (roomId, time)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
 		myplayer.pause();
+		myplayer.currentTime(time);
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('play', function once (){
@@ -656,8 +657,9 @@ socket.on("play", (roomId)=>{
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
+				var time = myplayer.currentTime();
 				video.removeEventListener('pause', once)
-				socket.emit("pauseEmit");
+				socket.emit("pauseEmit",time);
 			});
 		}
 	}

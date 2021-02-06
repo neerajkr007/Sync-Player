@@ -185,8 +185,8 @@ io.on('connection', function(socket){
         io.sockets.emit("playVideo", player.roomId);
     });
 
-    socket.on("pauseEmit", ()=>{
-        io.sockets.emit("pause", player.roomId);
+    socket.on("pauseEmit", (time)=>{
+        io.sockets.emit("pause", player.roomId, time);
     });
 
     socket.on("playEmit", ()=>{
