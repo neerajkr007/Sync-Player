@@ -618,8 +618,7 @@ socket.on("playVideo", (roomId)=>{
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
 				video.removeEventListener('pause', once)
-				var time = myplayer.currentTime();
-				socket.emit("pauseEmit", time);
+				socket.emit("pauseEmit");
 			});
 		}
 	}
@@ -633,33 +632,33 @@ socket.on("fileSize", (size, roomId)=>{
 	}
 });
 
-socket.on("pause", (roomId, time)=>{
+socket.on("pause", (roomId)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
 		myplayer.pause();
-		myplayer.currentTime(time);
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('play', function once (){
+				var time = myplayer.currentTime();
 				video.removeEventListener('play', once)
-				socket.emit("playEmit");
+				socket.emit("playEmit", time);
 			});
 		}
 	}
 });
 
-socket.on("play", (roomId)=>{
+socket.on("play", (roomId, time)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
+		myplayer.currentTime(time);
 		myplayer.play();
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
-				var time = myplayer.currentTime();
 				video.removeEventListener('pause', once)
-				socket.emit("pauseEmit",time);
+				socket.emit("pauseEmit");
 			});
 		}
 	}
