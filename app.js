@@ -58,6 +58,8 @@ var eventify = function(arr, callback) {
     };
 };
 
+var isPLayerShown = false;
+
 io.on('connection', function(socket){
     console.log('socket connected ');
     socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
@@ -121,7 +123,7 @@ io.on('connection', function(socket){
                 //console.log(socket);
                 callEventify(player.hostNumber);
                 peers[socket.id] = socket
-                socket.emit("joined", player.roomId);
+                socket.emit("joined", {id:player.roomId, isplayershown:isPLayerShown});
                 setTimeout(()=>{updatePlayerList();}, 1000)
                 return true;   
             }  
@@ -138,6 +140,9 @@ io.on('connection', function(socket){
         }
     }
 
+    socket.on("playershownemit", ()=>{
+        isPLayerShown = true;
+    });
     socket.on("showPlayeremit1", ()=>{
         io.sockets.emit("showPlayer", player.roomId);
     });

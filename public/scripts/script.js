@@ -1,5 +1,4 @@
 
-
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
@@ -21,6 +20,7 @@ var vidLen = 0
 var doneSending = false
 var buff = 0
 var stream
+var isPLayerShown = false;
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -431,7 +431,7 @@ function tryJoin(){
 function showPlayeremit(){
 	$('#Modal3').modal('toggle')
 	document.getElementById("go").style.display = "none";
-	
+	socket.emit("playershownemit");
 	if(document.getElementById("Radios1").checked)
 	{
 		sessionType = "load"
@@ -576,11 +576,25 @@ socket.on("hosted", function(data){
 socket.on("joined", function(data){
 	init()
 	hide();
+	console.log(data.isplayershown)
+	if(data.isplayershown){
+		
+		if(document.getElementById("Radios1").checked)
+		{
+			sessionType = "load"
+			socket.emit("showPlayeremit1");
+		}
+		else
+		{
+			sessionType = "stream"
+			socket.emit("showPlayeremit2");
+		} 
+	}
 	document.getElementById("playerList").style.display = "inline-flex";
-	myRoomId = data;
+	myRoomId = data.id;
 	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
-	document.getElementById("gameId").innerHTML = " joined room id -  "+ data;
+	document.getElementById("gameId").innerHTML = " joined room id -  "+ data.id;
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
@@ -598,6 +612,7 @@ socket.on("notJoined", function(){
 socket.on("showPlayer", (roomId)=>{
 	if(roomId == myRoomId)
 	{
+		isPLayerShown = true;
 		document.getElementById("player").style.display = "block";
 		document.getElementById("chatbox").setAttribute("class", "col-md-4 mt-2 text-center")
 		document.getElementById("chatbox").setAttribute("style", "")
@@ -610,10 +625,11 @@ socket.on("playVideo", (roomId)=>{
 	if(roomId == myRoomId)
 	{	
 		console.log("works ?")
+
 		var myplayer = videojs("my-video");
 		myplayer.play();
 		myplayer.controls(true);
-		
+		document.getElementById("waitingMsg").style.display = "none";
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
@@ -668,6 +684,7 @@ socket.on("showplayer2", (roomId)=>{
 	if(roomId == myRoomId && !isHost)
 	{
 		//init();
+		isPLayerShown = true;
 		document.getElementById("player").style.display = "block"
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
