@@ -11,17 +11,26 @@ app.get('/', (req, res) =>
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/index.html', (req, res) =>
+app.get('/index', (req, res) =>
 {
     res.sendFile(__dirname + '/index.html');
 }); 
 
-app.get('/rooms.html', (req, res) =>
+app.get('/rooms', (req, res) =>
 {
     res.sendFile(__dirname + '/rooms.html');
     
 }); 
 
+app.get('/login', (req, res) =>
+{
+    res.sendFile(__dirname + '/login.html');
+});
+
+app.get('/signup', (req, res) =>
+{
+    res.sendFile(__dirname + '/signup.html');
+});
 
 app.use(express.static(__dirname + '/public'));
 
