@@ -1,10 +1,34 @@
 const express = require('express');
 const app = express();
-const fs = require('fs')
-const path = require('path')
-var http = require('http')
 const serv = require('http').createServer(app);
- 
+const Users = require('./schemas/user')
+
+const mongoose = require('mongoose');
+
+const URI = "mongodb+srv://neerajkr007:MGpemPWPXnG7PEki@cluster0.eq19x.mongodb.net/DB0?retryWrites=true&w=majority"
+const connection = async ()=>{
+    await mongoose.connect(
+    URI, {
+    useNewUrlParser: true, 
+    useUnifiedTopology: true },
+    function(err){
+        if (err){
+            console.log(err)
+            return
+        }
+        mongoose.set('useFindAndModify', false);
+        console.log("db connected")
+        // let obj = {}
+        // obj.userName = "Neeraj"
+        // obj.email = "yolo"
+        // obj.password = "yoloyolo"
+        // let userModel = new Users(obj);
+        // await userModel.save();
+    });
+}
+connection();
+
+
 
 app.get('/', (req, res) =>
 {
@@ -69,6 +93,8 @@ var eventify = function(arr, callback) {
 
 var isPLayerShown = false;
 
+
+
 io.on('connection', function(socket){
     console.log('socket connected ');
     socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
@@ -101,6 +127,10 @@ io.on('connection', function(socket){
             //io.sockets.emit("updatePlayerList", updatedArr[updatedArr.length - 1].name, updatedArr[updatedArr.length - 1].roomId)
           });
     }
+
+    socket.on("yolo", ()=>{
+        console.log("yolo BITCH")
+    })
 
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
