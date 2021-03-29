@@ -4,6 +4,7 @@ const serv = require('http').createServer(app);
 const Users = require('./schemas/user')
 
 const mongoose = require('mongoose');
+const { copyFileSync } = require('fs');
 
 const URI = "mongodb+srv://neerajkr007:MGpemPWPXnG7PEki@cluster0.eq19x.mongodb.net/DB0?retryWrites=true&w=majority"
 const connection = async ()=>{
@@ -55,6 +56,12 @@ app.get('/signup', (req, res) =>
 {
     res.sendFile(__dirname + '/signup.html');
 });
+
+app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
+{
+    res.sendFile(__dirname + '/user.html');
+});
+
 
 app.use(express.static(__dirname + '/public'));
 
@@ -130,6 +137,19 @@ io.on('connection', function(socket){
 
 
 
+    socket.on("changeSocketId", async (newId)=>{
+        delete SOCKET_LIST[socket.id]
+        socket.id = newId
+        SOCKET_LIST[socket.id] = socket;
+        let user = await Users.findOne({"_id":newId})
+        if(user.requests.length != 0)
+        {
+            socket.emit("notification", user.requests.length)
+        }
+    })
+
+
+
 
 //          LOGIN AND SIGNUP STUFF
 
@@ -191,6 +211,37 @@ io.on('connection', function(socket){
     socket.on("yolo", ()=>{
         console.log("yolo ?")
     })
+
+
+
+
+
+//          ADD FRIEND
+
+
+
+
+
+    socket.on("searchFriend", async (name)=>{
+        let user = await Users.findOne({$or:[ {'email':name}, {'userName':name}]})
+        socket.emit("searchResult", user)
+    })
+
+    socket.on("sendRequest", async (id)=>{
+        let user = await Users.findOne({"_id":id})
+        // console.log(id)  FRIEND
+        // console.log(socket.id)  MY
+        user.requests.push(socket.id)
+        user.markModified('requests')
+        await user.save()
+        try{
+            SOCKET_LIST[id].emit("requestIncoming")
+        }
+        catch{}
+
+    })
+
+
 
 
 

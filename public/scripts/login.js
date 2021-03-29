@@ -1,4 +1,4 @@
-socket = io.connect()
+
 
 
 
@@ -85,7 +85,9 @@ socket.on("loginFailed", (res)=>{
 
 
 
-
+window.onunload = ()=>{
+    socket.emit('yolo')
+};
 
 
 
@@ -99,10 +101,7 @@ socket.on("loginFailed", (res)=>{
 
 
 
-window.onbeforeunload = function (e) {
-    socket.emit('yolo')
-    console.log('It worked');
-};
+
     
     
 
