@@ -44,23 +44,25 @@
 	<div class= "container">
         <div id="loginForm" class="bordered shadow ubantuFont mt-10 rounded offset-md-3 col-md-6" style="background-color: beige !important;">
             <p class="mt-5 display-4 text-center ubantuFont" ><strong style="margin-top: 50px !important;"> Login</strong></p>
-            <p class="mt-5 mb-0">username</p>
+            <p class="mt-5 mb-0">username or email</p>
             <div id="usernameInput" class="input-group loginInput">
                 <div class="input-group-prepend">
                   <span><i style="margin-top:12px;" class="far fa-user"></i></span>
                 </div>
-                <input id="input0" type="text" class="noBorder" placeholder='enter your username' style="padding:0.5rem">
+                <input id="input0" type="text" class="noBorder form-control shadow-none" placeholder='enter your username' style="padding:0.5rem">
+                <div id="invalid0" class="invalid-feedback"></div>
             </div>
             <p class="mt-4 mb-0">password</p>
             <div id="passwordInput" class="input-group loginInput">
                 <div class="input-group-prepend">
                   <span><i style="margin-top:12px;" class="fas fa-lock"></i></span>
                 </div>
-                <input id="input1" type="password" class="noBorder" placeholder="enter password" style="padding:0.5rem">
+                <input id="input1" type="password" class="noBorder form-control shadow-none" placeholder="enter password" style="padding:0.5rem">
+                <div id="invalid1" class="invalid-feedback"></div>
             </div>
             <p class="mt-1 hoverPointer ml-auto" style="max-width: fit-content;">forgot password</p>
             <div id="randomDiv001" class="mt-5 offset-md-1 col-md-10">
-                <button id="loginButton" class="btn loginButton text-white display-4">Login</button>
+                <button id="loginButton" class="btn loginButton text-white display-4" onclick="tryLogin(document.getElementById('input0').value, document.getElementById('input1').value, false)">Login</button>
             </div>
             <div class="mt-10">
                 <p class="mt-10 text-center">not signed up yet?</p>
@@ -69,6 +71,24 @@
         </div>
 	</div>
 
+    <!-- MODALS -->
+    <div id="modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 id="modal-title" class="modal-title">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+            </div>
+            <div class="modal-footer">
+              <button id="modal-cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+    </div>
 
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>   

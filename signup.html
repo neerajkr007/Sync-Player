@@ -49,31 +49,39 @@
                 <div class="input-group-prepend">
                   <span><i style="margin-top:12px;" class="far fa-envelope"></i></span>
                 </div>
-                <input id="input0" type="email" class="noBorder" placeholder='enter your email' style="padding:0.5rem">
+                <input id="input0" type="email" class="noBorder form-control shadow-none" placeholder='enter your email' style="padding:0.5rem" oninput="validateEmail()">
+                <div id="valid0" class="valid-feedback"></div>
+                <div id="invalid0" class="invalid-feedback"></div>
             </div>
             <p class="mt-4 mb-0">username</p>
             <div id="inputBox1" class="input-group loginInput">
                 <div class="input-group-prepend">
                   <span><i style="margin-top:12px;" class="far fa-user"></i></span>
                 </div>
-                <input id="input1" type="text" class="noBorder" placeholder='enter your username' style="padding:0.5rem">
+                <input id="input1" type="text" class="noBorder form-control shadow-none" placeholder='enter your username' style="padding:0.5rem">
+                <div id="valid1" class="valid-feedback"></div>
+                <div id="invalid1" class="invalid-feedback"></div>
             </div>
             <p class="mt-4 mb-0">password</p>
             <div id="inputBox2" class="input-group loginInput">
                 <div class="input-group-prepend">
                   <span><i style="margin-top:12px;" class="fas fa-lock"></i></span>
                 </div>
-                <input id="input2" type="password" class="noBorder" placeholder="enter your password" style="padding:0.5rem">
+                <input id="input2" type="password" class="noBorder form-control shadow-none" placeholder="enter your password" style="padding:0.5rem">
+                <div id="valid2" class="valid-feedback"></div>
+                <div id="invalid2" class="invalid-feedback"></div>
             </div>
             <p class="mt-4 mb-0">confirm password</p>
             <div id="inputBox3" class="input-group loginInput">
                 <div class="input-group-prepend">
                   <span><i style="margin-top:12px;" class="fas fa-lock"></i></span>
                 </div>
-                <input id="input3" type="password" class="noBorder" placeholder="confirm your password" style="padding:0.5rem">
+                <input id="input3" type="password" class="noBorder form-control shadow-none" placeholder="confirm your password" style="padding:0.5rem" oninput="validatePassword()">
+                <div id="valid3" class="valid-feedback"></div>
+                <div id="invalid3" class="invalid-feedback"></div>
             </div>
             <div id="randomDiv001" class="mt-5 offset-md-1 col-md-10">
-                <button id="loginButton" class="btn loginButton text-white display-4">Sign Up</button>
+                <button id="loginButton" class="btn loginButton text-white display-4" onclick="validateAll()">Sign Up</button>
             </div>
             <div class="mt-10">
                 <p class="mt-10 text-center">already signed up ?</p>
@@ -82,6 +90,25 @@
         </div>
 	</div>
 
+
+  <!-- MODALS -->
+  <div id="modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="modal-title" class="modal-title">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="modal-body" class="modal-body">
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>   

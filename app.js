@@ -128,9 +128,73 @@ io.on('connection', function(socket){
           });
     }
 
-    socket.on("yolo", ()=>{
-        console.log("yolo BITCH")
+
+
+
+//          LOGIN AND SIGNUP STUFF
+
+
+
+
+    socket.on("newSignUp", async (d)=>{
+        let list = ["email", "userName", "password"]
+        let user = await Users.findOne({$or:[ {'email':d[0]}, {'userName':d[1]}]})
+        if(user == null)
+        {
+            let obj = {}
+            for(let i = 0; i < 3; i++)
+            {
+                obj[list[i]] = d[i]
+            }
+            obj.alreadyLoggedIn = false
+            let userModal = Users(obj)
+            await userModal.save()
+            socket.emit("signUpSuccess")
+        }
+        else
+        {
+            if(user.email == d[0])
+            {
+                socket.emit("userAlreadyExists", "email")
+            }
+            else
+                socket.emit("userAlreadyExists", "userName")
+        }
     })
+
+    socket.on("tryLogin", async (e, p)=>{
+        let user = await Users.findOne({$or:[ {'email':e}, {'userName':e}]})
+        if(user == null)
+        {
+            socket.emit("loginFailed", "email")
+        }
+        else
+        {
+            if(user.password == p)
+            {
+                user.alreadyLoggedIn = true
+                await user.save()
+                let id = user._id
+                app.get('/'+id, (req, res) =>
+                {
+                    res.sendFile(__dirname + '/user.html');
+                });
+                socket.emit("loginSuccess", id)
+            }
+            else
+            {
+                socket.emit("loginFailed", "password")
+            }
+        }
+    })
+
+
+
+
+//          ROOMS STUFF
+
+
+
 
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;

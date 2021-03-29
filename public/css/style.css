@@ -61,6 +61,8 @@ input[type=number]{
 
 .noBorder:focus {
     outline-width: 0;
+    border: none;
+    background-color: transparent;
 }
 
 .hoverPointer:hover {
