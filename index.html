@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
+	<script src="https://kit.fontawesome.com/5c50a4aeb8.js" crossorigin="anonymous"></script>
 </head>
 <body >
 	
@@ -12,7 +13,7 @@
 
 	
 	<nav class="navbar navbar-expand-lg navbar-light" style="border-bottom: 1px solid black;" >
-	  <a class="navbar-brand" href="index.html">SyncPlayer</a>
+	  <a class="navbar-brand" href="index">SyncPlayer</a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
 	  </button>
@@ -20,18 +21,18 @@
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 	    <ul class="navbar-nav mr-auto">
 	      <li class="nav-item active">
-	        <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+	        <a class="nav-link" href="index">Home <span class="sr-only">(current)</span></a>
 	      </li>
 	      <li class="nav-item active">
-	      	<a class="nav-link" href="notice.html">About</a>
+	      	<a class="nav-link" href="notice">About</a>
 	      </li>
 	    </ul>
 	    <ul class="nav navbar-nav navbar-right">
 	    	<li class="nav-item active">
-	    		<a class="nav-link" href="notice.html"><span></span> Sign Up</a>
+	    		<a class="nav-link" href="signup"><span><i class="fas fa-user-plus"></i> Sign Up</span></a>
 	    	</li>
 	    	<li class="nav-item active">
-	    		<a class="nav-link" href="notice.html"><span></span> Login</a>
+	    		<a class="nav-link" href="login"><span><i class="fas fa-sign-in-alt"></i> Login</span></a>
 	    	</li>
 	    </ul>
 	  </div>
@@ -39,14 +40,13 @@
 
 	<div class= "container">
 		<div class  = "text-centre mt-6 mb-6"  >
-			<h1 class="display-3"> Welcome to the SyncPlayer !</h1>
+			<h1 class="display-3 text-center"> Welcome to the SyncPlayer !</h1>
 		</div>
-		<div class="row mt-6">
-			<div class="col-md-4 offset-md-4 text-center">
-				<div >
-					<a id="startButton" href="rooms.html" class="btn btn-success btn-lg active" role="button" aria-pressed="true">Get Started</a>
-				</div>
-			</div>
+		<div class="mt-6 text-center">
+			<button class="btn btn-success text-white" onclick="location.href = '/login'">Sign In</button>
+			<br>
+			<p class="mt-2">or</p>
+			<button class="btn mt-4 btn-outline-success text-black">Continue as a Guest</button>
 		</div>
 	</div>
 

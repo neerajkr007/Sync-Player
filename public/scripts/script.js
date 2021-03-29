@@ -1,5 +1,4 @@
 
-
 const socket = io.connect();
 var userName ="";
 var myRoomId = "";
@@ -21,6 +20,7 @@ var vidLen = 0
 var doneSending = false
 var buff = 0
 var stream
+var isPLayerShown = false;
 //"stun:bn-turn1.xirsys.com"
 const configuration = {
 	'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
@@ -56,7 +56,7 @@ function init() {
 	let once2 = true
     socket.on('initReceive', socket_id => {
 		console.log('INIT RECEIVE ' + socket_id)
-		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+		peers[socket_id] = new Peer({ host: 'peerjs-server.herokuapp.com', secure: true, port: 443, config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
 			{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
 				credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
 				urls: [       
@@ -131,7 +131,7 @@ function init() {
 
     socket.on('initSend', (socket_id, ida) => {
 		console.log('INIT SEND ' + socket_id)
-		peers[socket_id] = new Peer({config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
+		peers[socket_id] = new Peer({ host: 'peerjs-server.herokuapp.com', secure: true, port: 443, config: { 'iceServers': [{   urls: [ "stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com" ]}, 
 		{   username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",   
 			credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",   
 			urls: [       
@@ -328,17 +328,7 @@ function init() {
 							$('#streamStatusModal').modal('toggle')
 							once = false
 							setTimeout(()=>{$('#streamStatusModal').modal('toggle')}, 1000)
-							socket.on("seeked", (timetoseek, room)=>{
-								if(myRoomId == room && !isHost)
-								{
-									newTime = timetoseek
-									currentTime = timetoseek
-									chunksRecieved = Math.floor(newTime*numberofchunks/vidLen) - 1
-									console.log(timetoseek+" is time to seek")
-									timenow = n
-									isSeeked = true
-								}
-							})
+							
 						}
 						if(!isSeeked)
 						{
@@ -403,14 +393,17 @@ function loadVideo(e){
 		}
 		
 	});
-	myplayer.on("seeked", ()=>{
-		console.log("paused at "+myplayer.currentTime())
-		//socket.emit("seeked", myplayer.currentTime())
-	})
+	if(isHost)
+	{
+		myplayer.on("seeked", ()=>{
+			console.log("paused at "+myplayer.currentTime())
+			socket.emit("seeked", myplayer.currentTime())
+		})
+	}
 	var playButton = document.getElementsByClassName("vjs-big-play-button")[0];
 	if(!isHost){
 		playButton.style.display = "none";
-		myplayer.controls(false);
+		//myplayer.controls(false);
 	}
 	else{
 		var video = document.querySelector('video');
@@ -438,7 +431,7 @@ function tryJoin(){
 function showPlayeremit(){
 	$('#Modal3').modal('toggle')
 	document.getElementById("go").style.display = "none";
-	
+	socket.emit("playershownemit");
 	if(document.getElementById("Radios1").checked)
 	{
 		sessionType = "load"
@@ -583,11 +576,25 @@ socket.on("hosted", function(data){
 socket.on("joined", function(data){
 	init()
 	hide();
+	console.log(data.isplayershown)
+	if(data.isplayershown){
+		
+		if(document.getElementById("Radios1").checked)
+		{
+			sessionType = "load"
+			socket.emit("showPlayeremit1");
+		}
+		else
+		{
+			sessionType = "stream"
+			socket.emit("showPlayeremit2");
+		} 
+	}
 	document.getElementById("playerList").style.display = "inline-flex";
-	myRoomId = data;
+	myRoomId = data.id;
 	document.getElementById("gameId").outerHTML = "<h4 id='gameId' class='display-5 text-center'></h4>";
 	document.getElementById("gameId").style.display = "inline-flex";
-	document.getElementById("gameId").innerHTML = " joined room id -  "+ data;
+	document.getElementById("gameId").innerHTML = " joined room id -  "+ data.id;
 	document.getElementById("waitingMsg").style.display = "inline-flex";
 	document.getElementById("waitingMsg").outerHTML = "<h5 id='waitingMsg' class='text-center'> waiting for the host to start...</h5>";
 	$('#exampleModal2').modal('toggle')
@@ -605,6 +612,7 @@ socket.on("notJoined", function(){
 socket.on("showPlayer", (roomId)=>{
 	if(roomId == myRoomId)
 	{
+		isPLayerShown = true;
 		document.getElementById("player").style.display = "block";
 		document.getElementById("chatbox").setAttribute("class", "col-md-4 mt-2 text-center")
 		document.getElementById("chatbox").setAttribute("style", "")
@@ -617,16 +625,16 @@ socket.on("playVideo", (roomId)=>{
 	if(roomId == myRoomId)
 	{	
 		console.log("works ?")
+
 		var myplayer = videojs("my-video");
 		myplayer.play();
 		myplayer.controls(true);
-		
+		document.getElementById("waitingMsg").style.display = "none";
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
 				video.removeEventListener('pause', once)
-				var time = myplayer.currentTime();
-				socket.emit("pauseEmit", time);
+				socket.emit("pauseEmit");
 			});
 		}
 	}
@@ -640,33 +648,33 @@ socket.on("fileSize", (size, roomId)=>{
 	}
 });
 
-socket.on("pause", (roomId, time)=>{
+socket.on("pause", (roomId)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
-		myplayer.currentTime(time);
 		myplayer.pause();
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('play', function once (){
+				var time = myplayer.currentTime();
 				video.removeEventListener('play', once)
-				socket.emit("playEmit");
+				socket.emit("playEmit", time);
 			});
 		}
 	}
 });
 
-socket.on("play", (roomId)=>{
+socket.on("play", (roomId, time)=>{
 	if(roomId == myRoomId)
 	{
 		var myplayer = videojs("my-video");
+		myplayer.currentTime(time);
 		myplayer.play();
 		if(isHost){
 			var video = document.querySelector('video');
 			video.addEventListener('pause', function once (){
 				video.removeEventListener('pause', once)
-				var time = myplayer.currentTime();
-				socket.emit("pauseEmit", time);
+				socket.emit("pauseEmit");
 			});
 		}
 	}
@@ -676,6 +684,7 @@ socket.on("showplayer2", (roomId)=>{
 	if(roomId == myRoomId && !isHost)
 	{
 		//init();
+		isPLayerShown = true;
 		document.getElementById("player").style.display = "block"
 		document.getElementById("1").style.display = "none"
 		document.getElementById("myfile").style.display = "none"
@@ -775,6 +784,20 @@ socket.on("updatePlayerListHost", (name, roomId)=>{
 socket.on("cantConnect", ()=>{
 	alert("couldnt connect to host");
 	location.replace("https://sync-player-proto.herokuapp.com/rooms.html")
+})
+
+socket.on("seeked", (timetoseek, room)=>{
+	if(myRoomId == room && !isHost)
+	{
+		var myplayer = videojs("my-video");
+		myplayer.currentTime(timetoseek);
+		//newTime = timetoseek
+		//currentTime = timetoseek
+		//chunksRecieved = Math.floor(newTime*numberofchunks/vidLen) - 1
+		//console.log(timetoseek+" is time to seek")
+		//timenow = n
+		//isSeeked = true
+	}
 })
 
 

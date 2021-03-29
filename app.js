@@ -1,27 +1,60 @@
 const express = require('express');
 const app = express();
-const fs = require('fs')
-const path = require('path')
-var http = require('http')
 const serv = require('http').createServer(app);
- 
+const Users = require('./schemas/user')
+
+const mongoose = require('mongoose');
+
+const URI = "mongodb+srv://neerajkr007:MGpemPWPXnG7PEki@cluster0.eq19x.mongodb.net/DB0?retryWrites=true&w=majority"
+const connection = async ()=>{
+    await mongoose.connect(
+    URI, {
+    useNewUrlParser: true, 
+    useUnifiedTopology: true },
+    function(err){
+        if (err){
+            console.log(err)
+            return
+        }
+        mongoose.set('useFindAndModify', false);
+        console.log("db connected")
+        // let obj = {}
+        // obj.userName = "Neeraj"
+        // obj.email = "yolo"
+        // obj.password = "yoloyolo"
+        // let userModel = new Users(obj);
+        // await userModel.save();
+    });
+}
+connection();
+
+
 
 app.get('/', (req, res) =>
 {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/index.html', (req, res) =>
+app.get('/index', (req, res) =>
 {
     res.sendFile(__dirname + '/index.html');
 }); 
 
-app.get('/rooms.html', (req, res) =>
+app.get('/rooms', (req, res) =>
 {
     res.sendFile(__dirname + '/rooms.html');
     
 }); 
 
+app.get('/login', (req, res) =>
+{
+    res.sendFile(__dirname + '/login.html');
+});
+
+app.get('/signup', (req, res) =>
+{
+    res.sendFile(__dirname + '/signup.html');
+});
 
 app.use(express.static(__dirname + '/public'));
 
@@ -58,6 +91,10 @@ var eventify = function(arr, callback) {
     };
 };
 
+var isPLayerShown = false;
+
+
+
 io.on('connection', function(socket){
     console.log('socket connected ');
     socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
@@ -91,6 +128,74 @@ io.on('connection', function(socket){
           });
     }
 
+
+
+
+//          LOGIN AND SIGNUP STUFF
+
+
+
+
+    socket.on("newSignUp", async (d)=>{
+        let list = ["email", "userName", "password"]
+        let user = await Users.findOne({$or:[ {'email':d[0]}, {'userName':d[1]}]})
+        if(user == null)
+        {
+            let obj = {}
+            for(let i = 0; i < 3; i++)
+            {
+                obj[list[i]] = d[i]
+            }
+            obj.alreadyLoggedIn = false
+            let userModal = Users(obj)
+            await userModal.save()
+            socket.emit("signUpSuccess")
+        }
+        else
+        {
+            if(user.email == d[0])
+            {
+                socket.emit("userAlreadyExists", "email")
+            }
+            else
+                socket.emit("userAlreadyExists", "userName")
+        }
+    })
+
+    socket.on("tryLogin", async (e, p)=>{
+        let user = await Users.findOne({$or:[ {'email':e}, {'userName':e}]})
+        if(user == null)
+        {
+            socket.emit("loginFailed", "email")
+        }
+        else
+        {
+            if(user.password == p)
+            {
+                user.alreadyLoggedIn = true
+                await user.save()
+                let id = user._id
+                app.get('/'+id, (req, res) =>
+                {
+                    res.sendFile(__dirname + '/user.html');
+                });
+                socket.emit("loginSuccess", id)
+            }
+            else
+            {
+                socket.emit("loginFailed", "password")
+            }
+        }
+    })
+
+
+
+
+//          ROOMS STUFF
+
+
+
+
     socket.on("host", function(name){
         //ROOM_LIST[player.id] = player;
         //player.myRoomNumber = numberOfHosts;
@@ -121,7 +226,7 @@ io.on('connection', function(socket){
                 //console.log(socket);
                 callEventify(player.hostNumber);
                 peers[socket.id] = socket
-                socket.emit("joined", player.roomId);
+                socket.emit("joined", {id:player.roomId, isplayershown:isPLayerShown});
                 setTimeout(()=>{updatePlayerList();}, 1000)
                 return true;   
             }  
@@ -138,6 +243,9 @@ io.on('connection', function(socket){
         }
     }
 
+    socket.on("playershownemit", ()=>{
+        isPLayerShown = true;
+    });
     socket.on("showPlayeremit1", ()=>{
         io.sockets.emit("showPlayer", player.roomId);
     });
@@ -185,12 +293,12 @@ io.on('connection', function(socket){
         io.sockets.emit("playVideo", player.roomId);
     });
 
-    socket.on("pauseEmit", (time )=>{
-        io.sockets.emit("pause", player.roomId, time);
+    socket.on("pauseEmit", ()=>{
+        io.sockets.emit("pause", player.roomId);
     });
 
-    socket.on("playEmit", ()=>{
-        io.sockets.emit("play", player.roomId);
+    socket.on("playEmit", (time)=>{
+        io.sockets.emit("play", player.roomId, time);
     });
 
     socket.on("sendNextchunkemit", ()=>{
