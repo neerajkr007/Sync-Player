@@ -188,6 +188,9 @@ io.on('connection', function(socket){
         }
     })
 
+    socket.on("yolo", ()=>{
+        console.log("yolo ?")
+    })
 
 
 

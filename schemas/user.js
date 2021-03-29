@@ -12,7 +12,10 @@ const user = new mongoose.Schema({
     },
     alreadyLoggedIn:{
         type:Boolean
-    }
+    },
+    friends:[{
+        type:String
+    }]
 });
 
 module.exports = User = mongoose.model('user', user, 'users');

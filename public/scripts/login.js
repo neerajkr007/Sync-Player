@@ -1,6 +1,7 @@
 socket = io.connect()
 
 
+
 function tryLogin(e, p, b)
 {
     let allgood = [false, false]
@@ -96,6 +97,14 @@ socket.on("loginFailed", (res)=>{
 
 //          ON LOAD STUFF :
 
+
+
+window.onbeforeunload = function (e) {
+    socket.emit('yolo')
+    console.log('It worked');
+};
+    
+    
 
 document.getElementById("input0").onfocus = ()=>{
     document.getElementById("usernameInput").style.borderBottom = "2px solid black"
