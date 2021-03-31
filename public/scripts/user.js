@@ -6,7 +6,7 @@ if(window.location.href.match("localhost"))
 }
 else if(window.location.href.match("sync"))
 {
-
+    socket.emit("changeSocketId", window.location.href.slice(40))
 }
 
 
@@ -44,9 +44,17 @@ function addFriend()
             p.setAttribute("class", "hoverPointer mt-4")
             p.innerHTML = user.userName
             p.onclick = ()=>{
-                p.innerHTML += "  request sent !"
                 socket.emit("sendRequest", user._id)
             }
+            socket.on("requestSent", ()=>{
+                p.innerHTML += "  request sent !"
+            })
+            socket.on("requestNotSent", (n)=>{
+                if(n == 1)
+                    p.innerHTML += "        request already sent, pending response !"
+                else
+                    p.innerHTML += "        already friends with this user !"
+            })
         }
         else
         {
@@ -73,16 +81,34 @@ function requestResponse(users)
         button1.setAttribute("class", "btn btn-success text-white")
         button1.innerHTML = '<span><i class="fas fa-check"></i></span> Accept'
         button1.onclick = ()=>{
+            $('#modal').modal('toggle');
             socket.emit("acceptFriendRequest", users[i])
         }
         let button2 = document.createElement("button")
         button2.setAttribute("class", "btn btn-danger text-white ml-3")
         button2.innerHTML = '<span><i class="fas fa-times"></i></span> Decline'
+        button2.onclick = ()=>{
+            $('#modal').modal('toggle');
+            socket.emit("rejectFriendRequest", users[i])
+        }
         modalBody.appendChild(p)
         modalBody.appendChild(button1)
         modalBody.appendChild(button2)
     }
     $('#modal').modal('toggle');
+}
+
+function showFriends(friends)
+{
+    let friendList = document.getElementById("friendsList")
+    for(let i = 0; i < friends.length; i++)
+    {
+        let a = document.createElement("a")
+        a.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+        a.setAttribute("style", "background-color: transparent !important; width: fit-content;")
+        a.innerHTML = friends[i]
+        friendList.appendChild(a)
+    }
 }
 
 
@@ -95,20 +121,126 @@ function requestResponse(users)
 
 socket.on("notification", (user, users)=>{
     let n = user.requests.length
-    document.getElementById("bellCounter").innerHTML = n
-    document.getElementById("bellCounter").style.display = "block"
-    document.getElementById("requests").style.display = "block"
-    document.getElementById("noRequests").style.display = "none"
-    document.getElementById("requests").innerHTML = 'Friend Requests : ' + n
-    document.getElementById("requests").onclick = ()=>{
-        requestResponse(users)
+    //console.log(user)
+    if(n != 0)
+    {
+        document.getElementById("bellCounter").innerHTML = n
+        document.getElementById("bellCounter").style.display = "block"
+        document.getElementById("requests").style.display = "block"
+        document.getElementById("noRequests").style.display = "none"
+        document.getElementById("requests").innerHTML = 'Friend Requests : ' + n
+        document.getElementById("requests").onclick = ()=>{
+            requestResponse(users)
+        }
+    }
+    else
+    {
+        document.getElementById("bellCounter").innerHTML = n
+        document.getElementById("bellCounter").style.display = "none"
+        document.getElementById("requests").style.display = "none"
+        document.getElementById("noRequests").style.display = "block"
+    }
+    if(user.notifications.length != 0)
+    {
+        document.getElementById("bellCounter").innerHTML = user.notifications.length
+        document.getElementById("bellCounter").style.display = "block"
+        document.getElementById("noRequests").style.display = "none"
+        let notificationDropdown = document.getElementById("notificationDropdown")
+        for(let i = 0; i < user.notifications.length; i++)
+        {
+            if(i != 0)
+            {
+                let div = document.createElement('div')
+                div.setAttribute("class", "dropdown-divider")
+                notificationDropdown.appendChild(div)
+            }
+            let p = document.createElement('p')
+            // p.style.fontSize = "10px"
+            p.classList.add("ml-3")
+            p.innerHTML = user.notifications[i]
+            let mar = document.createElement('label')
+            mar.for = user.notifications[i]
+            mar.innerHTML = "mark as read ?"
+            let check = document.createElement('input')
+            check.id = user.notifications[i]
+            check.type = "checkbox"
+            check.classList.add("ml-4")
+            notificationDropdown.appendChild(p)
+            //notificationDropdown.appendChild(mar)
+            //notificationDropdown.appendChild(check)
+        }
+        
     }
 })
 
-socket.on("acceptedMe", ()=>{
+socket.on("acceptedMe", (name)=>{
 
+
+    // add/update friend to friends list
+    let friendList = document.getElementById("friendsList")
+    let a = document.createElement("a")
+    a.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+    a.setAttribute("style", "background-color: transparent !important; width: fit-content;")
+    a.innerHTML = name
+    friendList.appendChild(a)
 })
 
 socket.on("acceptedFriend", (name)=>{
-    
+    document.getElementById("searchButton").style.display = "none"
+    document.getElementById("modal-title").innerHTML = "Done";
+    document.getElementById("modal-body").innerHTML = name + " Accepted your friend request";
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 1000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+
+
+    // add/update friend to friends list
+    let friendList = document.getElementById("friendsList")
+    let a = document.createElement("a")
+    a.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+    a.setAttribute("style", "background-color: transparent !important; width: fit-content;")
+    a.innerHTML = name
+    friendList.appendChild(a)
+})
+
+socket.on("rejectedMe", ()=>{
+    document.getElementById("modal-title").innerHTML = "Done";
+    document.getElementById("modal-body").innerHTML = "Rejected friend request";
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 1000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
+
+socket.on("rejectedFriend", (name)=>{
+    document.getElementById("searchButton").style.display = "none"
+    document.getElementById("modal-title").innerHTML = "Done";
+    document.getElementById("modal-body").innerHTML = name + " Rejected your friend request";
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 1000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
+
+socket.on("showFriends", friends=>{
+    showFriends(friends)
+})
+
+
+
+
+//          ON LOADED STUFF
+
+
+$('#friendsListCol').on('hide.bs.dropdown', function (e) {
+    if (e.clickEvent) {
+      e.preventDefault();
+    }
 })

@@ -48,9 +48,9 @@
                             <span id="bellCounter" class="fa-layers-counter" style="background:Tomato; display: none;">1</span>
                         </span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                    <div id="notificationDropdown" class="dropdown-menu dropdown-menu-right" style="min-width: 300px !important;" aria-labelledby="dropdownMenuButton">
                         <a id="noRequests" class="dropdown-item" >no new notifications</a>
-                        <a id="requests" class="dropdown-item hoverPointer" style="display: none;"><span>Friend Requests : 0</span></a>
+                        <a id="requests" class="dropdown-item hoverPointer" style="display: none;">Friend Requests : 0</a>
                     </div>
                 </li>
                 <li class="nav-item active dropdown">
@@ -69,10 +69,12 @@
     </nav>
 
     <div class="row ubantuFont m-0" style="max-width: 100%;">
-        <div class="offset-md-9 col-md-3 pr-0">
-            <div class="mt-5" style="height: 80vh;">
-                <p class=" display-4 text-center">Friends</p>
-                <p class="ml-4" style="font-size: x-large;">Name</p>
+        <div class="offset-md-10 col-md-2 pr-0">
+            <div id="friendsListCol" class="dropdown mt-5">
+                <button class="noBorder shadow-none p-0" aria-haspopup="true" data-toggle="dropdown"
+                    aria-expanded="false"><span id="userIcon" class="d-flex" style="color: gray;"><i style="margin-top: 0px;" class="fas fa-users fa-2x mr-4"></i><p class="display-6 text-center">Friends</p></span></button>
+                <div id="friendsList" class="dropdown-menu w-100" style="background-color: transparent !important; border: none;" aria-labelledby="dropdownMenuButton">
+                </div>
             </div>
         </div>
         <!-- <div class="fixed-bottom mb-5" style="left: calc(100% - 100px); "><button class="">CHAT</button></div> -->
@@ -100,7 +102,7 @@
     </div>
 
 
-    <script src="/scripts/user.js"></script>
+    
     <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -111,6 +113,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
         integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
         crossorigin="anonymous"></script>
+    <script src="/scripts/user.js"></script>
 </body>
 
 </html>

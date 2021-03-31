@@ -74,3 +74,7 @@ input[type=number]{
     background: rgb(49,160,237);
     background: linear-gradient(90deg, rgba(49,160,237,1) 0%, rgba(241,1,236,1) 75%, rgba(253,29,180,1) 100%);
 }
+
+.display-6 {
+    font-size: 25px;
+}

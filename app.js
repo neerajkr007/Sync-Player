@@ -57,11 +57,15 @@ app.get('/signup', (req, res) =>
     res.sendFile(__dirname + '/signup.html');
 });
 
-app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
-{
-    res.sendFile(__dirname + '/user.html');
-});
+// app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
+// {
+//     res.sendFile(__dirname + '/user.html');
+// });
 
+// app.get('/60617626c2e2c80017968a1e', (req, res) =>
+// {
+//     res.sendFile(__dirname + '/user.html');
+// });
 
 app.use(express.static(__dirname + '/public'));
 
@@ -141,21 +145,22 @@ io.on('connection', function(socket){
         delete SOCKET_LIST[socket.id]
         socket.id = newId
         SOCKET_LIST[socket.id] = socket;
-        let user = await Users.findOne({"_id":newId})
-        if(user.requests.length != 0)
-        {
-            let user2 = []
-            for(let i = 0; i < user.requests.length; i++)
-            {
-                let user3 = await Users.findOne({"_id":user.requests[i]})
+        //console.log(socket.id)
+        let me = await Users.findOne({"_id":newId})
+        let user2 = []
+        if (me.requests.length != 0) {
+            for (let i = 0; i < me.requests.length; i++) {
+                let user3 = await Users.findOne({ "_id": me.requests[i] })
                 let obj = {}
                 obj.userName = user3.userName
                 obj._id = user3._id
                 user2.push(obj)
             }
-            socket.emit("notification", user, user2)
+
         }
-    })
+        socket.emit("showFriends", me.friends)
+        socket.emit("notification", me, user2)
+})
 
 
 
@@ -237,44 +242,163 @@ io.on('connection', function(socket){
     })
 
     socket.on("sendRequest", async (id)=>{
+        //console.log(id)
         let user = await Users.findOne({"_id":id})
+        let me = await Users.findOne({"_id":socket.id})
         // console.log(id)  FRIEND
         // console.log(socket.id)  MY
-        user.requests.push(socket.id)
-        user.markModified('requests')
-        await user.save()
-        let user2 = []
-        for(let i = 0; i < user.requests.length; i++)
+        if(!user.requests.includes(socket.id) && !user.friends.includes(me.userName))
         {
-            let user3 = await Users.findOne({"_id":user.requests[i]})
-            let obj = {}
-            obj.userName = user3.userName
-            obj._id = user3._id
-            user2.push(obj)
+            user.requests.push(socket.id)
+            user.markModified('requests')
+            await user.save()
+            socket.emit("requestSent")
+            let user2 = []
+            for(let i = 0; i < user.requests.length; i++)
+            {
+                let user3 = await Users.findOne({"_id":user.requests[i]})
+                let obj = {}
+                obj.userName = user3.userName
+                obj._id = user3._id
+                user2.push(obj)
+            }
+            try
+            {
+                SOCKET_LIST[id].emit("notification", user, user2)
+            }
+            catch
+            {
+                
+            }
         }
-        try{
-            SOCKET_LIST[id].emit("notification", user, user2)
-        }
-        catch{}
 
+        else if(user.friends.includes(me.userName))
+        {
+            socket.emit("requestNotSent", 0)
+        }
+
+        else
+        {
+            socket.emit("requestNotSent", 1)
+        }
     })
 
     socket.on("acceptFriendRequest", async (user)=>{
         let me = await Users.findOne({"_id":socket.id})
         me.friends.push(user.userName)
         me.requests.splice(me.requests.indexOf(user._id), 1)
+        let friend = await Users.findOne({"_id":user._id})
+        if(me.notifications.length < 5)
+        {
+            me.notifications.push("you are now friends with " + friend.userName)
+        }
+        else
+        {
+            me.notifications.shift()
+            me.notifications.push("you are now friends with " + friend.userName)
+        }
+        me.markModified('notifications')
         me.markModified('friends')
         me.markModified('requests')
         me.save()
-        let friend = await Users.findOne({"_id":user._id})
         friend.friends.push(me.userName)
+        if(friend.notifications.length < 5)
+        {
+            friend.notifications.push(me.userName + " Accepted your friend request !")
+        }
+        else
+        {
+            friend.notifications.shift()
+            friend.notifications.push(me.userName + " Accepted your friend request !")
+        }
+        friend.markModified('notifications')
         friend.markModified('friends')
         friend.save()
-        socket.emit("acceptedMe")
-        try{
-            SOCKET_LIST[user._id].emit("acceptedFriend", me.userName)
+        socket.emit("acceptedMe", friend.userName)
+        let user2 = []
+        if (me.requests.length != 0) {
+            for (let i = 0; i < me.requests.length; i++) {
+                let user3 = await Users.findOne({ "_id": me.requests[i] })
+                let obj = {}
+                obj.userName = user3.userName
+                obj._id = user3._id
+                user2.push(obj)
+            }
         }
-        catch{}
+        socket.emit("notification", me, user2)
+        try
+        {
+            SOCKET_LIST[friend._id].emit("acceptedFriend", me.userName)
+            let user2 = []
+            if(friend.requests.length != 0)
+            {
+                for(let i = 0; i < friend.requests.length; i++)
+                {
+                    let user3 = await Users.findOne({"_id":friend.requests[i]})
+                    let obj = {}
+                    obj.userName = user3.userName
+                    obj._id = user3._id
+                    user2.push(obj)
+                }
+            }
+            SOCKET_LIST[friend._id].emit("notification", friend, user2)
+        }
+        catch(e)
+        {
+        }
+    })
+
+    socket.on("rejectFriendRequest", async (user)=>{
+        let me = await Users.findOne({"_id":socket.id})
+        me.requests.splice(me.requests.indexOf(user._id), 1)
+        me.markModified('requests')
+        me.save()
+        let friendNot = await Users.findOne({"_id":user._id})
+        if(friendNot.notifications.length < 5)
+        {
+            friendNot.notifications.push(me.userName + " Rejected your friend request !")
+        }
+        else
+        {
+            friendNot.notifications.shift()
+            friendNot.notifications.push(me.userName + " Rejected your friend request !")
+        }
+        friendNot.markModified('notifications')
+        friendNot.save()
+        socket.emit("rejectedMe")
+        let user2 = []
+        if (me.requests.length != 0) {
+            for (let i = 0; i < me.requests.length; i++) {
+                let user3 = await Users.findOne({ "_id": me.requests[i] })
+                let obj = {}
+                obj.userName = user3.userName
+                obj._id = user3._id
+                user2.push(obj)
+            }
+        }
+        socket.emit("notification", me, user2)
+        try
+        {
+            SOCKET_LIST[friendNot._id].emit("rejectedFriend", me.userName)
+            let user2 = []
+            if(friendNot.requests.length != 0)
+            {
+                
+                for(let i = 0; i < friendNot.requests.length; i++)
+                {
+                    let user3 = await Users.findOne({"_id":friendNot.requests[i]})
+                    let obj = {}
+                    obj.userName = user3.userName
+                    obj._id = user3._id
+                    user2.push(obj)
+                }
+            }
+            SOCKET_LIST[friendNot._id].emit("notification", friendNot, user2)
+        }
+        catch(e)
+        {
+
+        }
     })
 
 
