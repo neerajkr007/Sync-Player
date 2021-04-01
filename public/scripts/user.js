@@ -103,11 +103,66 @@ function showFriends(friends)
     let friendList = document.getElementById("friendsList")
     for(let i = 0; i < friends.length; i++)
     {
+        let li = document.createElement('li')
+        li.classList.add("dropdown-submenu")
         let a = document.createElement("a")
-        a.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
-        a.setAttribute("style", "background-color: transparent !important; width: fit-content;")
-        a.innerHTML = friends[i]
-        friendList.appendChild(a)
+        a.setAttribute("class", "hoverPointer p-0 ml-3 dropdown-item " + friends[i])
+        a.setAttribute("style", "background-color: transparent !important; width: calc(100% - 50px); font-size: 21px;")
+        a.innerHTML = friends[i] + '<span id = "status' + friends[i] + '" class="float-right" style="color: gray"><i class="fas fa-circle"></i></span>'
+        let div  = document.createElement('div')
+        div.setAttribute("class", "dropdown-menu-right dropdown-menu")
+        let a1 = document.createElement('a')
+        a1.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+        a1.setAttribute("style", "width: fit-content;")
+        let span1 = document.createElement('span')
+        span1.innerHTML = '<i class="fas fa-arrow-circle-left mr-2"></i>Invite to room'
+        a1.appendChild(span1)
+        let a2 = document.createElement('a')
+        a2.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+        a2.setAttribute("style", "width: fit-content;")
+        let span2 = document.createElement('span')
+        span2.innerHTML = '<i class="far fa-comment-alt mr-2"></i>Send Message'
+        a1.appendChild(span1)
+        let a3 = document.createElement('a')
+        a3.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+        a3.setAttribute("style", "width: fit-content;")
+        let span3 = document.createElement('span')
+        span3.innerHTML = '<i class="fas fa-user-slash mr-2"></i>Remove Friend'
+        let div2 = document.createElement('div')
+        div2.setAttribute("class", "dropdown-divider")
+        let div3 = document.createElement('div')
+        div3.setAttribute("class", "dropdown-divider")
+
+
+        a1.appendChild(span1)
+        a2.appendChild(span2)
+        a3.appendChild(span3)
+
+
+        div.appendChild(a1)
+        div.appendChild(div2)
+        div.appendChild(a2)
+        div.appendChild(div3)
+        div.appendChild(a3)
+
+        li.appendChild(a)
+        li.appendChild(div)
+        friendList.appendChild(li)
+        $('.dropdown-menu a.'+friends[i]).on('click', function(e) {
+            if (!$(this).next().hasClass('show')) {
+              $(this).parents('.dropdown-menu').first().find('.show').removeClass('show');
+            }
+            var $subMenu = $(this).next('.dropdown-menu');
+            $subMenu.toggleClass('show');
+          
+          
+            $(this).parents('#friendsListCol').on('hidden.bs.dropdown', function(e) {
+              $('.dropdown-submenu .show').removeClass('show');
+            });
+          
+          
+            return false;
+        });
     }
 }
 
@@ -177,12 +232,7 @@ socket.on("acceptedMe", (name)=>{
 
 
     // add/update friend to friends list
-    let friendList = document.getElementById("friendsList")
-    let a = document.createElement("a")
-    a.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
-    a.setAttribute("style", "background-color: transparent !important; width: fit-content;")
-    a.innerHTML = name
-    friendList.appendChild(a)
+    showFriends([name])
 })
 
 socket.on("acceptedFriend", (name)=>{
@@ -198,12 +248,7 @@ socket.on("acceptedFriend", (name)=>{
 
 
     // add/update friend to friends list
-    let friendList = document.getElementById("friendsList")
-    let a = document.createElement("a")
-    a.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
-    a.setAttribute("style", "background-color: transparent !important; width: fit-content;")
-    a.innerHTML = name
-    friendList.appendChild(a)
+    showFriends([name])
 })
 
 socket.on("rejectedMe", ()=>{
@@ -233,6 +278,23 @@ socket.on("showFriends", friends=>{
     showFriends(friends)
 })
 
+socket.on("welcomeUser", (name)=>{
+    document.getElementById("welcomeUser").innerHTML = "welcome, " + name
+})
+
+socket.on("cameOnline", (name, id, myName)=>{
+    document.getElementById("status"+name).style.color = "green"
+    socket.emit("cameOnlineReply", id, myName)
+})
+
+socket.on("cameOnlineReply", (friendName)=>{
+    document.getElementById("status"+friendName).style.color = "green"
+})
+
+socket.on("wentOffline", (friendName)=>{
+    document.getElementById("status"+friendName).style.color = "gray"
+})
+
 
 
 
@@ -244,3 +306,5 @@ $('#friendsListCol').on('hide.bs.dropdown', function (e) {
       e.preventDefault();
     }
 })
+
+

@@ -78,3 +78,25 @@ input[type=number]{
 .display-6 {
     font-size: 25px;
 }
+
+.dropdown-submenu {
+    position: relative;
+  }
+  
+  .dropdown-submenu a::after {
+    transform: rotate(-90deg);
+    position: absolute;
+    right: 6px;
+    top: .8em;
+  }
+  
+  .dropdown-submenu .dropdown-menu {
+    top: 34px;
+    left: 0%;
+    margin-left: .1rem;
+    margin-right: .1rem;
+  }
+
+  .fa-circle {
+    font-size: .6em !important;
+  }

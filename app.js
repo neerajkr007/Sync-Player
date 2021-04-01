@@ -62,7 +62,7 @@ app.get('/signup', (req, res) =>
 //     res.sendFile(__dirname + '/user.html');
 // });
 
-// app.get('/60617626c2e2c80017968a1e', (req, res) =>
+// app.get('/6064c38c51fb84001718d5f3', (req, res) =>
 // {
 //     res.sendFile(__dirname + '/user.html');
 // });
@@ -147,6 +147,8 @@ io.on('connection', function(socket){
         SOCKET_LIST[socket.id] = socket;
         //console.log(socket.id)
         let me = await Users.findOne({"_id":newId})
+        socket.emit("welcomeUser", me.userName)
+        
         let user2 = []
         if (me.requests.length != 0) {
             for (let i = 0; i < me.requests.length; i++) {
@@ -160,6 +162,15 @@ io.on('connection', function(socket){
         }
         socket.emit("showFriends", me.friends)
         socket.emit("notification", me, user2)
+        for (let i = 0; i < me.friends.length; i++)
+        {
+            let friend = await Users.findOne({"userName":me.friends[i]})
+            if(SOCKET_LIST[friend._id] != undefined)
+            {
+                SOCKET_LIST[friend._id].emit("cameOnline", me.userName, me._id, friend.userName)
+            }
+        } 
+        
 })
 
 
@@ -222,9 +233,6 @@ io.on('connection', function(socket){
         }
     })
 
-    socket.on("yolo", ()=>{
-        console.log("yolo ?")
-    })
 
 
 
@@ -405,6 +413,30 @@ io.on('connection', function(socket){
 
 
 
+//          FRIENDS STUFF
+
+
+
+    socket.on("heyo", ()=>{
+        console.log("please works")
+    })
+
+    socket.on("cameOnlineReply", (id, name)=>{
+        try
+        {
+            SOCKET_LIST[id].emit("cameOnlineReply", name)
+        }
+        catch(e)
+        {
+
+        }
+    })
+
+
+
+
+
+
 //          ROOMS STUFF
 
 
@@ -577,8 +609,20 @@ io.on('connection', function(socket){
             io.sockets.emit('seeked', time, player.roomId)
     })
 
-    socket.on('disconnect',function(){
+    socket.on('disconnect', async function(){
         console.log('socket disconnected ');
+        if(socket.id.length > 4)
+        {
+            let me = await Users.findOne({"_id":socket.id})
+            for (let i = 0; i < me.friends.length; i++)
+            {
+                let friend = await Users.findOne({"userName":me.friends[i]})
+                if(SOCKET_LIST[friend._id] != undefined)
+                {
+                    SOCKET_LIST[friend._id].emit("wentOffline", me.userName)
+                }
+            } 
+        }
         io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
         io.sockets.emit('removePeer', socket.id, player.roomId)
         delete peers[socket.id]
