@@ -57,6 +57,11 @@ app.get('/signup', (req, res) =>
     res.sendFile(__dirname + '/signup.html');
 });
 
+app.get('/sw.js', (req, res) =>
+{
+    res.sendFile(__dirname + '/sw.js');
+});
+
 // app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
 // {
 //     res.sendFile(__dirname + '/user.html');
