@@ -9,9 +9,9 @@
       }
     ],
     "start_url": "/index",
-    "display": "standalone",
+    "display": "Fullscreen",
 	  "orientation": "portrait",
     "theme_color": "#3367D6",
-    "background_color": "#FF0000",
+    "background_color": "#79BBCD",
     "description": "Weather forecast information"
   }

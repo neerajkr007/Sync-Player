@@ -2,11 +2,19 @@ const socket = io.connect()
 
 if(window.location.href.match("localhost"))
 {
-    socket.emit("changeSocketId", window.location.href.slice(22))
+    try
+    {
+        socket.emit("changeSocketId", window.location.href.slice(22))
+    }
+    catch{}
 }
 else if(window.location.href.match("sync"))
 {
-    socket.emit("changeSocketId", window.location.href.slice(40))
+    try
+    {
+        socket.emit("changeSocketId", window.location.href.slice(40))
+    }
+    catch{}
 }
 
 

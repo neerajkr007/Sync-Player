@@ -62,15 +62,20 @@ app.get('/sw.js', (req, res) =>
     res.sendFile(__dirname + '/sw.js');
 });
 
+app.get('/guest', (req, res) =>
+{
+    res.sendFile(__dirname + '/user.html');
+});
+
 // app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
 // {
 //     res.sendFile(__dirname + '/user.html');
 // });
 
-// app.get('/6064c38c51fb84001718d5f3', (req, res) =>
-// {
-//     res.sendFile(__dirname + '/user.html');
-// });
+app.get('/6064c38c51fb84001718d5f3', (req, res) =>
+{
+    res.sendFile(__dirname + '/user.html');
+});
 
 app.use(express.static(__dirname + '/public'));
 
