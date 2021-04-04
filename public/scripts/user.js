@@ -1,4 +1,8 @@
 const socket = io.connect()
+let friendsName = ""
+let myName = ""
+
+
 
 if(window.location.href.match("localhost"))
 {
@@ -119,23 +123,48 @@ function showFriends(friends)
         a.innerHTML = friends[i] + '<span id = "status' + friends[i] + '" class="float-right" style="color: gray"><i class="fas fa-circle"></i></span>'
         let div  = document.createElement('div')
         div.setAttribute("class", "dropdown-menu-right dropdown-menu")
+
+
+
         let a1 = document.createElement('a')
         a1.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
         a1.setAttribute("style", "width: fit-content;")
         let span1 = document.createElement('span')
         span1.innerHTML = '<i class="fas fa-arrow-circle-left mr-2"></i>Invite to room'
-        a1.appendChild(span1)
+        a1.onclick = ()=>{
+            a1.parentElement.classList.remove('show')
+            document.getElementById('')
+        }
+
+
+
         let a2 = document.createElement('a')
         a2.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
         a2.setAttribute("style", "width: fit-content;")
         let span2 = document.createElement('span')
         span2.innerHTML = '<i class="far fa-comment-alt mr-2"></i>Send Message'
-        a1.appendChild(span1)
+        a2.onclick = ()=>{
+            a2.parentElement.classList.remove('show')
+            document.getElementById("chatBox").style.display = "block"
+            document.getElementById('message').focus()
+            document.getElementById("chatBoxButton").style.display = "none"
+            document.getElementById("friendNameChat").innerHTML = friends[i]
+            friendsName = friends[i]
+        }
+
+
+
         let a3 = document.createElement('a')
         a3.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
         a3.setAttribute("style", "width: fit-content;")
         let span3 = document.createElement('span')
         span3.innerHTML = '<i class="fas fa-user-slash mr-2"></i>Remove Friend'
+        a3.onclick = ()=>{
+            a3.parentElement.classList.remove('show')
+        }
+
+
+
         let div2 = document.createElement('div')
         div2.setAttribute("class", "dropdown-divider")
         let div3 = document.createElement('div')
@@ -174,6 +203,102 @@ function showFriends(friends)
     }
 }
 
+function hideChat(n)
+{
+    if(n == -1)
+    {
+        document.getElementById("chatBox").style.display = "none"
+        document.getElementById("chatBoxButton").style.display = "block"
+    }
+    else
+    {
+        document.getElementById("chatBox").style.display = "block"
+        document.getElementById("chatBoxButton").style.display = "none"
+    }
+}
+
+function displayMessage(n, message, name)
+{
+    if(n == 1)
+    {
+        document.getElementById("friendNameChat").innerHTML = name
+    }
+    document.getElementById("chatBox").style.display = "block"
+    document.getElementById("chatBoxButton").style.display = "none"
+    let messageType = {0:"msg-self", 1:"msg-remote"}
+    let userImg = {0:"//gravatar.com/avatar/56234674574535734573000000000001?d=retro", 1:"//gravatar.com/avatar/56234674574535734573000000000001?d=retro"}
+    let chatWindow = document.getElementById("chatWindow")
+
+
+
+    let article = document.createElement('article')
+    article.setAttribute("class", "msg-container")
+    article.classList.add(messageType[n])
+
+
+    let div0 = document.createElement('div')
+    div0.setAttribute("class", "msg-box")
+
+
+    let img = document.createElement('img')
+    img.setAttribute("class", "user-img")
+    img.src = userImg[n]
+
+
+
+    let div1 = document.createElement('div')
+    div1.classList.add("flr")
+
+
+    let div2 = document.createElement('div')
+    div2.classList.add("messages")
+
+
+
+    let p = document.createElement('p')
+    p.classList.add('msg')
+    p.innerHTML = message
+
+
+
+    let span = document.createElement('span')
+    span.classList.add('timestamp')
+    var d = new Date(),
+            h = (d.getHours() < 10 ? '0' : '') + d.getHours(),
+            m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+    var time = h + ':' + m;
+    span.innerHTML = '<span class="username">' + name + '</span>&bull;<span class="posttime">' + time + '</span>'
+    
+    div2.appendChild(p)
+    div1.appendChild(div2)
+    div1.appendChild(span)
+    if(n == 0)
+    {
+        div0.appendChild(div1)
+        div0.appendChild(img)
+    }
+    else
+    {
+        div0.appendChild(img)
+        div0.appendChild(div1)
+    }
+    article.appendChild(div0)
+    chatWindow.appendChild(article)
+    document.getElementById("chatWindow").scrollTop = document.getElementById("chatWindow").scrollHeight
+}
+
+function sendMessage()
+{
+    let message = document.getElementById('message').value
+    document.getElementById('message').value = ""
+    let a = document.getElementById("friendNameChat").innerHTML
+    socket.emit("message", message, a, myName)
+
+
+    // 0 for me and 1 for friend
+    if(message != "")
+        displayMessage(0, message, "me")
+}
 
 
 
@@ -288,6 +413,7 @@ socket.on("showFriends", friends=>{
 
 socket.on("welcomeUser", (name)=>{
     document.getElementById("welcomeUser").innerHTML = "welcome, " + name
+    myName = name
 })
 
 socket.on("cameOnline", (name, id, myName)=>{
@@ -303,6 +429,15 @@ socket.on("wentOffline", (friendName)=>{
     document.getElementById("status"+friendName).style.color = "gray"
 })
 
+socket.on("friendOffline", friendsName=>{
+
+})
+
+socket.on("message", (n, message, name)=>{
+    displayMessage(n, message, name)
+})
+
+
 
 
 
@@ -314,5 +449,14 @@ $('#friendsListCol').on('hide.bs.dropdown', function (e) {
       e.preventDefault();
     }
 })
+
+let input = document.getElementById("message")
+input.addEventListener("keydown", function(event) {
+    if (event.keyCode === 13) {
+        event.preventDefault();
+        sendMessage()
+    }
+  });
+
 
 

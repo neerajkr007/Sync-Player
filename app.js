@@ -4,7 +4,7 @@ const serv = require('http').createServer(app);
 const Users = require('./schemas/user')
 
 const mongoose = require('mongoose');
-const { copyFileSync } = require('fs');
+const { copyFileSync, appendFileSync } = require('fs');
 
 const URI = "mongodb+srv://neerajkr007:MGpemPWPXnG7PEki@cluster0.eq19x.mongodb.net/DB0?retryWrites=true&w=majority"
 const connection = async ()=>{
@@ -67,10 +67,10 @@ app.get('/guest', (req, res) =>
     res.sendFile(__dirname + '/user.html');
 });
 
-// app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
-// {
-//     res.sendFile(__dirname + '/user.html');
-// });
+app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
+{
+    res.sendFile(__dirname + '/user.html');
+});
 
 app.get('/6064c38c51fb84001718d5f3', (req, res) =>
 {
@@ -423,7 +423,7 @@ io.on('connection', function(socket){
 
 
 
-//          FRIENDS STUFF
+//          FRIENDS STATUS STUFF
 
 
 
@@ -439,6 +439,31 @@ io.on('connection', function(socket){
         catch(e)
         {
 
+        }
+    })
+
+
+
+
+
+//          CHAT STUFF
+
+
+
+
+
+    socket.on("message", async (message, friendsName, myName)=>{
+        console.log(message)
+        console.log(friendsName)
+        console.log(myName)
+        let friend = await Users.findOne({"userName":friendsName})
+        try
+        {
+            SOCKET_LIST[friend._id].emit("message", 1, message, myName)
+        }
+        catch
+        {
+            socket.emit("friendOffline", friendsName)
         }
     })
 

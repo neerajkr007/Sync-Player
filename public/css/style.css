@@ -110,15 +110,15 @@ input[type=number]{
 }
 .chatbox {
     width: 300px;
-    height: 400px;
-    max-height: 400px;
-    display: flex;
-    flex-direction: column;
+    height: calc(30vh + 100px);
+    max-height: calc(30vh + 100px);
+    display: block;
     overflow: hidden;
     box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
 .chat-window {
     flex: auto;
+    height: 30vh;
     max-height: calc(100% - 60px);
     background: #2f323b;
     overflow: auto;
@@ -146,12 +146,11 @@ input[type=number]{
     float: right;
     outline: 0 none;
     border: none;
-    background: rgba(255,255,255,.25);
+    background-color: transparent;
     height: 40px;
     width: 40px;
-    border-radius: 50%;
     padding: 2px 0 0 0;
-    margin: 10px;
+    margin-right: 10px;
     transition: all 0.15s ease-in-out;
 }
 .chat-input input[good] + button {
@@ -197,11 +196,15 @@ input[type=number]{
 }
 .messages {
     flex: 1 0 auto;
+    overflow: hidden
 }
 .msg {
-    display: inline-block;
+    display: block;
     font-size: 11pt;
     line-height: 13pt;
+    word-wrap: wrap;
+    word-break: break-all;
+    max-width: 166px;
     color: rgba(255,255,255,.7);
     margin: 0 0 4px 0;
 }
@@ -228,9 +231,19 @@ input[type=number]{
     margin: 0 0 10px 10px;
 }
 .msg-self .msg {
-    text-align: right;
+    text-align: left;
 }
 .msg-self .timestamp {
     text-align: right;
+}
+
+.chatToggleButton { 
+    display: none; 
+    width: 58px; 
+    height: 58px; 
+    padding-left: 5px; 
+    padding-top: 5px; 
+    background-color: #B8B0BB;
+    border-radius: 5rem;
 }
   

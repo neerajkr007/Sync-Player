@@ -9,6 +9,7 @@ function getStarted()
     let cancelButton = document.getElementById('modal-cancel')
     cancelButton.innerHTML = "confirm"
     cancelButton.onclick = ()=>{
+        document.getElementById("chatBox").style.display = "block"
         document.getElementById("getStartedButton").innerHTML = "Session Type"
         if (document.getElementById("Radios1").checked) {
             document.getElementById("sessionType").innerHTML = " : " + document.getElementById("Radios01").innerHTML
@@ -19,9 +20,5 @@ function getStarted()
     }
     $('#modal').modal('toggle');
 }
-$('.chat-input input').keyup(function(e) {
-    if ($(this).val() == '')
-      $(this).removeAttr('good');
-    else
-      $(this).attr('good', '');
-  });
+
+
