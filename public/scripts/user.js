@@ -145,11 +145,86 @@ function showFriends(friends)
         span2.innerHTML = '<i class="far fa-comment-alt mr-2"></i>Send Message'
         a2.onclick = ()=>{
             a2.parentElement.classList.remove('show')
-            document.getElementById("chatBox").style.display = "block"
-            document.getElementById('message').focus()
-            document.getElementById("chatBoxButton").style.display = "none"
-            document.getElementById("friendNameChat").innerHTML = friends[i]
+            
             friendsName = friends[i]
+            let main = document.getElementById('main')
+
+
+            let div0 = document.createElement('div')
+            div0.setAttribute('class', "fixed-bottom mb-5 mt-10")
+            div0.setAttribute('style', 'left: calc(95% - 300px); display: none;')
+            div0.id = "chatBox"+friends[i]
+
+
+            let section0 = document.createElement('section')
+            section0.setAttribute('class', 'chatbox')
+
+            
+            let div1 = document.createElement('div')
+            div1.setAttribute('style', 'min-height: 50px; padding-top: 16px; background-color: #2F323B; border-bottom: 1px solid #2671ff')
+
+
+            let span0 = document.createElement('span')
+            span0.setAttribute('class', 'text-white')
+
+
+            let p = document.createElement('p')
+            p.id = "friendNameChat"+friends[i]
+            p.setAttribute('class', 'd-inline-flex ml-3 mb-0')
+
+            span0.appendChild(p)
+
+
+            let itag = document.createElement('i')
+            itag.setAttribute('class', 'fas fa-times fa-1x float-right mr-3 d-inline-flex')
+            itag.setAttribute('onclick', "hideChat(-1, '"+friends[i]+"')")
+
+            span0.appendChild(itag)
+            div1.appendChild(span0)
+            section0.appendChild(div1)
+
+
+            let section1 = document.createElement('section')
+            section1.id = "chatWindow"+friends[i]
+            section1.setAttribute('class', "chat-window")
+
+
+            section0.appendChild(section1)
+
+
+            let form = document.createElement('form')
+            form.setAttribute('class', 'chat-input')
+            form.setAttribute('onsubmit', 'return false;')
+            form.innerHTML = '<input id="message' + friends[i] + '" class="messageInput" type="text" autocomplete="off" placeholder="enter a message" />'
+            let btn = document.createElement('button')
+            btn.setAttribute('class', 'noBorder mt-2')
+            btn.innerHTML = '<img src="https://img.icons8.com/fluent/48/000000/filled-sent.png"/>'
+            btn.setAttribute('onclick', "sendMessage('" + friends[i] + "')")
+            form.appendChild(btn)
+
+
+            section0.appendChild(form)
+            div0.appendChild(section0)
+            main.appendChild(div0)
+
+
+            // let div2 = document.createElement('div')
+            // div2.setAttribute('class', 'fixed-bottom mb-5 mt-10 chatToggleButton')
+            // div2.setAttribute('style', 'left: calc(95% - 48px); display: none;')
+            // div2.id = "chatBoxButton"+friends[i]
+            // let span1 = document.createElement('span')
+            // span1.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"width="48" height="48"viewBox="0 0 226 226"style=" fill:#000000;"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><g><path d="M94.16667,169.5h75.33333l28.25,28.25v-103.58333c0,-10.40071 -8.43263,-18.83333 -18.83333,-18.83333h-84.75c-10.40071,0 -18.83333,8.43263 -18.83333,18.83333v56.5c0,10.40071 8.43263,18.83333 18.83333,18.83333" fill="#00a07f"></path><path d="M136.54167,122.41667h-80.04167l-28.25,28.25v-103.58333c0,-10.40071 8.43263,-18.83333 18.83333,-18.83333h89.45833c10.40071,0 18.83333,8.43263 18.83333,18.83333v56.5c0,10.40071 -8.43263,18.83333 -18.83333,18.83333" fill="#666666"></path></g></g></svg>'
+            // span1.setAttribute('onclick', "hideChat(-1, '"+friends[i]+"')")
+
+
+            // div2.appendChild(span1)
+            // main.appendChild(div2)
+
+
+            document.getElementById("chatBox"+friends[i]).style.display = "block"
+            document.getElementById('message'+friends[i]).focus()
+            document.getElementById("chatBoxButton").style.display = "none"
+            document.getElementById("friendNameChat"+friends[i]).innerHTML = friends[i]
         }
 
 
@@ -203,16 +278,16 @@ function showFriends(friends)
     }
 }
 
-function hideChat(n)
+function hideChat(n, friend)
 {
     if(n == -1)
     {
-        document.getElementById("chatBox").style.display = "none"
+        document.getElementById("chatBox"+friend).style.display = "none"
         document.getElementById("chatBoxButton").style.display = "block"
     }
     else
     {
-        document.getElementById("chatBox").style.display = "block"
+        document.getElementById("chatBox"+friend).style.display = "block"
         document.getElementById("chatBoxButton").style.display = "none"
     }
 }
@@ -221,13 +296,13 @@ function displayMessage(n, message, name)
 {
     if(n == 1)
     {
-        document.getElementById("friendNameChat").innerHTML = name
+        document.getElementById("friendNameChat"+name).innerHTML = name
     }
-    document.getElementById("chatBox").style.display = "block"
+    document.getElementById("chatBox"+name).style.display = "block"
     document.getElementById("chatBoxButton").style.display = "none"
     let messageType = {0:"msg-self", 1:"msg-remote"}
     let userImg = {0:"//gravatar.com/avatar/56234674574535734573000000000001?d=retro", 1:"//gravatar.com/avatar/56234674574535734573000000000001?d=retro"}
-    let chatWindow = document.getElementById("chatWindow")
+    let chatWindow = document.getElementById("chatWindow"+name)
 
 
 
@@ -284,20 +359,22 @@ function displayMessage(n, message, name)
     }
     article.appendChild(div0)
     chatWindow.appendChild(article)
-    document.getElementById("chatWindow").scrollTop = document.getElementById("chatWindow").scrollHeight
+    document.getElementById("chatWindow"+name).scrollTop = document.getElementById("chatWindow"+name).scrollHeight
 }
 
-function sendMessage()
+function sendMessage(friend)
 {
-    let message = document.getElementById('message').value
-    document.getElementById('message').value = ""
-    let a = document.getElementById("friendNameChat").innerHTML
-    socket.emit("message", message, a, myName)
+    let message = document.getElementById('message'+friend).value
+    document.getElementById('message'+friend).value = ""
+    let a = document.getElementById("friendNameChat"+friend).innerHTML
 
 
     // 0 for me and 1 for friend
     if(message != "")
+    {
+        socket.emit("message", message, a, myName)
         displayMessage(0, message, "me")
+    }
 }
 
 
@@ -450,13 +527,18 @@ $('#friendsListCol').on('hide.bs.dropdown', function (e) {
     }
 })
 
-let input = document.getElementById("message")
-input.addEventListener("keydown", function(event) {
-    if (event.keyCode === 13) {
-        event.preventDefault();
-        sendMessage()
-    }
-  });
+let input = document.getElementsByClassName("messageInput")
+for(let i = 0; i < input.length; i++)
+{
+    let friend = input[i].parentElement.parentElement.id.slice(6)
+    input[i].addEventListener("keydown", function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            sendMessage(friend)
+        }
+      });
+}
+
 
 
 
