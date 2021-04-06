@@ -471,6 +471,71 @@ io.on('connection', function(socket){
 
 
 
+//          NEW ROOMS STUFF
+
+
+
+    socket.on("createRoom", ()=>{
+        socket.join(socket.id)
+        //console.log(socket.adapter.rooms.get(socket.id).size)
+        //console.log(socket.adapter.rooms.get(socket.id))
+    })
+
+    socket.on("inviteToRoom", async (friendsName, myName)=>{
+        let friend = await Users.findOne({"userName":friendsName})
+        try
+        {
+            SOCKET_LIST[friend._id].emit("invitationToRoom", socket.id, myName)
+            socket.emit("invitedToRoom")
+        }
+        catch
+        {
+            socket.emit("inviteToRoomFailed")
+        }
+    })
+
+    socket.on("acceptInvitationToRoom", (id, myName) => {
+        socket.join(id)
+        setTimeout(() => 
+        {
+            try 
+            {
+                SOCKET_LIST[id].emit("acceptedInviteToRoom", myName)
+                socket.emit("acceptedInvitationToRoom")
+            }
+            catch (e) 
+            {
+                if (e == "TypeError: Cannot read property 'emit' of undefined") 
+                {
+                    SOCKET_LIST[socket.id].emit("accepteInvitationToRoomFailed")
+                }
+            }
+
+        }, 1000);
+        // console.log(socket.adapter.rooms.get(id).size)
+        // console.log(socket.adapter.rooms.get(id))
+    })
+
+    socket.on("rejectInvitationToRoom", (id, friendsName)=>{
+        setTimeout(() => 
+        {
+            try 
+            {
+                SOCKET_LIST[id].emit("rejectInvitationToRoom", friendsName)
+            }
+            catch (e) 
+            {
+                if (e == "TypeError: Cannot read property 'emit' of undefined") 
+                {
+                    SOCKET_LIST[socket.id].emit("accepteInvitationToRoomFailed")
+                }
+            }
+
+        }, 1000);
+    })
+
+
+
 
 //          ROOMS STUFF
 

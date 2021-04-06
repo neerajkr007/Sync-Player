@@ -1,6 +1,7 @@
 const socket = io.connect()
 let friendsName = ""
 let myName = ""
+let mySocketId = ""
 
 
 
@@ -8,7 +9,8 @@ if(window.location.href.match("localhost"))
 {
     try
     {
-        socket.emit("changeSocketId", window.location.href.slice(22))
+        mySocketId = window.location.href.slice(22)
+        socket.emit("changeSocketId", mySocketId)
     }
     catch{}
 }
@@ -16,7 +18,8 @@ else if(window.location.href.match("sync"))
 {
     try
     {
-        socket.emit("changeSocketId", window.location.href.slice(40))
+        mySocketId = window.location.href.slice(40)
+        socket.emit("changeSocketId", mySocketId)
     }
     catch{}
 }
@@ -133,7 +136,8 @@ function showFriends(friends)
         span1.innerHTML = '<i class="fas fa-arrow-circle-left mr-2"></i>Invite to room'
         a1.onclick = ()=>{
             a1.parentElement.classList.remove('show')
-            document.getElementById('')
+            socket.emit('createRoom')
+            socket.emit('inviteToRoom', friends[i], myName)
         }
 
 
@@ -533,7 +537,106 @@ socket.on("message", (n, message, name)=>{
     displayMessage(n, message, name)
 })
 
+socket.on("invitedToRoom", ()=>{
+    document.getElementById('modal-title').innerHTML = "done"
+    document.getElementById('modal-body').innerHTML = "invitation sent"
+    $('#modal').modal('toggle');
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 3000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
 
+socket.on("inviteToRoomFailed", ()=>{
+    document.getElementById('modal-title').innerHTML = "failed"
+    document.getElementById('modal-body').innerHTML = "user is offline"
+    $('#modal').modal('toggle');
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 3000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
+
+socket.on("invitationToRoom", (id, friendsName)=>{
+    document.getElementById('modal-title').innerHTML = "cool"
+    let modalBody = document.getElementById('modal-body')
+    modalBody.innerHTML = friendsName +  " invited you to join his room !"
+    let div = document.createElement('div')
+    let button1 = document.createElement("button")
+    button1.setAttribute("class", "btn btn-success text-white")
+    button1.innerHTML = '<span><i class="fas fa-check"></i></span> Accept'
+    button1.onclick = () => {
+        $('#modal').modal('toggle');
+        socket.emit("acceptInvitationToRoom", id, myName)
+        document.getElementById('modal-cancel').style.display = "block"
+    }
+    let button2 = document.createElement("button")
+    button2.setAttribute("class", "btn btn-danger text-white ml-3")
+    button2.innerHTML = '<span><i class="fas fa-times"></i></span> Decline'
+    button2.onclick = () => {
+        $('#modal').modal('toggle');
+        socket.emit("rejectInvitationToRoom", id, myName)
+        document.getElementById('modal-cancel').style.display = "block"
+    }
+    document.getElementById('modal-cancel').style.display = "none"
+    div.appendChild(button1)
+    div.appendChild(button2)
+    modalBody.appendChild(div)
+    $('#modal').modal('toggle');
+})
+
+socket.on("accepteInvitationToRoomFailed", ()=>{
+    document.getElementById('modal-title').innerHTML = "lol"
+    let modalBody = document.getElementById('modal-body')
+    modalBody.innerHTML = "lol the noob couldnt remain in his own room xd (went offline)"
+    $('#modal').modal('toggle');
+    // let timeOut = setTimeout(() => {
+    //     $('#modal').modal('toggle');
+    // }, 3000);
+    // $('#modal').on('hidden.bs.modal', function (e) {
+    //     clearInterval(timeOut)
+    // })
+})
+
+socket.on("acceptedInviteToRoom", (friendsName)=>{
+    document.getElementById('modal-title').innerHTML = "cool"
+    document.getElementById('modal-body').innerHTML = friendsName + " joined your room !"
+    $('#modal').modal('toggle');
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 3000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
+
+socket.on("acceptedInvitationToRoom", ()=>{
+    document.getElementById('modal-title').innerHTML = "cool"
+    document.getElementById('modal-body').innerHTML = "room joined !"
+    $('#modal').modal('toggle');
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 3000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
+
+socket.on("rejectInvitationToRoom", (friendsName)=>{
+    document.getElementById('modal-title').innerHTML = "damn"
+    document.getElementById('modal-body').innerHTML = friendsName + " rejected your room invitation :{ !"
+    $('#modal').modal('toggle');
+    let timeOut = setTimeout(() => {
+        $('#modal').modal('toggle');
+    }, 3000);
+    $('#modal').on('hidden.bs.modal', function (e) {
+        clearInterval(timeOut)
+    })
+})
 
 
 
