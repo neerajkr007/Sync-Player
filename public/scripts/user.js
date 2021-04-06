@@ -208,22 +208,9 @@ function showFriends(friends)
             main.appendChild(div0)
 
 
-            // let div2 = document.createElement('div')
-            // div2.setAttribute('class', 'fixed-bottom mb-5 mt-10 chatToggleButton')
-            // div2.setAttribute('style', 'left: calc(95% - 48px); display: none;')
-            // div2.id = "chatBoxButton"+friends[i]
-            // let span1 = document.createElement('span')
-            // span1.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"width="48" height="48"viewBox="0 0 226 226"style=" fill:#000000;"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><g><path d="M94.16667,169.5h75.33333l28.25,28.25v-103.58333c0,-10.40071 -8.43263,-18.83333 -18.83333,-18.83333h-84.75c-10.40071,0 -18.83333,8.43263 -18.83333,18.83333v56.5c0,10.40071 8.43263,18.83333 18.83333,18.83333" fill="#00a07f"></path><path d="M136.54167,122.41667h-80.04167l-28.25,28.25v-103.58333c0,-10.40071 8.43263,-18.83333 18.83333,-18.83333h89.45833c10.40071,0 18.83333,8.43263 18.83333,18.83333v56.5c0,10.40071 -8.43263,18.83333 -18.83333,18.83333" fill="#666666"></path></g></g></svg>'
-            // span1.setAttribute('onclick', "hideChat(-1, '"+friends[i]+"')")
-
-
-            // div2.appendChild(span1)
-            // main.appendChild(div2)
-
 
             document.getElementById("chatBox"+friends[i]).style.display = "block"
             document.getElementById('message'+friends[i]).focus()
-            document.getElementById("chatBoxButton").style.display = "none"
             document.getElementById("friendNameChat"+friends[i]).innerHTML = friends[i]
         }
 
@@ -300,6 +287,15 @@ function displayMessage(n, message, name)
     }
     document.getElementById("chatBox"+name).style.display = "block"
     document.getElementById("chatBoxButton").style.display = "none"
+    let friends = document.querySelectorAll('[id^="chatBox"]')
+    let numberOfFriends = friends.length;
+    for(let i = 1; i < numberOfFriends.length; i++)
+    {
+        if(friends[i].id != "chatBox"+name)
+        {
+            friends[i].style.display = "none"
+        }
+    }
     let messageType = {0:"msg-self", 1:"msg-remote"}
     let userImg = {0:"//gravatar.com/avatar/56234674574535734573000000000001?d=retro", 1:"//gravatar.com/avatar/56234674574535734573000000000001?d=retro"}
     let chatWindow = document.getElementById("chatWindow"+name)
@@ -373,7 +369,30 @@ function sendMessage(friend)
     if(message != "")
     {
         socket.emit("message", message, a, myName)
-        displayMessage(0, message, "me")
+        displayMessage(0, message, friend)
+    }
+}
+
+function chatMenu()
+{
+    let friends = document.querySelectorAll('[id^="chatWindow"]')
+    let chatMenu = document.getElementById('chatWindow')
+    chatMenu.innerHTML = ""
+    let numberOfFriends = friends.length;
+    for(let i = 1; i < numberOfFriends; i++)
+    {
+        if(friends[i].innerHTML != "")
+        {
+            let a = document.createElement('a')
+            a.innerHTML = friends[i].id.slice(10)
+            a.setAttribute('class', 'w-100 btn pt-3 pb-3 text-left')
+            a.setAttribute('style', 'border-top: 1px solid #2671ff; border-bottom: 1px solid #2671ff; color: white; background-color: #5a5e6c;')
+            a.onclick = ()=>{
+                document.getElementById("chatBox").style.display = "none"
+                document.getElementById("chatBox"+friends[i].id.slice(10)).style.display = "block"
+            }
+            chatMenu.appendChild(a)
+        }
     }
 }
 

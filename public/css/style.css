@@ -238,7 +238,7 @@ input[type=number]{
 }
 
 .chatToggleButton { 
-    display: none; 
+    display: block; 
     width: 58px; 
     height: 58px; 
     padding-left: 5px; 
