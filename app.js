@@ -496,12 +496,17 @@ io.on('connection', function(socket){
 
     socket.on("acceptInvitationToRoom", (id, myName) => {
         socket.join(id)
+        for (let item of socket.adapter.rooms.get(id)) {
+            if (item == socket.id) continue
+            console.log('sending init receive to ' + item)
+            SOCKET_LIST[item].emit('initReceive', socket.id, id)
+        }
         setTimeout(() => 
         {
             try 
             {
                 SOCKET_LIST[id].emit("acceptedInviteToRoom", myName)
-                socket.emit("acceptedInvitationToRoom")
+                socket.emit("acceptedInvitationToRoom", id)
             }
             catch (e) 
             {
@@ -533,6 +538,32 @@ io.on('connection', function(socket){
 
         }, 1000);
     })
+
+    socket.on('initSend', (init_socket_id, id) => {
+        console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
+        SOCKET_LIST[init_socket_id].emit('initSend', socket.id, id)
+    })
+
+
+
+
+
+
+//          VOICE CHAT STUFF
+
+
+
+
+
+    socket.on("playAudioEmit", (n, hostId)=>{
+        if(n == 1)
+            io.sockets.emit("playAudio", hostId, socket.id);
+        else if(n == 2)
+            io.sockets.emit("pauseAudio", hostId, socket.id);
+    });
+
+
+
 
 
 
@@ -657,10 +688,7 @@ io.on('connection', function(socket){
         io.sockets.emit("showplayer2", player.roomId);
     });
 
-    socket.on('initSend', (init_socket_id, id) => {
-        console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
-        peers[init_socket_id].emit('initSend', socket.id, id)
-    })
+    
 
     socket.on('sendnextchunkemit', init_socket_id => {
         peers[init_socket_id].emit('sendnextchunk')
@@ -690,12 +718,7 @@ io.on('connection', function(socket){
         }
     })
 
-    socket.on("playAudioEmit", (id, n, speaker)=>{
-        if(n == 1)
-            io.sockets.emit("playAudio", player.roomId, id, speaker);
-        else if(n == 2)
-            io.sockets.emit("pauseAudio", player.roomId, id, speaker);
-    });
+    
 
     socket.on("test", data=>{
         io.sockets.emit("test2", {id:player.roomId, chunk:data.chunk});

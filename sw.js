@@ -2,7 +2,7 @@ const cacheName = "cache-v1"
 const resourcesToPrecache = [
     '/',
     '/index',
-    '/scripts/user.js',
+    //'/scripts/user.js',
     '/css/style.css'
 ]
 

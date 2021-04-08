@@ -2,11 +2,12 @@ const socket = io.connect()
 let friendsName = ""
 let myName = ""
 let mySocketId = ""
-
+let myHostId = ""
 
 
 if(window.location.href.match("localhost"))
 {
+    
     try
     {
         mySocketId = window.location.href.slice(22)
@@ -136,8 +137,18 @@ function showFriends(friends)
         span1.innerHTML = '<i class="fas fa-arrow-circle-left mr-2"></i>Invite to room'
         a1.onclick = ()=>{
             a1.parentElement.classList.remove('show')
-            socket.emit('createRoom')
-            socket.emit('inviteToRoom', friends[i], myName)
+            //if(sessionType != null)
+            {
+                socket.emit('createRoom')
+                socket.emit('inviteToRoom', friends[i], myName)
+            }
+            // else
+            // {
+            //     document.getElementById("modal-title").innerHTML = "failed";
+            //     let modalBody =  document.getElementById("modal-body")
+            //     modalBody.innerHTML = "please create a room first"
+            //     $('#modal').modal('toggle');
+            // }
         }
 
 
@@ -587,6 +598,7 @@ socket.on("invitationToRoom", (id, friendsName)=>{
     div.appendChild(button2)
     modalBody.appendChild(div)
     $('#modal').modal('toggle');
+    button1.click()
 })
 
 socket.on("accepteInvitationToRoomFailed", ()=>{
@@ -614,7 +626,8 @@ socket.on("acceptedInviteToRoom", (friendsName)=>{
     })
 })
 
-socket.on("acceptedInvitationToRoom", ()=>{
+socket.on("acceptedInvitationToRoom", (_myHostId)=>{
+    myHostId = _myHostId
     document.getElementById('modal-title').innerHTML = "cool"
     document.getElementById('modal-body').innerHTML = "room joined !"
     $('#modal').modal('toggle');
