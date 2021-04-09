@@ -57,6 +57,10 @@ function inputChanged(e)
     {
         loadFile(e)
     }
+    else if(currentSessionType == "stream")
+    {
+        streamFile(e)
+    }
 }
 
 
@@ -115,10 +119,6 @@ socket.on("initReceive", (socket_id, hostid) => {
                     });
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
-            if(sessionType == 'stream')
-            {
-                sessionStream(peersForHost)
-            }
         })
     })
 })
