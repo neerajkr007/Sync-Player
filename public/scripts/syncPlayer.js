@@ -98,6 +98,7 @@ socket.on("initReceive", (socket_id, hostid) => {
     peers[socket_id].on('connection', function (conn) {
         conn.on('open', () => {
             console.log("connected")
+            document.getElementById('playerlist').style.display = "block"
             if(myHostId == mySocketId)
             {
                 peersForHost.push(peers[socket_id])
@@ -148,6 +149,15 @@ socket.on('initSend', (socket_id, ida) => {
         var conn = peers[socket_id].connect(ida)
         conn.on('open', function () {
             console.log("connected")
+            document.getElementById('playerlist').style.display = "block"
+            document.getElementById('modal-title').innerHTML = "Success"
+            document.getElementById("modal-body").innerHTML = "connected"
+            let timeOut = setTimeout(() => {
+                $('#modal').modal('toggle');
+            }, 1000);
+            $('#modal').on('hidden.bs.modal', function (e) {
+                clearInterval(timeOut)
+            })
             navigator.mediaDevices.getUserMedia({
                 audio: true
             }).then((stream) => {
@@ -160,7 +170,7 @@ socket.on('initSend', (socket_id, ida) => {
                     newAud.id = socket_id;
                     document.getElementById("audioPlayer").appendChild(newAud);
                 });
-            }).catch(e => { alert(`getusermedia error ${e.name}`); micWorking = false })
+            }).catch(e => { alert(`getusermedia error ${e.name}`);})
             //console.log(peers)
         })
     })

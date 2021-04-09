@@ -153,9 +153,10 @@ function showFriends(friends)
 
 
 
-        let a2 = document.createElement('a')
-        a2.setAttribute("class", "dropdown-item hoverPointer p-0 ml-3")
+        let a2 = document.createElement('button')
+        a2.setAttribute("class", "dropdown-item hoverPointer noBorder p-0 ml-3")
         a2.setAttribute("style", "width: fit-content;")
+        a2.id = "sendMessageButton"+friends[i]
         let span2 = document.createElement('span')
         span2.innerHTML = '<i class="far fa-comment-alt mr-2"></i>Send Message'
         a2.onclick = ()=>{
@@ -414,6 +415,15 @@ function chatMenu()
     }
 }
 
+function updateRoomMemberList(roomMemberArray)
+{
+    document.getElementById('playerList').innerHTML = ""
+    for(let i = 0; i < roomMemberArray.length; i++)
+    {
+        document.getElementById('playerList').innerHTML += '<li id="roomMemberList' + roomMemberArray[i] + '" class="list-group-item" style="background: #404040 !important;">' + roomMemberArray[i] + '</li>'
+    }
+}
+
 
 
 
@@ -548,6 +558,7 @@ socket.on("friendOffline", friendsName=>{
 })
 
 socket.on("message", (n, message, name)=>{
+    document.getElementById("sendMessageButton"+name).click()
     displayMessage(n, message, name)
 })
 
@@ -631,17 +642,13 @@ socket.on("acceptedInviteToRoom", (friendsName)=>{
 
 socket.on("acceptedInvitationToRoom", (_myHostId, hostName)=>{
     myHostId = _myHostId
-    document.getElementById('modal-title').innerHTML = "cool"
-    document.getElementById('modal-body').innerHTML = "room joined !"
+    document.getElementById('modal-title').innerHTML = "connecting..." 
+    let text = "connecting to "+ hostName + "'s room, please wait"
+    document.getElementById("modal-body").innerHTML = '<div class="d-flex inline-flex"><div><p class="display-4 mr-4" style="font-size:medium; margin-bottom:0; margin-top:0.1rem">'+text+'</p></div><div class="spinner-border" role="status"><span class="sr-only"></span></div></div>'
+    
     document.getElementById('welcomeUser').innerHTML = hostName + "'s room"
     document.getElementById('hostUI').style.display = "none"
     $('#modal').modal('toggle');
-    let timeOut = setTimeout(() => {
-        $('#modal').modal('toggle');
-    }, 3000);
-    $('#modal').on('hidden.bs.modal', function (e) {
-        clearInterval(timeOut)
-    })
 })
 
 socket.on("rejectInvitationToRoom", (friendsName)=>{
@@ -655,6 +662,17 @@ socket.on("rejectInvitationToRoom", (friendsName)=>{
         clearInterval(timeOut)
     })
 })
+
+socket.on("joinedRoom", (roomMemberArray)=>{
+    updateRoomMemberList(roomMemberArray)
+    //console.log(name + " joined the room")
+})
+
+socket.on("leftRoom", (roomMemberArray)=>{
+    updateRoomMemberList(roomMemberArray)
+    //console.log(name + " left the room")
+})
+
 
 
 

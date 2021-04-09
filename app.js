@@ -123,13 +123,6 @@ var isPLayerShown = false;
 
 io.on('connection', function(socket){
     console.log('socket connected ');
-    socket.id = String(Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(1000) + 1) + Math.ceil(1000)));
-    console.log(socket.id);
-    SOCKET_LIST[socket.id] = socket;
-    
-    var player = Player(socket.id);
-    PLAYER_LIST[socket.id] = player;
-    socket.emit("mysocketid", socket.id);
 
     function callEventify(id){
         eventify(ROOM_LIST[id], function(updatedArr) {
@@ -154,16 +147,17 @@ io.on('connection', function(socket){
           });
     }
 
-
+    var player
 
     socket.on("changeSocketId", async (newId)=>{
-        delete SOCKET_LIST[socket.id]
         socket.id = newId
         SOCKET_LIST[socket.id] = socket;
+        player = Player(socket.id);
+        PLAYER_LIST[socket.id] = player;
         //console.log(socket.id)
         let me = await Users.findOne({"_id":newId})
         socket.emit("welcomeUser", me.userName)
-        
+        player.name = me.userName
         let user2 = []
         if (me.requests.length != 0) {
             for (let i = 0; i < me.requests.length; i++) {
@@ -458,9 +452,6 @@ io.on('connection', function(socket){
 
 
     socket.on("message", async (message, friendsName, myName)=>{
-        console.log(message)
-        console.log(friendsName)
-        console.log(myName)
         let friend = await Users.findOne({"userName":friendsName})
         try
         {
@@ -482,6 +473,7 @@ io.on('connection', function(socket){
 
     socket.on("createRoom", ()=>{
         socket.join(socket.id)
+        SOCKET_LIST[socket.id].emit('joinedRoom', PLAYER_LIST[socket.id].name)
         //console.log(socket.adapter.rooms.get(socket.id).size)
         //console.log(socket.adapter.rooms.get(socket.id))
     })
@@ -501,8 +493,18 @@ io.on('connection', function(socket){
 
     socket.on("acceptInvitationToRoom", (id, myName, friendsName) => {
         socket.join(id)
+        PLAYER_LIST[socket.id].roomId = id
+        let roomMemberArray = []
+        for(let item of socket.adapter.rooms.get(id))
+        {
+            roomMemberArray.push(PLAYER_LIST[item].name)    
+        }
         for (let item of socket.adapter.rooms.get(id)) {
-            if (item == socket.id) continue
+            SOCKET_LIST[item].emit('joinedRoom', roomMemberArray)
+            if (item == socket.id)
+            {
+                continue
+            }
             console.log('sending init receive to ' + item)
             SOCKET_LIST[item].emit('initReceive', socket.id, id)
         }
@@ -792,39 +794,53 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', async function(){
         console.log('socket disconnected ');
-        if(socket.id.length > 4)
+        if(socket.id.length > 20)
         {
             let me = await Users.findOne({"_id":socket.id})
-            for (let i = 0; i < me.friends.length; i++)
+            if(me != null)
             {
-                let friend = await Users.findOne({"userName":me.friends[i]})
-                if(SOCKET_LIST[friend._id] != undefined)
+                for (let i = 0; i < me.friends.length; i++)
                 {
-                    SOCKET_LIST[friend._id].emit("wentOffline", me.userName)
-                }
-            } 
+                    let friend = await Users.findOne({"userName":me.friends[i]})
+                    if(SOCKET_LIST[friend._id] != undefined)
+                    {
+                        SOCKET_LIST[friend._id].emit("wentOffline", me.userName)
+                    }
+                } 
+            }
+            let roomMemberArray = []
+            for(let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+            {
+                if (item == socket.id) continue
+                roomMemberArray.push(PLAYER_LIST[item].name)    
+            }
+            for (let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+            {
+                SOCKET_LIST[item].emit('leftRoom', roomMemberArray)
+            }
+            
         }
-        io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
-        io.sockets.emit('removePeer', socket.id, player.roomId)
+        //io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");
+        //io.sockets.emit('removePeer', socket.id, player.roomId)
         delete peers[socket.id]
-        socket.leave(player.roomId);
+        //socket.leave(player.roomId);
         delete SOCKET_LIST[socket.id];  
         delete PLAYER_LIST[socket.id];
-        for(var i in ROOM_LIST[player.hostNumber]){
-            if(player == ROOM_LIST[player.hostNumber][i])
-            {
-                ROOM_LIST[player.hostNumber].splice(i, 1);
-                if(ROOM_LIST[player.hostNumber].length != 0)
-                {
-                    io.sockets.emit("clearPlayerList", ROOM_LIST[player.hostNumber][0].roomId);
-                    io.sockets.emit("updatePlayerList", "connected users -", ROOM_LIST[player.hostNumber][0].roomId)
-                }
-                for(var i = 0; i<ROOM_LIST[player.hostNumber].length; i++){
-                    io.sockets.emit("updatePlayerList", ROOM_LIST[player.hostNumber][i].name, ROOM_LIST[player.hostNumber][i].roomId)
-                }
-            }
-        }
-        if(player.isHost)
-            delete ROOM_LIST[player.hostNumber]
+        // for(var i in ROOM_LIST[player.hostNumber]){
+        //     if(player == ROOM_LIST[player.hostNumber][i])
+        //     {
+        //         ROOM_LIST[player.hostNumber].splice(i, 1);
+        //         if(ROOM_LIST[player.hostNumber].length != 0)
+        //         {
+        //             io.sockets.emit("clearPlayerList", ROOM_LIST[player.hostNumber][0].roomId);
+        //             io.sockets.emit("updatePlayerList", "connected users -", ROOM_LIST[player.hostNumber][0].roomId)
+        //         }
+        //         for(var i = 0; i<ROOM_LIST[player.hostNumber].length; i++){
+        //             io.sockets.emit("updatePlayerList", ROOM_LIST[player.hostNumber][i].name, ROOM_LIST[player.hostNumber][i].roomId)
+        //         }
+        //     }
+        // }
+        // if(player.isHost)
+        //     delete ROOM_LIST[player.hostNumber]
     });
 });
