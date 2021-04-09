@@ -1,6 +1,6 @@
 
 let sessionType = null
-
+let currentSessionType = ""
 
 
 function getStarted() {
@@ -16,22 +16,26 @@ function getStarted() {
         if (document.getElementById("Radios1").checked) {
             sessionType = "load"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios01").innerHTML
-
         }
         else {
             sessionType = "stream"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios02").innerHTML
         }
+        document.getElementById('player').style.display = "block"
         document.getElementById("randomElement1").remove()
         document.getElementById('welcomeUser').innerHTML = myName + "'s room"
 
     }
     $('#modal').modal('toggle');
+    $('#modal').on('hidden.bs.modal', function (e) {
+        cancelButton.onclick = null
+    })
 }
 
 
 let peers = {}
 let voiceOn = true
+let peersForHost = []
 
 function toggleVoice() 
 {
@@ -44,6 +48,14 @@ function toggleVoice()
         socket.emit("playAudioEmit", 2, myHostId)
         voiceOn = true
         document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
+    }
+}
+
+function inputChanged(e)
+{
+    if(currentSessionType == "load")
+    {
+        loadFile(e)
     }
 }
 
@@ -76,12 +88,18 @@ socket.on("initReceive", (socket_id, hostid) => {
 
     peers[socket_id].on('open', function (id) {
         socket.emit('initSend', socket_id, id)
-        console.log("peer open " + id)
+        //console.log("peer open " + id)
     });
 
     peers[socket_id].on('connection', function (conn) {
         conn.on('open', () => {
             console.log("connected")
+            if(myHostId == mySocketId)
+            {
+                peersForHost.push(peers[socket_id])
+                currentSessionType = sessionType
+                socket.emit("sessionType", sessionType)
+            }
             navigator.mediaDevices.getUserMedia({
                 audio: true
             }).then((stream) => {
@@ -89,21 +107,25 @@ socket.on("initReceive", (socket_id, hostid) => {
                     call.answer(stream);
                     call.on('stream', function (audstream) {
                         document.getElementById("micButton").style.display = "block"
-                        console.log("stream connected to " + socket_id)
+                        //console.log("stream connected to " + socket_id)
                         let newAud = document.createElement('audio');
                         newAud.srcObject = audstream;
                         newAud.id = socket_id;
                         document.getElementById("audioPlayer").appendChild(newAud);
                     });
                 });
-            }).catch(e => { alert(`getusermedia error ${e.name}`); micWorking = false })
+            }).catch(e => { alert(`getusermedia error ${e.name}`);})
+            if(sessionType == 'stream')
+            {
+                sessionStream(peersForHost)
+            }
         })
     })
 })
 
 socket.on('initSend', (socket_id, ida) => {
-    console.log(myHostId)
-    console.log('INIT SEND ' + socket_id + ida)
+    //console.log(myHostId)
+    //console.log('INIT SEND ' + socket_id + ida)
     peers[socket_id] = new Peer({
         host: 'peerjs-server.herokuapp.com', secure: true, port: 443, config: {
             'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
@@ -122,7 +144,7 @@ socket.on('initSend', (socket_id, ida) => {
     });
 
     peers[socket_id].on('open', function (id) {
-        console.log("peer open " + id)
+        //console.log("peer open " + id)
         var conn = peers[socket_id].connect(ida)
         conn.on('open', function () {
             console.log("connected")
@@ -132,22 +154,20 @@ socket.on('initSend', (socket_id, ida) => {
                 var call = peers[socket_id].call(ida, stream)
                 call.on('stream', function (audstream) {
                     document.getElementById("micButton").style.display = "block"
-                    console.log("call connected to " + socket_id)
+                    //console.log("call connected to " + socket_id)
                     let newAud = document.createElement('audio');
                     newAud.srcObject = audstream;
                     newAud.id = socket_id;
                     document.getElementById("audioPlayer").appendChild(newAud);
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`); micWorking = false })
+            //console.log(peers)
         })
     })
 
 
 })
 
-socket.on("yolo99", ()=>{
-    console.log("rooms shit works maan !!")
-})
 
 socket.on("playAudio", (roomId, id)=>{
 	if(roomId == myHostId && id != mySocketId)
@@ -170,4 +190,19 @@ socket.on("pauseAudio", (roomId, id )=>{
 		catch(e){}
 	}
 });
+
+socket.on("sessionType", (_currentSessionType)=>{
+    currentSessionType = _currentSessionType
+    document.getElementById('player').style.display = "block"
+    if(currentSessionType == "load")
+    {
+        document.getElementById('1').style.display = "block"
+        document.getElementById('myfile').style.display = "block"
+    }
+    else if(currentSessionType == "stream")
+    {
+        document.getElementById('1').style.display = "none"
+        document.getElementById('myfile').style.display = "none"
+    }
+})
 

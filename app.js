@@ -77,6 +77,11 @@ app.get('/6064c38c51fb84001718d5f3', (req, res) =>
     res.sendFile(__dirname + '/user.html');
 });
 
+app.get('/606f5bec26e2936274a3361f', (req, res) =>
+{
+    res.sendFile(__dirname + '/user.html');
+});
+
 app.use(express.static(__dirname + '/public'));
 
 serv.listen(process.env.PORT || 3000); 
@@ -494,7 +499,7 @@ io.on('connection', function(socket){
         }
     })
 
-    socket.on("acceptInvitationToRoom", (id, myName) => {
+    socket.on("acceptInvitationToRoom", (id, myName, friendsName) => {
         socket.join(id)
         for (let item of socket.adapter.rooms.get(id)) {
             if (item == socket.id) continue
@@ -506,7 +511,7 @@ io.on('connection', function(socket){
             try 
             {
                 SOCKET_LIST[id].emit("acceptedInviteToRoom", myName)
-                socket.emit("acceptedInvitationToRoom", id)
+                socket.emit("acceptedInvitationToRoom", id, friendsName)
             }
             catch (e) 
             {
@@ -544,8 +549,13 @@ io.on('connection', function(socket){
         SOCKET_LIST[init_socket_id].emit('initSend', socket.id, id)
     })
 
+    socket.on("sessionType", (currentSessionType)=>{
+        let lastestJoinedUser;
+        for(lastestJoinedUser of socket.adapter.rooms.get(socket.id));
+        SOCKET_LIST[lastestJoinedUser].emit("sessionType", currentSessionType)
+    })
 
-
+    
 
 
 
@@ -566,9 +576,63 @@ io.on('connection', function(socket){
 
 
 
+//          "LOAD FILE SESSION TYPE STUFF"
+
+
+
+
+    socket.on("hostLoadedFile", (hostId)=>{
+        for (let item of socket.adapter.rooms.get(hostId)) {
+            if (item == socket.id) continue
+            SOCKET_LIST[item].emit('hostLoadedFile')
+        }
+    })
+
+    socket.on("getCurrentTime",(currentSessionType, hostId, currentFileSize)=>{
+        if(currentSessionType == "load")
+        {
+            SOCKET_LIST[hostId].emit("getCurrentTimeLoad", socket.id, currentFileSize)
+        }
+    })
+
+    socket.on("setCurrentTime", (id, currentTime, currentSessionType)=>{
+        console.log(currentTime)
+        if(currentSessionType == "load")
+        {
+            SOCKET_LIST[id].emit("setCurrentTimeLoad", currentTime)
+        }
+    })
+
+    socket.on("wrongFile", id=>{
+        SOCKET_LIST[id].emit("wrongFile")
+    })
+
+
+
+
+
+
+//          COMMON SYNC STUFF
+
+
+
+
+    socket.on("pauseEmit", (time)=>{
+        for (let item of socket.adapter.rooms.get(socket.id)) {
+            SOCKET_LIST[item].emit('pause', time)
+        }
+    });
+
+    socket.on("playEmit", (time)=>{
+        for (let item of socket.adapter.rooms.get(socket.id)) {
+            SOCKET_LIST[item].emit('play', time)
+        }
+    });
+
 
 
 //          ROOMS STUFF
+
 
 
 
@@ -670,13 +734,7 @@ io.on('connection', function(socket){
         io.sockets.emit("playVideo", player.roomId);
     });
 
-    socket.on("pauseEmit", ()=>{
-        io.sockets.emit("pause", player.roomId);
-    });
-
-    socket.on("playEmit", (time)=>{
-        io.sockets.emit("play", player.roomId, time);
-    });
+    
 
     socket.on("sendNextchunkemit", ()=>{
         //console.log("recieved")

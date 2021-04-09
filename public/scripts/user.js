@@ -278,6 +278,9 @@ function showFriends(friends)
             return false;
         });
     }
+    document.getElementById('friendsButton2').click()
+    document.getElementById('friendsButton').setAttribute('style', "min-height: " + (document.getElementById('friendsList').offsetHeight + 200) + "px !important;")
+    document.getElementById('friendsButton2').click()
 }
 
 function hideChat(n, friend)
@@ -582,7 +585,7 @@ socket.on("invitationToRoom", (id, friendsName)=>{
     button1.innerHTML = '<span><i class="fas fa-check"></i></span> Accept'
     button1.onclick = () => {
         $('#modal').modal('toggle');
-        socket.emit("acceptInvitationToRoom", id, myName)
+        socket.emit("acceptInvitationToRoom", id, myName, friendsName)
         document.getElementById('modal-cancel').style.display = "block"
     }
     let button2 = document.createElement("button")
@@ -626,10 +629,12 @@ socket.on("acceptedInviteToRoom", (friendsName)=>{
     })
 })
 
-socket.on("acceptedInvitationToRoom", (_myHostId)=>{
+socket.on("acceptedInvitationToRoom", (_myHostId, hostName)=>{
     myHostId = _myHostId
     document.getElementById('modal-title').innerHTML = "cool"
     document.getElementById('modal-body').innerHTML = "room joined !"
+    document.getElementById('welcomeUser').innerHTML = hostName + "'s room"
+    document.getElementById('hostUI').style.display = "none"
     $('#modal').modal('toggle');
     let timeOut = setTimeout(() => {
         $('#modal').modal('toggle');
