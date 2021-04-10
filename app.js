@@ -493,37 +493,35 @@ io.on('connection', function(socket){
 
     socket.on("acceptInvitationToRoom", (id, myName, friendsName) => {
         socket.join(id)
-        PLAYER_LIST[socket.id].roomId = id
-        let roomMemberArray = []
-        for(let item of socket.adapter.rooms.get(id))
-        {
-            roomMemberArray.push(PLAYER_LIST[item].name)    
-        }
-        for (let item of socket.adapter.rooms.get(id)) {
-            SOCKET_LIST[item].emit('joinedRoom', roomMemberArray)
-            if (item == socket.id)
-            {
-                continue
-            }
-            console.log('sending init receive to ' + item)
-            SOCKET_LIST[item].emit('initReceive', socket.id, id)
-        }
-        setTimeout(() => 
-        {
             try 
             {
+                let roomMemberArray = []
+                for(let item of socket.adapter.rooms.get(id))
+                {
+                    roomMemberArray.push(PLAYER_LIST[item].name)    
+                }
+                for (let item of socket.adapter.rooms.get(id)) 
+                {
+                    SOCKET_LIST[item].emit('joinedRoom', roomMemberArray)
+                    if (item == socket.id)
+                    {
+                        continue
+                    }
+                    console.log('sending init receive to ' + item)
+                    SOCKET_LIST[item].emit('initReceive', socket.id, id)
+                }
                 SOCKET_LIST[id].emit("acceptedInviteToRoom", myName)
                 socket.emit("acceptedInvitationToRoom", id, friendsName)
+                PLAYER_LIST[socket.id].roomId = id
             }
             catch (e) 
             {
+                console.log(e)
                 if (e == "TypeError: Cannot read property 'emit' of undefined") 
                 {
                     SOCKET_LIST[socket.id].emit("accepteInvitationToRoomFailed")
                 }
             }
-
-        }, 1000);
         // console.log(socket.adapter.rooms.get(id).size)
         // console.log(socket.adapter.rooms.get(id))
     })
@@ -578,7 +576,7 @@ io.on('connection', function(socket){
 
 
 
-//          "LOAD FILE SESSION TYPE STUFF"
+//          "LOAD FILE SESSION" TYPE STUFF
 
 
 
@@ -607,6 +605,22 @@ io.on('connection', function(socket){
 
     socket.on("wrongFile", id=>{
         SOCKET_LIST[id].emit("wrongFile")
+    })
+
+
+
+
+
+//          "STREAM SESSION" TYPE STUFF
+
+
+
+
+
+    socket.on("streamInfo", (size, length, hostId)=>{
+        for (let item of socket.adapter.rooms.get(hostId)) {
+            SOCKET_LIST[item].emit('streamInfo', size, length)
+        }
     })
 
 
@@ -809,15 +823,23 @@ io.on('connection', function(socket){
                 } 
             }
             let roomMemberArray = []
-            for(let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+            try
             {
-                if (item == socket.id) continue
-                roomMemberArray.push(PLAYER_LIST[item].name)    
+                for(let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+                {
+                    if (item == socket.id) continue
+                    roomMemberArray.push(PLAYER_LIST[item].name)    
+                }
+                for (let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+                {
+                    SOCKET_LIST[item].emit('leftRoom', roomMemberArray)
+                }
             }
-            for (let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+            catch
             {
-                SOCKET_LIST[item].emit('leftRoom', roomMemberArray)
+
             }
+            
             
         }
         //io.sockets.emit("chatToOthers", player.roomId, player.name+" left the room", test, " ");

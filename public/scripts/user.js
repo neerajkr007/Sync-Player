@@ -642,13 +642,13 @@ socket.on("acceptedInviteToRoom", (friendsName)=>{
 
 socket.on("acceptedInvitationToRoom", (_myHostId, hostName)=>{
     myHostId = _myHostId
-    document.getElementById('modal-title').innerHTML = "connecting..." 
-    let text = "connecting to "+ hostName + "'s room, please wait"
-    document.getElementById("modal-body").innerHTML = '<div class="d-flex inline-flex"><div><p class="display-4 mr-4" style="font-size:medium; margin-bottom:0; margin-top:0.1rem">'+text+'</p></div><div class="spinner-border" role="status"><span class="sr-only"></span></div></div>'
-    
     document.getElementById('welcomeUser').innerHTML = hostName + "'s room"
     document.getElementById('hostUI').style.display = "none"
-    $('#modal').modal('toggle');
+        document.getElementById('modal-title').innerHTML = "connecting..." 
+        let text = "connecting to "+ hostName + "'s room, please wait"
+        document.getElementById("modal-body").innerHTML = '<div class="d-flex inline-flex"><div><p class="display-4 mr-4" style="font-size:medium; margin-bottom:0; margin-top:0.1rem">'+text+'</p></div><div class="spinner-border" role="status"><span class="sr-only"></span></div></div>'
+        $('#modal').modal('toggle');       
+    
 })
 
 socket.on("rejectInvitationToRoom", (friendsName)=>{

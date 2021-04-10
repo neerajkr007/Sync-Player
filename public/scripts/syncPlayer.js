@@ -16,12 +16,12 @@ function getStarted() {
         if (document.getElementById("Radios1").checked) {
             sessionType = "load"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios01").innerHTML
+            document.getElementById('player').style.display = "block"
         }
         else {
             sessionType = "stream"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios02").innerHTML
         }
-        document.getElementById('player').style.display = "block"
         document.getElementById("randomElement1").remove()
         document.getElementById('welcomeUser').innerHTML = myName + "'s room"
 
@@ -53,11 +53,11 @@ function toggleVoice()
 
 function inputChanged(e)
 {
-    if(currentSessionType == "load")
+    if(sessionType == "load")
     {
         loadFile(e)
     }
-    else if(currentSessionType == "stream")
+    else if(sessionType == "stream")
     {
         streamFile(e)
     }
@@ -68,7 +68,7 @@ function inputChanged(e)
 
 //          SOCKET STUFF
 
-
+let once = true
 
 socket.on("initReceive", (socket_id, hostid) => {
     myHostId = hostid
@@ -98,13 +98,17 @@ socket.on("initReceive", (socket_id, hostid) => {
     peers[socket_id].on('connection', function (conn) {
         conn.on('open', () => {
             console.log("connected")
-            document.getElementById('playerlist').style.display = "block"
-            if(myHostId == mySocketId)
+            if(once)
             {
-                peersForHost.push(peers[socket_id])
-                currentSessionType = sessionType
-                socket.emit("sessionType", sessionType)
+                document.getElementById('player').style.display = "block"
+                if(myHostId == mySocketId)
+                {
+                    document.getElementById('1').style.display = "block"
+                    document.getElementById('myfile').style.display = "block"
+                }
+                once = false
             }
+            document.getElementById('playerlist').style.display = "block"
             navigator.mediaDevices.getUserMedia({
                 audio: true
             }).then((stream) => {
@@ -120,6 +124,13 @@ socket.on("initReceive", (socket_id, hostid) => {
                     });
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
+            if(myHostId == mySocketId)
+            {
+                peersForHost.push(peers[socket_id])
+                currentSessionType = sessionType
+                socket.emit("sessionType", sessionType)
+                createDataChannel(peers[socket_id], conn)
+            }
         })
     })
 })
@@ -149,6 +160,13 @@ socket.on('initSend', (socket_id, ida) => {
         var conn = peers[socket_id].connect(ida)
         conn.on('open', function () {
             console.log("connected")
+            if(once)
+            {
+                document.getElementById('player').style.display = "block"
+                document.getElementById('1').style.display = "none"
+                document.getElementById('myfile').style.display = "none"
+                once = false
+            }
             document.getElementById('playerlist').style.display = "block"
             document.getElementById('modal-title').innerHTML = "Success"
             document.getElementById("modal-body").innerHTML = "connected"
@@ -172,6 +190,10 @@ socket.on('initSend', (socket_id, ida) => {
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
             //console.log(peers)
+            if(myHostId != mySocketId)
+            {
+                recieveDataChannel(peers[socket_id], conn)
+            }
         })
     })
 
@@ -203,16 +225,17 @@ socket.on("pauseAudio", (roomId, id )=>{
 
 socket.on("sessionType", (_currentSessionType)=>{
     currentSessionType = _currentSessionType
-    document.getElementById('player').style.display = "block"
+    
     if(currentSessionType == "load")
     {
+        document.getElementById('player').style.display = "block"
         document.getElementById('1').style.display = "block"
         document.getElementById('myfile').style.display = "block"
     }
-    else if(currentSessionType == "stream")
-    {
-        document.getElementById('1').style.display = "none"
-        document.getElementById('myfile').style.display = "none"
-    }
+    // else if(currentSessionType == "stream")
+    // {
+    //     document.getElementById('1').style.display = "none"
+    //     document.getElementById('myfile').style.display = "none"
+    // }
 })
 
