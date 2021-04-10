@@ -80,11 +80,14 @@ function recieveDataChannel(peer, conn)
             if(timeDifference >= 60000 && timeDifference < 65000)
             {
                 loadChunks(URL.createObjectURL(blob))
+                console.log("loaded 60 secs")
                 lastTime = newTime
             }
         }
+        console.log(chunksRecieved + "   " + chunkAmount)
         if(chunksRecieved == chunkAmount)
         {
+            console.log("loaded all")
             loadChunks(URL.createObjectURL(blob))
         }
     });
@@ -145,10 +148,12 @@ function parseFile(file) {
 
 function startSendingChunks()
 {
+    console.log("works ?")
     for(let i = 0; i < chunkArray.length; i++)
     {
         for(let j = 0; j < connArray.length; j++)
         {
+            console.log(i + " sent to " + j)
             connArray[j].send({chunk:chunkArray[i]})
         }
     }
