@@ -63,6 +63,11 @@ function recieveDataChannel(peer, conn)
     let  newTime = 0
     let timeDifference = 0
     conn.on('data', function(data) {
+        if(data.firstCall)
+        {
+            chunksRecieved = 0
+            blobArray = []
+        }
         chunksRecieved++
         let d = new Date()
         if(once2)
@@ -84,7 +89,7 @@ function recieveDataChannel(peer, conn)
                 lastTime = newTime
             }
         }
-        console.log(chunksRecieved + "   " + chunkAmount)
+        //console.log(chunksRecieved + "   " + chunkAmount)
         if(chunksRecieved == chunkAmount)
         {
             console.log("loaded all")
@@ -147,15 +152,28 @@ function parseFile(file) {
 }
 
 function startSendingChunks()
-{
-    console.log("works ?")
+{   
+    let once = true
     for(let i = 0; i < chunkArray.length; i++)
     {
-        for(let j = 0; j < connArray.length; j++)
+        if(once)
         {
-            console.log(i + " sent to " + j)
-            connArray[j].send({chunk:chunkArray[i]})
+            for(let j = 0; j < connArray.length; j++)
+            {
+                //console.log(i + " sent to " + j)
+                connArray[j].send({chunk:chunkArray[i], firstCall:true})
+            }
+            once = false
         }
+        else
+        {
+            for(let j = 0; j < connArray.length; j++)
+            {
+                //console.log(i + " sent to " + j)
+                connArray[j].send({chunk:chunkArray[i], firstCall:false})
+            }
+        }
+        
     }
 }
 
