@@ -137,18 +137,18 @@ function showFriends(friends)
         span1.innerHTML = '<i class="fas fa-arrow-circle-left mr-2"></i>Invite to room'
         a1.onclick = ()=>{
             a1.parentElement.classList.remove('show')
-            //if(sessionType != null)
+            if(sessionType != null)
             {
                 socket.emit('createRoom')
                 socket.emit('inviteToRoom', friends[i], myName)
             }
-            // else
-            // {
-            //     document.getElementById("modal-title").innerHTML = "failed";
-            //     let modalBody =  document.getElementById("modal-body")
-            //     modalBody.innerHTML = "please create a room first"
-            //     $('#modal').modal('toggle');
-            // }
+            else
+            {
+                document.getElementById("modal-title").innerHTML = "failed";
+                let modalBody =  document.getElementById("modal-body")
+                modalBody.innerHTML = "please create a room first"
+                $('#modal').modal('toggle');
+            }
         }
 
 
@@ -612,7 +612,7 @@ socket.on("invitationToRoom", (id, friendsName)=>{
     div.appendChild(button2)
     modalBody.appendChild(div)
     $('#modal').modal('toggle');
-    button1.click()
+    //button1.click()
 })
 
 socket.on("accepteInvitationToRoomFailed", ()=>{

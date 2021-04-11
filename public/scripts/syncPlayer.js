@@ -1,7 +1,7 @@
 
 let sessionType = null
 let currentSessionType = ""
-
+let hostSocket
 
 function getStarted() {
     document.getElementById("modal-title").innerHTML = "Session Type";
@@ -129,7 +129,7 @@ socket.on("initReceive", (socket_id, hostid) => {
                 peersForHost.push(peers[socket_id])
                 currentSessionType = sessionType
                 socket.emit("sessionType", sessionType)
-                createDataChannel(peers[socket_id], conn)
+                createDataChannel(conn)
             }
         })
     })
@@ -154,7 +154,6 @@ socket.on('initSend', (socket_id, ida) => {
             }]
         }
     });
-
     peers[socket_id].on('open', function (id) {
         //console.log("peer open " + id)
         var conn = peers[socket_id].connect(ida)
@@ -165,6 +164,7 @@ socket.on('initSend', (socket_id, ida) => {
                 document.getElementById('player').style.display = "block"
                 document.getElementById('1').style.display = "none"
                 document.getElementById('myfile').style.display = "none"
+                document.getElementsByClassName("vjs-big-play-button")[0].remove()
                 once = false
             }
             document.getElementById('playerlist').style.display = "block"
@@ -192,7 +192,7 @@ socket.on('initSend', (socket_id, ida) => {
             //console.log(peers)
             if(myHostId != mySocketId)
             {
-                recieveDataChannel(peers[socket_id], conn)
+                recieveDataChannel(conn)
             }
         })
     })
