@@ -29,6 +29,7 @@ function getStarted() {
     $('#modal').modal('toggle');
     $('#modal').on('hidden.bs.modal', function (e) {
         cancelButton.onclick = null
+        cancelButton.innerHTML = "close"
     })
 }
 
@@ -170,6 +171,7 @@ socket.on('initSend', (socket_id, ida) => {
             document.getElementById('playerlist').style.display = "block"
             document.getElementById('modal-title').innerHTML = "Success"
             document.getElementById("modal-body").innerHTML = "connected"
+            socket.emit('connectedToRoom')
             let timeOut = setTimeout(() => {
                 $('#modal').modal('toggle');
             }, 1000);
@@ -199,7 +201,6 @@ socket.on('initSend', (socket_id, ida) => {
 
 
 })
-
 
 socket.on("playAudio", (roomId, id)=>{
 	if(roomId == myHostId && id != mySocketId)

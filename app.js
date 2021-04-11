@@ -510,7 +510,10 @@ io.on('connection', function(socket){
                     console.log('sending init receive to ' + item)
                     SOCKET_LIST[item].emit('initReceive', socket.id, id)
                 }
-                SOCKET_LIST[id].emit("acceptedInviteToRoom", myName)
+                SOCKET_LIST[id].emit("acceptingInviteToRoom", myName)
+                socket.on("connectedToRoom", ()=>{
+                    SOCKET_LIST[id].emit("acceptedInviteToRoom", myName)
+                })
                 socket.emit("acceptedInvitationToRoom", id, friendsName)
                 PLAYER_LIST[socket.id].roomId = id
             }
