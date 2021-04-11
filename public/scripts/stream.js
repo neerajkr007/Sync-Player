@@ -75,6 +75,7 @@ function recieveDataChannel(conn)
             chunksRecieved = 0
             blobArray = []
             once2 = true
+            //conn.send("fileLoaded")
         }
         chunksRecieved++
         let d = new Date()
@@ -110,7 +111,7 @@ function recieveDataChannel(conn)
         }
         else
         {
-            console.log("conn sent for")
+            console.log("conn sent")
             //console.log("conn sent for " + chunksRecieved)
             conn.send({nextChunk:chunksRecieved, isNextFile:data.firstCall})
                 
@@ -174,6 +175,10 @@ function parseFile(file) {
 
 function startSendingChunks()
 {
+    for(let i = 0; i < connArray.length; i++)
+    {
+        connArray[i].off('data')
+    }
     let _isPaused, _currentTime;
     for(let i = 0; i < connArray.length; i++)
     {
@@ -223,33 +228,33 @@ function loadChunks(blob, isPaused, currentTime)
 
 
 
-socket.on("pause", (time) => 
-{
-    //myplayer.currentTime(time);
-    myplayer.pause();
-    if (myHostId == mySocketId) 
-    {
-        var video = document.querySelector('video');
-        video.addEventListener('play', function once() {
-            var time = myplayer.currentTime();
-            video.removeEventListener('play', once)
-            socket.emit("playEmit", time);
-        });
-    }
-});
+// socket.on("pause", (time) => 
+// {
+//     //myplayer.currentTime(time);
+//     myplayer.pause();
+//     if (myHostId == mySocketId) 
+//     {
+//         var video = document.querySelector('video');
+//         video.addEventListener('play', function once() {
+//             var time = myplayer.currentTime();
+//             video.removeEventListener('play', once)
+//             socket.emit("playEmit", time);
+//         });
+//     }
+// });
 
-socket.on("play", (time) => {
-    myplayer.currentTime(time);
-    myplayer.play();
-    if (myHostId == mySocketId) {
-        var video = document.querySelector('video');
-        video.addEventListener('pause', function once() {
-            var time = myplayer.currentTime();
-            video.removeEventListener('pause', once)
-            socket.emit("pauseEmit", time);
-        });
-    }
-});
+// socket.on("play", (time) => {
+//     myplayer.currentTime(time);
+//     myplayer.play();
+//     if (myHostId == mySocketId) {
+//         var video = document.querySelector('video');
+//         video.addEventListener('pause', function once() {
+//             var time = myplayer.currentTime();
+//             video.removeEventListener('pause', once)
+//             socket.emit("pauseEmit", time);
+//         });
+//     }
+// });
 
 socket.on("streamInfo", (size, length)=>{
     currentFileDuration = Math.ceil(Number(length))
