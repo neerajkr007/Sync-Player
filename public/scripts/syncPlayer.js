@@ -74,7 +74,7 @@ let once = true
 socket.on("initReceive", (socket_id, hostid) => {
     myHostId = hostid
     peers[socket_id] = new Peer({
-        host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
+        //host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
         config: {
             'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
             {
@@ -140,7 +140,8 @@ socket.on('initSend', (socket_id, ida) => {
     //console.log(myHostId)
     //console.log('INIT SEND ' + socket_id + ida)
     peers[socket_id] = new Peer({
-        host: 'peerjs-server.herokuapp.com', secure: true, port: 443, config: {
+        //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+        config: {
             'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
             {
                 username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
@@ -192,7 +193,8 @@ socket.on('initSend', (socket_id, ida) => {
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
             //console.log(peers)
-            if(myHostId != mySocketId)
+            console.log(socket_id)
+            if(myHostId == socket_id)
             {
                 recieveDataChannel(conn)
             }

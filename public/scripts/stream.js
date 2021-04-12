@@ -57,19 +57,30 @@ function createDataChannel (conn)
 {
     //conn.send('Hello!');
     connArray.push(conn)
+    if(myplayer.currentTime() > 10)
+    {
+        myplayer.pause()
+        socket.emit("streamInfoToNew", currentFileSize, currentFileDuration, mySocketId)
+        startSendingChunksInBetween(conn)
+    }
 }
 
 let blobArray = []
 let once2 = true
+let once33 = true
 
 function recieveDataChannel(conn)
 {
+    console.log("conn Recieved")
     let chunksRecieved = 0
     let lastTime = 0
     let  newTime = 0
     let timeDifference = 0
+    let buffer = 0
     conn.on('data', function(data) {
-        console.log("recieved next chunk " + data.firstCall)
+        console.log("recieved next chunk")
+        //console.log("recieved next chunk " + data.firstCall)
+        
         if(data.firstCall)
         {
             chunksRecieved = 0
@@ -78,6 +89,15 @@ function recieveDataChannel(conn)
             //conn.send("fileLoaded")
         }
         chunksRecieved++
+        if(data.loadMeta)
+        {
+            chunksRecieved = data.forNewNextIs
+            buffer = (chunksRecieved + Math.round(oneSecondChunks*70))
+            //let blob = new Blob(blobArray,{'type':'video/mp4'});
+            //loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
+            //console.log("loaded first time for new guys")
+        }
+        
         let d = new Date()
         if(once2)
         {
@@ -94,11 +114,19 @@ function recieveDataChannel(conn)
             {
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded worth 70 secs")
+                console.log(chunksRecieved)
             }
+            if(chunksRecieved == buffer)
+            {
+                loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
+                console.log("loaded worth 70 secs for new ones")
+                console.log(chunksRecieved)
+            }
+            
             if(timeDifference >= 60000 && timeDifference < 65000)
             {
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
-                //console.log("loaded after 60 secs")
+                console.log("loaded after 60 secs")
                 lastTime = newTime
             }
         }
@@ -111,7 +139,7 @@ function recieveDataChannel(conn)
         }
         else
         {
-            console.log("conn sent")
+            //console.log("conn sent")
             //console.log("conn sent for " + chunksRecieved)
             conn.send({nextChunk:chunksRecieved, isNextFile:data.firstCall})
                 
@@ -191,7 +219,7 @@ function startSendingChunks()
         connArray[i].on('data', function once(data){
             if(data != "fileLoaded")
             {
-                console.log("sending next chunk for")
+                console.log("sending next chunk for " + i)
                 //console.log("sending next chunk for " + data.nextChunk)
                 _isPaused = myplayer.paused()
                 _currentTime = myplayer.currentTime()
@@ -204,6 +232,43 @@ function startSendingChunks()
             }
         })
     }
+}
+
+let once4 = true
+
+function startSendingChunksInBetween(conn)
+{
+    
+    let _currentTime = myplayer.currentTime()
+    let _isPaused = myplayer.paused()
+    let next = Math.round(myplayer.currentTime()*oneSecondChunks)
+    conn.send({chunk:chunkArray[0], firstCall:true, isPaused:_isPaused, currentTime:_currentTime})
+    conn.on('data', function once(data){
+        if(data != "fileLoaded")
+        {
+            console.log("sending next chunk for")
+            //console.log("sending next chunk for " + data.nextChunk)
+            _isPaused = myplayer.paused()
+            _currentTime = myplayer.currentTime()
+            if(data.nextChunk <= Math.round(oneSecondChunks*5))
+            conn.send({chunk:chunkArray[data.nextChunk], firstCall:false, isPaused:_isPaused, currentTime:_currentTime})
+            else if(once4)
+            {
+                conn.send({chunk:chunkArray[data.nextChunk], firstCall:false, isPaused:_isPaused, currentTime:_currentTime, forNewNextIs:next, loadMeta:true})
+                once4 = false
+            }
+            else
+            {
+                conn.send({chunk:chunkArray[data.nextChunk], firstCall:false, isPaused:_isPaused, currentTime:_currentTime})
+            }
+            
+        }
+        else
+        {
+            conn.off('data')
+            //connArray[i].removeEventListener("data", once);
+        }
+    })
 }
 
 function loadChunks(blob, isPaused, currentTime)

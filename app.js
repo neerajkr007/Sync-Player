@@ -626,6 +626,14 @@ io.on('connection', function(socket){
         }
     })
 
+    socket.on("streamInfoToNew", (size, length, hostId)=>{
+        let final
+        for (let item of socket.adapter.rooms.get(hostId)) {
+            final = item
+        }
+        SOCKET_LIST[final].emit('streamInfo', size, length)
+    })
+
 
 
 
