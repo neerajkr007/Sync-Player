@@ -74,7 +74,7 @@ let once = true
 socket.on("initReceive", (socket_id, hostid) => {
     myHostId = hostid
     peers[socket_id] = new Peer({
-        //host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
+        host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
         config: {
             'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
             {
@@ -140,7 +140,7 @@ socket.on('initSend', (socket_id, ida) => {
     //console.log(myHostId)
     //console.log('INIT SEND ' + socket_id + ida)
     peers[socket_id] = new Peer({
-        //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+        host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
         config: {
             'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
             {
@@ -242,3 +242,14 @@ socket.on("sessionType", (_currentSessionType)=>{
     // }
 })
 
+
+
+
+//          ONLOAD STUFF
+let i = 0
+document.addEventListener('click', function (){
+    if(document.getElementById("modal").style.display == "none" && document.getElementsByClassName('modal-backdrop')[0] != undefined)
+    {
+        document.getElementsByClassName('modal-backdrop')[0].remove()
+    }
+})
