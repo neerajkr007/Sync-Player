@@ -76,7 +76,7 @@ socket.on("initReceive", (socket_id, hostid) => {
     try
     {
         peers[socket_id] = new Peer({
-            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
                 'iceServers': [{ urls: ["stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
@@ -159,7 +159,7 @@ socket.on('initSend', (socket_id, ida) => {
     try
     {
         peers[socket_id] = new Peer({
-            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
                 'iceServers': [{ urls: ["stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
