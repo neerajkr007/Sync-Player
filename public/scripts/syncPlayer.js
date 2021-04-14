@@ -76,40 +76,32 @@ socket.on("initReceive", (socket_id, hostid) => {
     try
     {
         peers[socket_id] = new Peer({
-            host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
+            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
-                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                'iceServers': [{ urls: ["stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
-                    urls: [
-                        "turn:bn-turn1.xirsys.com:80?transport=udp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
-                }]
+                    username: 'webrtc',
+                    credential: 'webrtc',
+                    urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
+                    
+                },
+                ]
             }
         });
     }
     catch
     {
         peers[socket_id] = new Peer({
-            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
+            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
-                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                'iceServers': [{ urls: ["stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
-                    urls: [
-                        "turn:bn-turn1.xirsys.com:80?transport=udp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
-                }]
+                    username: 'webrtc',
+                    credential: 'webrtc',
+                    urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
+                    
+                },
+                ]
             }
         });
     }
@@ -123,6 +115,7 @@ socket.on("initReceive", (socket_id, hostid) => {
     peers[socket_id].on('connection', function (conn) {
         conn.on('open', () => {
             console.log("connected")
+            console.log(peers[socket_id])
             if(once)
             {
                 document.getElementById('player').style.display = "block"
@@ -168,38 +161,30 @@ socket.on('initSend', (socket_id, ida) => {
         peers[socket_id] = new Peer({
             host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
-                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                'iceServers': [{ urls: ["stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
-                    urls: [
-                        "turn:bn-turn1.xirsys.com:80?transport=udp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
-                }]
+                    username: 'webrtc',
+                    credential: 'webrtc',
+                    urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
+                    
+                },
+                ]
             }
         });
     }
     catch
     {
         peers[socket_id] = new Peer({
-            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
-                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                'iceServers': [{ urls: ["stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
-                    urls: [
-                        "turn:bn-turn1.xirsys.com:80?transport=udp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
-                }]
+                    username: 'webrtc',
+                    credential: 'webrtc',
+                    urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
+                    
+                },
+                ]
             }
         });
     }
