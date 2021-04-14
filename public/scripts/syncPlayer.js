@@ -85,7 +85,17 @@ socket.on("initReceive", (socket_id, hostid) => {
                     urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
                     
                 },
-                ]
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
             }
         });
     }
@@ -101,7 +111,17 @@ socket.on("initReceive", (socket_id, hostid) => {
                     urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
                     
                 },
-                ]
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
             }
         });
     }
@@ -168,7 +188,17 @@ socket.on('initSend', (socket_id, ida) => {
                     urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
                     
                 },
-                ]
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
             }
         });
     }
@@ -184,7 +214,17 @@ socket.on('initSend', (socket_id, ida) => {
                     urls: ['turn:relay.backups.cz', "turn:relay.backups.cz?transport=tcp"],
                     
                 },
-                ]
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
             }
         });
     }
