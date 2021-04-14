@@ -80,8 +80,8 @@ socket.on("initReceive", (socket_id, hostid) => {
             config: {
                 'iceServers': [{ urls: ["stun:bn-turn1.xirsys.com", "stun:numb.viagenie.ca", "stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    username: "997wytH9ZFhdVNSdxdJpgJ3AAJcA98dMKAVZTF4aPhTHykqtJ5rJb-zClEvM-03ZAAAAAGB2nMNzdHJpZGVy",
+                    credential: "e2af97c0-9cf4-11eb-80c6-0242ac140004",
                     urls: [
                         "turn:bn-turn1.xirsys.com:80?transport=udp",
                         "turn:bn-turn1.xirsys.com:3478?transport=udp",
@@ -113,8 +113,8 @@ socket.on("initReceive", (socket_id, hostid) => {
             config: {
                 'iceServers': [{ urls: ["stun:bn-turn1.xirsys.com", "stun:numb.viagenie.ca", "stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    username: "997wytH9ZFhdVNSdxdJpgJ3AAJcA98dMKAVZTF4aPhTHykqtJ5rJb-zClEvM-03ZAAAAAGB2nMNzdHJpZGVy",
+                    credential: "e2af97c0-9cf4-11eb-80c6-0242ac140004",
                     urls: [
                         "turn:bn-turn1.xirsys.com:80?transport=udp",
                         "turn:bn-turn1.xirsys.com:3478?transport=udp",
@@ -197,8 +197,8 @@ socket.on('initSend', (socket_id, ida) => {
             config: {
                 'iceServers': [{ urls: ["stun:bn-turn1.xirsys.com", "stun:numb.viagenie.ca", "stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    username: "997wytH9ZFhdVNSdxdJpgJ3AAJcA98dMKAVZTF4aPhTHykqtJ5rJb-zClEvM-03ZAAAAAGB2nMNzdHJpZGVy",
+                    credential: "e2af97c0-9cf4-11eb-80c6-0242ac140004",
                     urls: [
                         "turn:bn-turn1.xirsys.com:80?transport=udp",
                         "turn:bn-turn1.xirsys.com:3478?transport=udp",
@@ -230,8 +230,8 @@ socket.on('initSend', (socket_id, ida) => {
             config: {
                 'iceServers': [{ urls: ["stun:bn-turn1.xirsys.com", "stun:numb.viagenie.ca", "stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
-                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    username: "997wytH9ZFhdVNSdxdJpgJ3AAJcA98dMKAVZTF4aPhTHykqtJ5rJb-zClEvM-03ZAAAAAGB2nMNzdHJpZGVy",
+                    credential: "e2af97c0-9cf4-11eb-80c6-0242ac140004",
                     urls: [
                         "turn:bn-turn1.xirsys.com:80?transport=udp",
                         "turn:bn-turn1.xirsys.com:3478?transport=udp",
@@ -256,23 +256,6 @@ socket.on('initSend', (socket_id, ida) => {
             }
         });
     }
-    peers[socket_id] = new Peer({
-        host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
-        config: {
-            'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
-            {
-                username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
-                urls: [
-                    "turn:bn-turn1.xirsys.com:80?transport=udp",
-                    "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                    "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                    "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                    "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                    "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
-            }]
-        }
-    });
     peers[socket_id].on('open', function (id) {
         //console.log("peer open " + id)
         var conn = peers[socket_id].connect(ida)
