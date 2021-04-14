@@ -73,23 +73,47 @@ let once = true
 
 socket.on("initReceive", (socket_id, hostid) => {
     myHostId = hostid
-    peers[socket_id] = new Peer({
-        host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
-        config: {
-            'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
-            {
-                username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
-                credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
-                urls: [
-                    "turn:bn-turn1.xirsys.com:80?transport=udp",
-                    "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                    "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                    "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                    "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                    "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
-            }]
-        }
-    });
+    try
+    {
+        peers[socket_id] = new Peer({
+            host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
+            config: {
+                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
+            }
+        });
+    }
+    catch
+    {
+        peers[socket_id] = new Peer({
+            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443,
+            config: {
+                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
+            }
+        });
+    }
+    
 
     peers[socket_id].on('open', function (id) {
         socket.emit('initSend', socket_id, id)
@@ -139,6 +163,46 @@ socket.on("initReceive", (socket_id, hostid) => {
 socket.on('initSend', (socket_id, ida) => {
     //console.log(myHostId)
     //console.log('INIT SEND ' + socket_id + ida)
+    try
+    {
+        peers[socket_id] = new Peer({
+            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            config: {
+                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
+            }
+        });
+    }
+    catch
+    {
+        peers[socket_id] = new Peer({
+            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            config: {
+                'iceServers': [{ urls: ["stun:global.stun.twilio.com:3478?transport=udp", "stun:bn-turn1.xirsys.com"] },
+                {
+                    username: "8KYgw1JiOE8ifuMVMJJhADMVLAx9rrGgZgk0b6UE7SQWG9HDlqdlFfvGbMlz64AcAAAAAF_yDcZzdHJpZGVy",
+                    credential: "0eaa9930-4df2-11eb-8e11-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"]
+                }]
+            }
+        });
+    }
     peers[socket_id] = new Peer({
         host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
         config: {
@@ -246,7 +310,6 @@ socket.on("sessionType", (_currentSessionType)=>{
 
 
 //          ONLOAD STUFF
-let i = 0
 document.addEventListener('click', function (){
     if(document.getElementById("modal").style.display == "none" && document.getElementsByClassName('modal-backdrop')[0] != undefined)
     {

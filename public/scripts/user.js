@@ -563,15 +563,15 @@ socket.on("message", (n, message, name)=>{
 })
 
 socket.on("invitedToRoom", ()=>{
-    document.getElementById('modal-title').innerHTML = "done"
-    document.getElementById('modal-body').innerHTML = "invitation sent"
-    $('#modal').modal('toggle');
-    let timeOut = setTimeout(() => {
-        $('#modal').modal('toggle');
-    }, 3000);
-    $('#modal').on('hidden.bs.modal', function (e) {
-        clearInterval(timeOut)
-    })
+    // document.getElementById('modal-title').innerHTML = "done"
+    // document.getElementById('modal-body').innerHTML = "invitation sent"
+    // $('#modal').modal('toggle');
+    // let timeOut = setTimeout(() => {
+    //     $('#modal').modal('toggle');
+    // }, 3000);
+    // $('#modal').on('hidden.bs.modal', function (e) {
+    //     clearInterval(timeOut)
+    // })
 })
 
 socket.on("inviteToRoomFailed", ()=>{
