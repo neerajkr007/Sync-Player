@@ -284,6 +284,11 @@ function loadChunks(blob, isPaused, currentTime)
     else {
         myplayer.play()
     }
+    myplayer.addRemoteTextTrack({
+        kind: 'captions', 
+        label:'added',
+        src: subBlobUrl,
+        mode: 'showing'}, false);
 }
 
 

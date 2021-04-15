@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <script src="https://imshaikot.github.io/srt-webvtt/index.js"></script>
     <!-- <link rel="manifest" href="/manifest.json"> -->
 </head>
 
@@ -70,15 +71,11 @@
             </ul>
         </div>
     </nav>
+
     <div id="main" class="row ubantuFont m-0 pl-3 pr-3" style="max-width: 100%;">
         <div class="col-md-10">
             <div class="row mt-5">
                 <p id="welcomeUser" class="ubantuFont col-md-9 display-4"></p>
-                <!-- <div  class="col-md-3 text-center rounded" style="background: transparent; margin-top: 15px; display: none;">
-                    <ul  class="list-group text-white">
-                      <li class="list-group-item" style="background: #404040 !important;">users connected - </li>
-                    </ul>
-                </div> -->
                 <div id="playerlist" class="dropdown col-md-2 mb-5 text-center rounded text-white" style="background: transparent; margin-top: 15px; display: none;">
                     <button class="btn btn-secondary w-100" type="menu" id="dropdownMenuButton4" style="background: #404040 !important;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         users connected - 
@@ -98,7 +95,7 @@
                     <p id="sessionType" class="col-md-6 pl-2 mb-0" style="margin-top: 8px;"></p>
                 </div>
             </div>
-            <div id="player" class="mt-10 mb-5" style="display: none;">
+            <div id="player" class="mt-10 mb-2" style="display: none;">
                 <h3 id="1">choose local file:</h3><br>
                 <input type="file" id="myfile" class="mb-5" name="myfile" accept="video/*" />
                 <video
@@ -110,6 +107,8 @@
                   data-setup='{"autoplay": false}'
                 >
                 </video>
+                <label for="mySubs">upload subs</label>
+                <input type="file" id="mySubs" class="mb-5"/>
             </div>
         </div>
         <div id="friendsButton" class="col-md-2 pr-0" >
@@ -181,7 +180,10 @@
     <script src="/scripts/syncPlayer.js"></script>
     <script src="/scripts/load.js"></script>
     <script src="/scripts/stream.js"></script>
-    <script>document.getElementById('myfile').addEventListener('change', inputChanged)</script>
+    <script>
+        document.getElementById('myfile').addEventListener('change', inputChanged)
+        document.getElementById('mySubs').addEventListener('change', addSubs)
+    </script>
 </body>
 
 </html>

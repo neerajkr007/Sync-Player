@@ -5,7 +5,7 @@ let currentFileSize = 0
 
 function loadFile(e){
     //console.log(hostLoadedFile)
-    if(hostLoadedFile || myHostId == mySocketId)
+    //if(hostLoadedFile || myHostId == mySocketId)
     {
         const { target: { files } } = e
         const [file] = files
@@ -16,6 +16,7 @@ function loadFile(e){
         myplayer.src({ type: 'video/mp4', src: blobURL });
         myplayer.on('loadeddata', (e) => {
             console.log("file loaded")
+            
             if(myHostId != mySocketId)
             {
                 socket.emit("getCurrentTime", currentSessionType,  myHostId, currentFileSize)
@@ -27,19 +28,19 @@ function loadFile(e){
             }
         });
     }
-    else
-    {
-        document.getElementById("modal-title").innerHTML = "Failed";
-        let modalBody = document.getElementById("modal-body")
-        modalBody.innerHTML = "ask the host to load the file first !"
-        $('#modal').modal('toggle');
-        let timeOut = setTimeout(() => {
-            $('#modal').modal('toggle');
-        }, 2000);
-        $('#modal').on('hidden.bs.modal', function (e) {
-            clearInterval(timeOut)
-        })
-    }
+    // else
+    // {
+    //     document.getElementById("modal-title").innerHTML = "Failed";
+    //     let modalBody = document.getElementById("modal-body")
+    //     modalBody.innerHTML = "ask the host to load the file first !"
+    //     $('#modal').modal('toggle');
+    //     let timeOut = setTimeout(() => {
+    //         $('#modal').modal('toggle');
+    //     }, 2000);
+    //     $('#modal').on('hidden.bs.modal', function (e) {
+    //         clearInterval(timeOut)
+    //     })
+    // }
     
     // if(isHost)
     // {

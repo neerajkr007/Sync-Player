@@ -2,6 +2,8 @@
 let sessionType = null
 let currentSessionType = ""
 let hostSocket
+let SubBlob
+let subBlobUrl
 
 function getStarted() {
     document.getElementById("modal-title").innerHTML = "Session Type";
@@ -64,6 +66,31 @@ function inputChanged(e)
     }
 }
 
+function addSubs(e)
+{
+    const { target: { files } } = e
+    const [file] = files
+    {
+        const webvtt = new WebVTTConverter([file][0]);
+        webvtt
+        .getURL()
+        .then(url => {
+            myplayer.addRemoteTextTrack({
+                kind: 'captions', 
+                label:'added',
+                src: url,
+                mode: 'showing'}, false);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+    }
+    if(sessionType == "stream" && mySocketId == myHostId)
+    {
+        socket.emit("subs", [file][0])
+    }
+}
+
 
 
 
@@ -75,8 +102,9 @@ socket.on("initReceive", (socket_id, hostid) => {
     myHostId = hostid
     try
     {
+        console.log("tries")
         peers[socket_id] = new Peer({
-            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
                 'iceServers': [{ urls: ["stun:bn-turn1.xirsys.com", "stun:numb.viagenie.ca", "stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
@@ -106,8 +134,10 @@ socket.on("initReceive", (socket_id, hostid) => {
             }
         });
     }
-    catch
+    catch(e)
     {
+        console.log(e)
+        console.log("catches")
         peers[socket_id] = new Peer({
             //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
@@ -149,7 +179,6 @@ socket.on("initReceive", (socket_id, hostid) => {
     peers[socket_id].on('connection', function (conn) {
         conn.on('open', () => {
             console.log("connected")
-            console.log(peers[socket_id])
             if(once)
             {
                 document.getElementById('player').style.display = "block"
@@ -193,7 +222,7 @@ socket.on('initSend', (socket_id, ida) => {
     try
     {
         peers[socket_id] = new Peer({
-            host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
+            //host: 'peerjs-server.herokuapp.com', secure: true, port: 443, 
             config: {
                 'iceServers': [{ urls: ["stun:bn-turn1.xirsys.com", "stun:numb.viagenie.ca", "stun:stun.l.google.com:19302" , "stun:stun1.l.google.com:19302" , "stun:stun2.l.google.com:19302" , "stun:stun3.l.google.com:19302" , "stun:stun4.l.google.com:19302" ,"stun:global.stun.twilio.com:3478?transport=udp", "stun:stun.stunprotocol.prg", "stun:stun.counterpath.com", "stun:stun.stunprotocol.org"] },
                 {
@@ -340,6 +369,16 @@ socket.on("sessionType", (_currentSessionType)=>{
     //     document.getElementById('1').style.display = "none"
     //     document.getElementById('myfile').style.display = "none"
     // }
+})
+
+socket.on("subs", data=>{
+    SubBlob = new Blob([data], {type: 'text/plain'});
+    subBlobUrl = URL.createObjectURL(SubBlob);
+    myplayer.addRemoteTextTrack({
+        kind: 'captions', 
+        label:'added',
+        src: subBlobUrl,
+        mode: 'showing'}, false);
 })
 
 
