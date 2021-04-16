@@ -296,6 +296,8 @@ socket.on('initSend', (socket_id, ida) => {
                 document.getElementById('1').style.display = "none"
                 document.getElementById('myfile').style.display = "none"
                 document.getElementsByClassName("vjs-big-play-button")[0].remove()
+                document.getElementById("mySubs").previousElementSibling.remove()
+                document.getElementById("mySubs").remove()
                 once = false
             }
             document.getElementById('playerlist').style.display = "block"

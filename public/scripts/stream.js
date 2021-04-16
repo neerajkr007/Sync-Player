@@ -250,7 +250,7 @@ function startSendingChunksInBetween(conn)
             //console.log("sending next chunk for " + data.nextChunk)
             _isPaused = myplayer.paused()
             _currentTime = myplayer.currentTime()
-            if(data.nextChunk <= Math.round(oneSecondChunks*5))
+            if(data.nextChunk <= Math.round(oneSecondChunks*10))
             conn.send({chunk:chunkArray[data.nextChunk], firstCall:false, isPaused:_isPaused, currentTime:_currentTime})
             else if(once4)
             {
