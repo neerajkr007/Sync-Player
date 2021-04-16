@@ -109,6 +109,15 @@
                 </video>
                 <label for="mySubs">upload subs</label>
                 <input type="file" id="mySubs" class="mb-5"/>
+                <video
+                  id="my-video2"
+                  class="video-js mt-5"
+                  controls
+                  preload="auto"
+                  fluid = "true"
+                  data-setup='{"autoplay": false}'
+                >
+                </video>
             </div>
         </div>
         <div id="friendsButton" class="col-md-2 pr-0" >
@@ -176,10 +185,10 @@
         integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
         crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.3.2/peerjs.min.js" integrity="sha512-4wTQ8feow93K3qVGVXUGLULDB9eAULiG+xdbaQH8tYZlXxYv9ij+evblXD0EOqmGWT8NBTd1vQGsURvrQzmKeg==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mp4box@0.4.1/dist/mp4box.all.min.js" integrity="sha256-EcVkbViGB2s/KosHquMDEF2b6cfp0f3IVjZNxFH2x+s=" crossorigin="anonymous"></script>
     <script src="/scripts/user.js"></script>
     <script src="/scripts/syncPlayer.js"></script>
     <script src="/scripts/load.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mp4box@0.4.1/dist/mp4box.all.min.js" integrity="sha256-EcVkbViGB2s/KosHquMDEF2b6cfp0f3IVjZNxFH2x+s=" crossorigin="anonymous"></script>
     <script src="/scripts/stream.js"></script>
     <script>
         document.getElementById('myfile').addEventListener('change', inputChanged)
