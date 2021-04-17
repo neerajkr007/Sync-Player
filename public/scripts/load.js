@@ -1,23 +1,11 @@
 var myplayer = videojs("my-video");
-var myplayer2 = videojs("my-video2");
 let hostLoadedFile = false
 let currentFileSize = 0
 
-var mp4box2 = MP4Box.createFile();
-mp4box2.onError = function (e) {
-    console.log("mp4box failed to parse data.");
-};
-mp4box2.onMoovStart = function () {
-    console.log("Starting to receive File Information 2");
-};
-mp4box2.onReady = function (info) {
-    console.log("2 rady ")
-    console.log(info)
-};
-
-
+var buffer
 var mediaSource = new MediaSource();
-myplayer2.src({ type: 'video/mp4', src: URL.createObjectURL(mediaSource) });
+var sourceBuffer
+document.getElementById("my-video2").src = URL.createObjectURL(mediaSource)
 
 var mp4box = MP4Box.createFile();
 mp4box.onError = function (e) {
@@ -29,28 +17,38 @@ mp4box.onMoovStart = function () {
 mp4box.onReady = function (info) {
     console.log(info)
     let bufferArray = []
-    let once = true
+    let once66 = true
     let lol = 0
-    var sourceBuffer
+    console.log(info.tracks.length)
+    let codec = (info.tracks[0].codec)
+    console.log(info.tracks[1].codec)
+    sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs=\"'+codec+'\"');
+    sourceBuffer.addEventListener('updatestart', function(e) { console.log('updatestart: ' + mediaSource.readyState); });
+    sourceBuffer.addEventListener('update', function(e) { console.log('update: ' + mediaSource.readyState); });
+    sourceBuffer.addEventListener('updateend', function(e) { console.log('updateend: ' + mediaSource.readyState); });
+    sourceBuffer.addEventListener('error', function(e) { console.log('error: ' + mediaSource.readyState); });
+    sourceBuffer.addEventListener('abort', function(e) { console.log('abort: ' + mediaSource.readyState); });
+
+    sourceBuffer.appendBuffer(buffer)
+    mediaSource.addEventListener('sourceopen', function () {
+        sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42c01e"');
+        console.log('Received from ');
+    })
+    console.log(mediaSource.readyState)
+    //console.log(mediaSource.sourceBuffers)
     mp4box.onSegment = function (id, user, buffer, sampleNumber, last) {
-        console.log(buffer)
-        bufferArray.push(buffer)
-        //if (once) 
+        //console.log(buffer)
+        //bufferArray.push(buffer)
+        if (once66) 
         {
-            mediaSource.addEventListener('sourceopen', function () {
-                sourceBuffer = mediaSource.addSourceBuffer(info.mime);
-                console.log('Received from ');
-                sourceBuffer.appendBuffer(buffer)
-            })
-            once = false
+            once66 = false
         }
         if (last) {
-            mp4box.flush()
         }
     }
-    for (var i = 0; i < info.tracks.length; i++) {
+    for (var i = 0; i < 1; i++) {
         var track = info.tracks[i];
-        mp4box.setSegmentOptions(track.id, null);
+        mp4box.setSegmentOptions(track.id, sourceBuffer, { nbSamples: 10000 });
     }
     mp4box.initializeSegmentation();
     mp4box.start();
@@ -70,10 +68,10 @@ async function loadFile(e) {
         //console.log(currentFileSize)
         var blob = new Blob([file], { type: 'video/mp4' })
         var blobURL = URL.createObjectURL(blob)
-        var buffer = await blob.arrayBuffer();
+        buffer = await blob.arrayBuffer();
         buffer.fileStart = 0;
-        console.log(buffer)
-        console.log(blob)
+        // console.log(buffer)
+        // console.log(blob)
         mp4box.appendBuffer(buffer);
 
         myplayer.src({ type: 'video/mp4', src: blobURL });
