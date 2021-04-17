@@ -1,60 +1,9 @@
 var myplayer = videojs("my-video");
-var myplayer2 = videojs("my-video2");
 let hostLoadedFile = false
 let currentFileSize = 0
 
-var mp4box2 = MP4Box.createFile();
-            mp4box2.onError = function(e) {
-                console.log("mp4box failed to parse data.");
-              };
-              mp4box2.onMoovStart = function () {
-                console.log("Starting to receive File Information 2");
-              };
-              mp4box2.onReady = function(info) {
-                console.log("2 rady ")
-                console.log(info)
-            };
 
-var mp4box = MP4Box.createFile();
-            mp4box.onError = function(e) {
-                console.log("mp4box failed to parse data.");
-              };
-              mp4box.onMoovStart = function () {
-                console.log("Starting to receive File Information");
-              };
-              mp4box.onReady = function(info) {
-                console.log(info)
-                let bufferArray = []
-                let once=true
-                let lol = 0
-                mp4box.onSegment = function (id, user, buffer, sampleNumber, last) {
-                    console.log(buffer)
-                    bufferArray.push(buffer)
-                    //if(once)
-                    {
-                        console.log(once)
-                        buffer.fileStart = lol;
-                        lol++
-                        once = false
-                    }
-                    mp4box2.appendBuffer(buffer)
-                    if(last)
-                    {
-                        mp4box.flush()
-                    }
-                }
-                for (var i = 0; i < 1; i++) {
-                    var track = info.tracks[i];
-                    mp4box.setSegmentOptions(track.id, null);
-                }
-                mp4box.initializeSegmentation();  
-                mp4box.start();
-            };
-
-            
-              
-
-async function loadFile(e){
+function loadFile(e){
     //console.log(hostLoadedFile)
     //if(hostLoadedFile || myHostId == mySocketId)
     {
@@ -64,17 +13,8 @@ async function loadFile(e){
         //console.log(currentFileSize)
         var blob = new Blob([file], { type: 'video/mp4' })
         var blobURL = URL.createObjectURL(blob)
-        var buffer = await blob.arrayBuffer();
-        buffer.fileStart = 0;
-        console.log(buffer)
-        console.log(blob)
-        mp4box.appendBuffer(buffer);
-        
         myplayer.src({ type: 'video/mp4', src: blobURL });
-        var video = document.querySelector("video");
-        myplayer.on('loadeddata', ()=>{
-        // video.addEventListener("loadeddata", function once() {
-        //     video.removeEventListener('loadeddata', once);
+        myplayer.on('loadeddata', (e) => {
             console.log("file loaded")
             
             if(myHostId != mySocketId)
