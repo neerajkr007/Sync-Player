@@ -14,43 +14,51 @@ mp4box.onError = function (e) {
 mp4box.onMoovStart = function () {
     console.log("Starting to receive File Information");
 };
+mediaSource.addEventListener('sourceopen', function () {
+    console.log("source open")
+})
 mp4box.onReady = function (info) {
     console.log(info)
     let bufferArray = []
     let once66 = true
     let lol = 0
-    console.log(info.tracks.length)
-    let codec = (info.tracks[0].codec)
-    console.log(info.tracks[1].codec)
-    sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs=\"'+codec+'\"');
-    sourceBuffer.addEventListener('updatestart', function(e) { console.log('updatestart: ' + mediaSource.readyState); });
-    sourceBuffer.addEventListener('update', function(e) { console.log('update: ' + mediaSource.readyState); });
-    sourceBuffer.addEventListener('updateend', function(e) { console.log('updateend: ' + mediaSource.readyState); });
-    sourceBuffer.addEventListener('error', function(e) { console.log('error: ' + mediaSource.readyState); });
-    sourceBuffer.addEventListener('abort', function(e) { console.log('abort: ' + mediaSource.readyState); });
+    //let codec = info.tracks[0].codec + ',' + info.tracks[1].codec
+    //sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs=\"'+codec+'\"');
 
-    sourceBuffer.appendBuffer(buffer)
-    mediaSource.addEventListener('sourceopen', function () {
-        sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42c01e"');
-        console.log('Received from ');
-    })
-    console.log(mediaSource.readyState)
+    //sourceBuffer.appendBuffer(buffer)
+    // sourceBuffer.onupdateend = () => {
+    //     console.log("test")
+	// 	//mediaSource.endOfStream();
+	// 	document.getElementById("my-video2").play();
+	// };
     //console.log(mediaSource.sourceBuffers)
     mp4box.onSegment = function (id, user, buffer, sampleNumber, last) {
-        //console.log(buffer)
-        //bufferArray.push(buffer)
+        console.log(buffer)
+        bufferArray.push(buffer)
         if (once66) 
         {
             once66 = false
         }
         if (last) {
+            console.log("last")
         }
     }
-    for (var i = 0; i < 1; i++) {
+    for (var i = 0; i < info.tracks.length; i++) {
         var track = info.tracks[i];
-        mp4box.setSegmentOptions(track.id, sourceBuffer, { nbSamples: 10000 });
+        var codec = track.codec;
+	    var mime = 'video/mp4; codecs=\"'+codec+'\"';
+        var sb = mediaSource.addSourceBuffer(mime);
+        mp4box.setSegmentOptions(track.id, sb);
     }
-    mp4box.initializeSegmentation();
+    var initSegs = mp4box.initializeSegmentation();
+	for (var i = 0; i < initSegs.length; i++) {
+		var sb = initSegs[i].user;
+        sb.appendBuffer(initSegs[i].buffer);
+        sb.addEventListener("updateend", ()=>{
+            console.log("updateended " + mediaSource.readyState)
+            
+        });
+    }
     mp4box.start();
 };
 mediaSource.addEventListener('sourceended', function () {

@@ -1,4 +1,4 @@
-<script>
+
   /* Setting the level of logs (error, warning, info, debug) */
 Log.setLogLevel(Log.info);
 
@@ -729,4 +729,3 @@ function updateHtml5TrackInfo() {
 	content += '</tbody></table>';
 	html5MediaDiv.innerHTML = content;
 }
-</script>
