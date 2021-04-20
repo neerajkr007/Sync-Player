@@ -33,34 +33,52 @@ mp4box.onReady = function (info) {
 	// };
     //console.log(mediaSource.sourceBuffers)
     mp4box.onSegment = function (id, user, buffer, sampleNumber, last) {
-        console.log(buffer)
-        bufferArray.push(buffer)
-        if (once66) 
-        {
-            once66 = false
-        }
-        if (last) {
-            console.log("last")
-        }
+        let sb = user
+        sb.pendingAppends.push({buffer: buffer});
     }
     for (var i = 0; i < info.tracks.length; i++) {
         var track = info.tracks[i];
         var codec = track.codec;
 	    var mime = 'video/mp4; codecs=\"'+codec+'\"';
         var sb = mediaSource.addSourceBuffer(mime);
+        sb.pendingAppends = [];
         mp4box.setSegmentOptions(track.id, sb);
     }
     var initSegs = mp4box.initializeSegmentation();
 	for (var i = 0; i < initSegs.length; i++) {
 		var sb = initSegs[i].user;
         sb.appendBuffer(initSegs[i].buffer);
-        sb.addEventListener("updateend", ()=>{
-            console.log("updateended " + mediaSource.readyState)
-            
-        });
+        sb.addEventListener("updateend", onInitAppended)
     }
-    mp4box.start();
+    
 };
+
+function onInitAppended(e)
+{
+    let sb = e.target;
+    console.log("updateended " + mediaSource.readyState)
+    sb.removeEventListener('updateend', onInitAppended);
+    sb.addEventListener('updateend', onUpdateEnd(sb, true, true));
+    onUpdateEnd(sb, false, true);
+    mp4box.start();
+}
+
+function onUpdateEnd(sb, isNotInit, isEndOfAppend) {
+	if (isEndOfAppend === true) {
+		if (isNotInit === true) {
+            //
+		}
+		// if (sb.is_last) {
+		// 	mediaSource.endOfStream();
+		// }
+	}
+	if (sb.updating === false && sb.pendingAppends.length != 0) {
+        console.log("append2")
+        console.log(sb.pendingAppends)
+		var obj = sb.pendingAppends.shift();
+		sb.appendBuffer(obj.buffer);
+	}
+}
 mediaSource.addEventListener('sourceended', function () {
     console.log('MediaSource readyState: ' + this.readyState);
 }, false);
