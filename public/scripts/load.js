@@ -4,9 +4,8 @@ let currentFileSize = 0
 
 var buffer
 var mediaSource = new MediaSource();
-var sourceBuffer
-document.getElementById("my-video2").src = URL.createObjectURL(mediaSource)
-
+var myplayer2 = videojs("my-video2");
+myplayer2.src({ type: 'video/mp4', src: URL.createObjectURL(mediaSource) });
 var mp4box = MP4Box.createFile();
 mp4box.onError = function (e) {
     console.log("mp4box failed to parse data.");
@@ -19,21 +18,11 @@ mediaSource.addEventListener('sourceopen', function () {
 })
 mp4box.onReady = function (info) {
     console.log(info)
-    let bufferArray = []
-    let once66 = true
-    let lol = 0
-    //let codec = info.tracks[0].codec + ',' + info.tracks[1].codec
-    //sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs=\"'+codec+'\"');
-
-    //sourceBuffer.appendBuffer(buffer)
-    // sourceBuffer.onupdateend = () => {
-    //     console.log("test")
-	// 	//mediaSource.endOfStream();
-	// 	document.getElementById("my-video2").play();
-	// };
-    //console.log(mediaSource.sourceBuffers)
+    let test = 0
     mp4box.onSegment = function (id, user, buffer, sampleNumber, last) {
         let sb = user
+        sb.is_last = last
+        sb.id = id
         sb.pendingAppends.push({buffer: buffer});
     }
     for (var i = 0; i < info.tracks.length; i++) {
@@ -42,9 +31,10 @@ mp4box.onReady = function (info) {
 	    var mime = 'video/mp4; codecs=\"'+codec+'\"';
         var sb = mediaSource.addSourceBuffer(mime);
         sb.pendingAppends = [];
-        mp4box.setSegmentOptions(track.id, sb);
+        mp4box.setSegmentOptions(track.id, sb, {nbSamples: 1000});
     }
     var initSegs = mp4box.initializeSegmentation();
+    mp4box.start();
 	for (var i = 0; i < initSegs.length; i++) {
 		var sb = initSegs[i].user;
         sb.appendBuffer(initSegs[i].buffer);
@@ -56,28 +46,24 @@ mp4box.onReady = function (info) {
 function onInitAppended(e)
 {
     let sb = e.target;
-    console.log("updateended " + mediaSource.readyState)
+    console.log(mediaSource.sourceBuffers)
+    console.log("updateended " + mediaSource.readyState + sb.id)
     sb.removeEventListener('updateend', onInitAppended);
-    sb.addEventListener('updateend', onUpdateEnd(sb, true, true));
-    onUpdateEnd(sb, false, true);
-    mp4box.start();
+    sb.addEventListener('updateend', function(){ onUpdateEnd(sb)});
+    onUpdateEnd(sb);
 }
 
-function onUpdateEnd(sb, isNotInit, isEndOfAppend) {
-	if (isEndOfAppend === true) {
-		if (isNotInit === true) {
-            //
-		}
-		// if (sb.is_last) {
-		// 	mediaSource.endOfStream();
-		// }
-	}
+function onUpdateEnd(user){
+    let sb = user
+    if(sb.is_last)
+    {
+
+    }
 	if (sb.updating === false && sb.pendingAppends.length != 0) {
-        console.log("append2")
-        console.log(sb.pendingAppends)
 		var obj = sb.pendingAppends.shift();
 		sb.appendBuffer(obj.buffer);
 	}
+    
 }
 mediaSource.addEventListener('sourceended', function () {
     console.log('MediaSource readyState: ' + this.readyState);
@@ -85,8 +71,6 @@ mediaSource.addEventListener('sourceended', function () {
 
 
 async function loadFile(e) {
-    //console.log(hostLoadedFile)
-    //if(hostLoadedFile || myHostId == mySocketId)
     {
         const { target: { files } } = e
         const [file] = files
@@ -96,8 +80,6 @@ async function loadFile(e) {
         var blobURL = URL.createObjectURL(blob)
         buffer = await blob.arrayBuffer();
         buffer.fileStart = 0;
-        // console.log(buffer)
-        // console.log(blob)
         mp4box.appendBuffer(buffer);
 
         myplayer.src({ type: 'video/mp4', src: blobURL });
@@ -116,27 +98,6 @@ async function loadFile(e) {
             }
         });
     }
-    // else
-    // {
-    //     document.getElementById("modal-title").innerHTML = "Failed";
-    //     let modalBody = document.getElementById("modal-body")
-    //     modalBody.innerHTML = "ask the host to load the file first !"
-    //     $('#modal').modal('toggle');
-    //     let timeOut = setTimeout(() => {
-    //         $('#modal').modal('toggle');
-    //     }, 2000);
-    //     $('#modal').on('hidden.bs.modal', function (e) {
-    //         clearInterval(timeOut)
-    //     })
-    // }
-
-    // if(isHost)
-    // {
-    //     myplayer.on("seeked", ()=>{
-    //         console.log("paused at "+myplayer.currentTime())
-    //         socket.emit("seeked", myplayer.currentTime())
-    //     })
-    // }
     let playButton = document.getElementsByClassName("vjs-big-play-button")[0];
     if (myHostId == mySocketId) {
         var video = document.querySelector('video');
