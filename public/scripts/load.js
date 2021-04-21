@@ -26,6 +26,7 @@ mp4box.onReady = function (info) {
         sb.pendingAppends.push({buffer: buffer});
     }
     for (var i = 0; i < info.tracks.length; i++) {
+        console.log(i)
         var track = info.tracks[i];
         var codec = track.codec;
 	    var mime = 'video/mp4; codecs=\"'+codec+'\"';
