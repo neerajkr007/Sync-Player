@@ -23,6 +23,7 @@ mp4box.onReady = function (info) {
         let sb = user
         sb.is_last = last
         sb.id = id
+        sb.sampleNum = sampleNumber
         sb.pendingAppends.push({buffer: buffer});
     }
     for (var i = 0; i < info.tracks.length; i++) {
@@ -50,16 +51,21 @@ function onInitAppended(e)
     console.log(mediaSource.sourceBuffers)
     console.log("updateended " + mediaSource.readyState + sb.id)
     sb.removeEventListener('updateend', onInitAppended);
-    sb.addEventListener('updateend', function(){ onUpdateEnd(sb)});
-    onUpdateEnd(sb);
+    sb.addEventListener('updateend', function(){ onUpdateEnd(sb, true)});
+    onUpdateEnd(sb, true);
 }
 
-function onUpdateEnd(user){
+function onUpdateEnd(user, isEndOfAppend){
     let sb = user
-    if(sb.is_last)
-    {
-
-    }
+    if (isEndOfAppend === true) {
+		if (sb.sampleNum) {
+			mp4box.releaseUsedSamples(sb.id, sb.sampleNum);
+			delete sb.sampleNum;
+		}
+		if (sb.is_last) {
+			//mediaSource.endOfStream();
+		}
+	}
 	if (sb.updating === false && sb.pendingAppends.length != 0) {
 		var obj = sb.pendingAppends.shift();
 		sb.appendBuffer(obj.buffer);
@@ -79,15 +85,18 @@ async function loadFile(e) {
         //console.log(currentFileSize)
         var blob = new Blob([file], { type: 'video/mp4' })
         var blobURL = URL.createObjectURL(blob)
+        
         buffer = await blob.arrayBuffer();
+        console.log("yolo")
         buffer.fileStart = 0;
         mp4box.appendBuffer(buffer);
+        //parseFile2([file][0])
 
         myplayer.src({ type: 'video/mp4', src: blobURL });
         var video = document.querySelector("video");
-        myplayer.on('loadeddata', () => {
-            // video.addEventListener("loadeddata", function once() {
-            //     video.removeEventListener('loadeddata', once);
+        //myplayer.on('loadeddata', () => {
+        video.addEventListener("loadeddata", function once() {
+            video.removeEventListener('loadeddata', once);
             console.log("file loaded")
 
             if (myHostId != mySocketId) {
@@ -112,6 +121,56 @@ async function loadFile(e) {
         playButton.style.display = "none";
     }
 
+}
+
+let once69 = 0
+
+function callback2(e){
+    {
+        console.log("pushed once")
+        e.fileStart = once69
+        mp4box.appendBuffer(e);
+        once69++
+    }
+
+}
+
+function parseFile2(file) {
+    var fileSize   = file.size;
+    var chunkSize  = 2*262144; // bytes 262144
+    var offset     = 0;
+    var self       = this; // we need a reference to the current object
+    var chunkReaderBlock = null;
+
+    var readEventHandler = function(evt) {
+        if (evt.target.error == null) {
+            offset += chunkSize;
+            callback2(evt.target.result); // callback for handling read chunk
+        } else {
+            console.log("Read error: " + evt.target.error);
+            return;
+        }
+        if (offset >= fileSize) {
+			console.log("Done reading file");
+            console.log(chunkArray.length)
+            return;
+        }
+
+		// of to the next chunk
+		chunkReaderBlock(offset, chunkSize, file);
+		
+        
+    }
+
+    chunkReaderBlock = function(_offset, length, _file) {
+        var r = new FileReader();
+        var blob = _file.slice(_offset, length + _offset);
+        r.onload = readEventHandler;
+        r.readAsArrayBuffer(blob);
+    }
+
+    // now let's start the read with the first block
+    chunkReaderBlock(offset, chunkSize, file);
 }
 
 
