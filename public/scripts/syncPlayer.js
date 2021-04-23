@@ -376,11 +376,11 @@ socket.on("sessionType", (_currentSessionType)=>{
 socket.on("subs", data=>{
     SubBlob = new Blob([data], {type: 'text/plain'});
     subBlobUrl = URL.createObjectURL(SubBlob);
-    myplayer.addRemoteTextTrack({
-        kind: 'captions', 
-        label:'added',
-        src: subBlobUrl,
-        mode: 'showing'}, false);
+    // myplayer.addRemoteTextTrack({
+    //     kind: 'captions', 
+    //     label:'added',
+    //     src: subBlobUrl,
+    //     mode: 'showing'}, false);
 })
 
 

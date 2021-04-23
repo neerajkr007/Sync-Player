@@ -6,7 +6,8 @@ let chunkFactor = 0;
 let chunkAmount = 0
 let oneChunkLength = 0
 let oneSecondChunks = 0
-
+let newChunkNumber = 0
+let chunksSent = []
 
 
 function streamFile(e) {
@@ -15,20 +16,6 @@ function streamFile(e) {
     currentFileSize = [file][0].size;
     let blob = new Blob([file], { type: "video/mp4" });
     let blobURL = URL.createObjectURL(blob);
-
-    /* dispose and recreate (not working for now) */
-
-    // videojs('my-video').dispose();
-    // let videoPlayer = document.createElement('video')
-    // videoPlayer.id = "my-video"
-    // videoPlayer.classList.add('videos-js')
-    // videoPlayer.setAttribute('controls', "controls")
-    // document.getElementById('player').appendChild(videoPlayer)
-    // myplayer = videojs('my-video', {
-    //     autoplay: false,
-    //     preload: 'auto',
-    //     fluid : "true"
-    // });
     myplayer.src({ type: "video/mp4", src: blobURL });
     var video = document.querySelector("video");
     video.addEventListener("loadeddata", function once() {
@@ -38,18 +25,26 @@ function streamFile(e) {
         chunkArray = []
         parseFile([file][0])
         console.log("file loaded");
-      });
-    // myplayer.on("loadeddata", (e) => {
-    //     currentFileDuration = myplayer.duration()
-    //     console.log("file loaded");
-    // });
-
-    var video = document.querySelector("video");
+    });
     video.addEventListener("play", function once() {
       video.removeEventListener("play", once);
       var time = myplayer.currentTime();
       socket.emit("playEmit", time);
     });
+    video.addEventListener('seeked', function once(){
+        cTime = myplayer.currentTime()
+        newChunkNumber = oneSecondChunks*cTime
+        let newTime = newChunkNumber*oneChunkLength
+        let oldTime = []
+        for(let i = 0; i < chunksSent.length; i++)
+        {
+            oldTime[i] = chunksSent[i]*oneChunkLength
+            if(newTime - oldTime[i] >= 60)
+            {
+                console.log("yolo")
+            }
+        }
+    })
 }
 
 
@@ -68,11 +63,12 @@ function createDataChannel (conn)
 let blobArray = []
 let once2 = true
 let once33 = true
+let chunksRecieved = 0
 
 function recieveDataChannel(conn)
 {
     console.log("conn Recieved")
-    let chunksRecieved = 0
+    
     let lastTime = 0
     let  newTime = 0
     let timeDifference = 0
@@ -106,18 +102,19 @@ function recieveDataChannel(conn)
         }
         newTime = d.getTime()
         blobArray.push(new Blob([new Uint8Array(data.chunk)],{'type':'video/mp4'}));
-		let blob = new Blob(blobArray,{'type':'video/mp4'});
         if(currentFileDuration >= 60)
         {
             timeDifference = newTime - lastTime
             if(chunksRecieved == Math.round(oneSecondChunks*70))
             {
+                let blob = new Blob(blobArray,{'type':'video/mp4'});
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded worth 70 secs")
                 console.log(chunksRecieved)
             }
             if(chunksRecieved == buffer)
             {
+                let blob = new Blob(blobArray,{'type':'video/mp4'});
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded worth 70 secs for new ones")
                 console.log(chunksRecieved)
@@ -125,6 +122,7 @@ function recieveDataChannel(conn)
             
             if(timeDifference >= 60000 && timeDifference < 65000)
             {
+                let blob = new Blob(blobArray,{'type':'video/mp4'});
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded after 60 secs")
                 lastTime = newTime
@@ -134,8 +132,10 @@ function recieveDataChannel(conn)
         if(chunksRecieved == chunkAmount)
         {
             console.log("loaded all")
+            let blob = new Blob(blobArray,{'type':'video/mp4'});
             loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
             conn.send("fileLoaded")
+            chunksRecieved = 0
         }
         else
         {
@@ -223,6 +223,7 @@ function startSendingChunks()
                 //console.log("sending next chunk for " + data.nextChunk)
                 _isPaused = myplayer.paused()
                 _currentTime = myplayer.currentTime()
+                chunksSent[i] = (data.nextChunk - 1)
                 connArray[i].send({chunk:chunkArray[data.nextChunk], firstCall:false, isPaused:_isPaused, currentTime:_currentTime})
             }
             else
@@ -238,10 +239,12 @@ let once4 = true
 
 function startSendingChunksInBetween(conn)
 {
-    
+    let myIndex = 0
     let _currentTime = myplayer.currentTime()
     let _isPaused = myplayer.paused()
     let next = Math.round(myplayer.currentTime()*oneSecondChunks)
+    myIndex = chunksSent.length
+    chunksSent[myIndex] = 0
     conn.send({chunk:chunkArray[0], firstCall:true, isPaused:_isPaused, currentTime:_currentTime})
     conn.on('data', function once(data){
         if(data != "fileLoaded")
@@ -259,6 +262,7 @@ function startSendingChunksInBetween(conn)
             }
             else
             {
+                chunksSent[myIndex] = (data.nextChunk - 1)
                 conn.send({chunk:chunkArray[data.nextChunk], firstCall:false, isPaused:_isPaused, currentTime:_currentTime})
             }
             
@@ -335,6 +339,6 @@ socket.on("streamInfo", (size, length)=>{
     oneSecondChunks = 1/oneChunkLength
 })
 
-socket.on("ohman", ()=>{
-    consolelog("wokrs ?")
+socket.on("seeked", ()=>{
+    
 })
