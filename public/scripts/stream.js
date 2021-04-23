@@ -32,6 +32,8 @@ function streamFile(e) {
       socket.emit("playEmit", time);
     });
     video.addEventListener('seeked', function once(){
+        //video.removeEventListener("seeked", once);
+        console.log("seeked")
         cTime = myplayer.currentTime()
         newChunkNumber = oneSecondChunks*cTime
         let newTime = newChunkNumber*oneChunkLength

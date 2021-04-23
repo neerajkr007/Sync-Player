@@ -3,6 +3,7 @@ let friendsName = ""
 let myName = ""
 let mySocketId = ""
 let myHostId = ""
+let roomMemberCount = 0
 
 
 if(window.location.href.match("localhost"))
@@ -677,11 +678,13 @@ socket.on("rejectInvitationToRoom", (friendsName)=>{
 })
 
 socket.on("joinedRoom", (roomMemberArray)=>{
+    roomMemberCount = roomMemberArray.length
     updateRoomMemberList(roomMemberArray)
     //console.log(name + " joined the room")
 })
 
 socket.on("leftRoom", (roomMemberArray)=>{
+    roomMemberCount = roomMemberArray.length
     updateRoomMemberList(roomMemberArray)
     //console.log(name + " left the room")
 })
