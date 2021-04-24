@@ -221,7 +221,7 @@ io.on('connection', function(socket){
         }
     })
 
-    socket.on("tryLogin", async (e, p)=>{
+    socket.on("tryLogin", async (e, p, b)=>{
         let user = await Users.findOne({$or:[ {'email':e}, {'userName':e}]})
         if(user == null)
         {
@@ -229,7 +229,25 @@ io.on('connection', function(socket){
         }
         else
         {
-            if(user.password == p)
+            if(!b)
+            {
+                if(user.password == p)
+                {
+                    user.alreadyLoggedIn = true
+                    await user.save()
+                    let id = user._id
+                    app.get('/'+id, (req, res) =>
+                    {
+                        res.sendFile(__dirname + '/user.html');
+                    });
+                    socket.emit("loginSuccess", id, user.email, b)
+                }
+                else
+                {
+                    socket.emit("loginFailed", "password")
+                }
+            }
+            else
             {
                 user.alreadyLoggedIn = true
                 await user.save()
@@ -238,11 +256,7 @@ io.on('connection', function(socket){
                 {
                     res.sendFile(__dirname + '/user.html');
                 });
-                socket.emit("loginSuccess", id)
-            }
-            else
-            {
-                socket.emit("loginFailed", "password")
+                socket.emit("loginSuccess", id, user.email, b)
             }
         }
     })
@@ -928,6 +942,8 @@ io.on('connection', function(socket){
             let me = await Users.findOne({"_id":socket.id})
             if(me != null)
             {
+                me.alreadyLoggedIn = false
+                me.save()
                 for (let i = 0; i < me.friends.length; i++)
                 {
                     let friend = await Users.findOne({"userName":me.friends[i]})

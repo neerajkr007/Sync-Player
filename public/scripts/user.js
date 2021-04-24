@@ -5,6 +5,29 @@ let mySocketId = ""
 let myHostId = ""
 let roomMemberCount = 0
 
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+}
+
+var signinrememberme = getCookie("signinrememberme")
+var signinhref = getCookie("signinhref")
+if(!signinrememberme || !window.location.href.match(signinhref))
+{
+    window.location.replace('login')
+    window.onloadstart
+}
+
 
 if(window.location.href.match("localhost"))
 {
@@ -28,6 +51,14 @@ else if(window.location.href.match("sync"))
 
 
 //socket.emit("changeSocketId", )
+
+function logout()
+{
+    document.cookie = "signinrememberme=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "signinhref=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "signinemail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location.href = "login"
+}
 
 function addFriend()
 {
