@@ -738,6 +738,10 @@ io.on('connection', function(socket){
         SOCKET_LIST[final].emit('streamInfo', size, length)
     })
 
+    socket.on('loaded', (hostId)=>{
+        SOCKET_LIST[hostId].emit('userLoaded')
+    })
+
 
 
 

@@ -7,28 +7,12 @@ let chunkAmount = 0
 let oneChunkLength = 0
 let oneSecondChunks = 0
 
-
-
 function streamFile(e) {
     let { target: { files } } = e
     let [file] = files;
     currentFileSize = [file][0].size;
     let blob = new Blob([file], { type: "video/mp4" });
     let blobURL = URL.createObjectURL(blob);
-
-    /* dispose and recreate (not working for now) */
-
-    // videojs('my-video').dispose();
-    // let videoPlayer = document.createElement('video')
-    // videoPlayer.id = "my-video"
-    // videoPlayer.classList.add('videos-js')
-    // videoPlayer.setAttribute('controls', "controls")
-    // document.getElementById('player').appendChild(videoPlayer)
-    // myplayer = videojs('my-video', {
-    //     autoplay: false,
-    //     preload: 'auto',
-    //     fluid : "true"
-    // });
     myplayer.src({ type: "video/mp4", src: blobURL });
     var video = document.querySelector("video");
     video.addEventListener("loadeddata", function once() {
@@ -114,6 +98,7 @@ function recieveDataChannel(conn)
             {
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded worth 70 secs")
+                socket.emit("loaded", myHostId)
                 console.log(chunksRecieved)
             }
             if(chunksRecieved == buffer)
@@ -294,37 +279,13 @@ function loadChunks(blob, isPaused, currentTime)
 
 
 
+
+
 //          SOCKET STUFF    
 
 
 
-// socket.on("pause", (time) => 
-// {
-//     //myplayer.currentTime(time);
-//     myplayer.pause();
-//     if (myHostId == mySocketId) 
-//     {
-//         var video = document.querySelector('video');
-//         video.addEventListener('play', function once() {
-//             var time = myplayer.currentTime();
-//             video.removeEventListener('play', once)
-//             socket.emit("playEmit", time);
-//         });
-//     }
-// });
 
-// socket.on("play", (time) => {
-//     myplayer.currentTime(time);
-//     myplayer.play();
-//     if (myHostId == mySocketId) {
-//         var video = document.querySelector('video');
-//         video.addEventListener('pause', function once() {
-//             var time = myplayer.currentTime();
-//             video.removeEventListener('pause', once)
-//             socket.emit("pauseEmit", time);
-//         });
-//     }
-// });
 
 socket.on("streamInfo", (size, length)=>{
     currentFileDuration = Math.ceil(Number(length))
@@ -337,4 +298,12 @@ socket.on("streamInfo", (size, length)=>{
 
 socket.on("ohman", ()=>{
     consolelog("wokrs ?")
+})
+
+socket.on("userLoaded", ()=>{
+    usersLoaded.push(true)
+    if(usersLoaded.length == roomMemberCount)
+    {
+        
+    }
 })

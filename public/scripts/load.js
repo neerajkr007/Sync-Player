@@ -19,15 +19,24 @@ mediaSource.addEventListener('sourceopen', function () {
 mp4box.onReady = function (info) {
     console.log(info)
     let test = 0
+    let test2 = 0
     mp4box.onSegment = function (id, user, buffer, sampleNumber, last) {
         let sb = user
         sb.is_last = last
         sb.id = id
         sb.sampleNum = sampleNumber
         sb.pendingAppends.push({buffer: buffer});
+        if(id == 1)
+        {
+            console.log(test++)
+        }
+        else
+        {
+            console.log(test2++)
+        }
     }
     for (var i = 0; i < info.tracks.length; i++) {
-        console.log(i)
+        //console.log(i)
         var track = info.tracks[i];
         var codec = track.codec;
 	    var mime = 'video/mp4; codecs=\"'+codec+'\"';
