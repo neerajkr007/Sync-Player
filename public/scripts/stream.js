@@ -23,27 +23,68 @@ function streamFile(e) {
         currentFileDuration = myplayer.duration()
         socket.emit("streamInfo", currentFileSize, currentFileDuration, mySocketId)
         chunkArray = []
+        document.getElementById("modal-title").innerHTML = "wait";
+        let modalBody = document.getElementById("modal-body")
+        modalBody.innerHTML = "please wait while we get a few things ready, you will get an alert when we are ready"
+        $('#modal').modal('toggle');
         parseFile([file][0])
         console.log("file loaded");
+        document.getElementById("modal-title").innerHTML = "wait";
+        modalBody.innerHTML = "other users are loading files please dont start the video till next alert"
+        $('#modal').modal('toggle');
     });
     video.addEventListener("play", function once() {
       video.removeEventListener("play", once);
       var time = myplayer.currentTime();
       socket.emit("playEmit", time);
     });
-    video.addEventListener('seeked', function once(){
-        //video.removeEventListener("seeked", once);
-        console.log("seeked")
-        cTime = myplayer.currentTime()
-        newChunkNumber = oneSecondChunks*cTime
-        let newTime = newChunkNumber*oneChunkLength
-        let oldTime = []
+
+
+
+    //          SEEKING STUFF
+
+
+    var previousTime = 0;
+    var currentTime = 0;
+    myplayer.controlBar.progressControl.on('mousedown', () => 
+        previousTime = myplayer.currentTime()
+    );
+    myplayer.controlBar.progressControl.seekBar.on('mousedown', () => 
+        previousTime = myplayer.currentTime()
+    );
+    myplayer.on('keydown', (e) => {
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            previousTime = myplayer.currentTime();
+        }
+    });
+
+    console.log(previousTime);
+    myplayer.on('seeked', function once(){
+        if(Math.floor(previousTime) == Math.floor(currentTime))
+        {
+            return
+        }
+        currentTime = Math.floor(myplayer.currentTime())
+        // console.log(previousTime)
+        // console.log(currentTime)
+        // console.log("seeked")
+        newChunkNumber = oneSecondChunks*currentTime
+        // let newTime = newChunkNumber*oneChunkLength
+        // let oldTime = []
         for(let i = 0; i < chunksSent.length; i++)
         {
             oldTime[i] = chunksSent[i]*oneChunkLength
             if(newTime - oldTime[i] >= 60)
             {
-                console.log("yolo")
+                //console.log("yolo")
+            }
+            if(oldTime[i] - currentTime >= 60)
+            {
+                //          LOAD VIDEO TILL NOW
+            }
+            else 
+            {
+
             }
         }
     })
@@ -113,6 +154,7 @@ function recieveDataChannel(conn)
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded worth 70 secs")
                 console.log(chunksRecieved)
+                socket.emit("readyToStream", myHostId)
             }
             if(chunksRecieved == buffer)
             {
@@ -120,6 +162,7 @@ function recieveDataChannel(conn)
                 loadChunks(URL.createObjectURL(blob), data.isPaused, data.currentTime)
                 console.log("loaded worth 70 secs for new ones")
                 console.log(chunksRecieved)
+                socket.emit("readyToStream", myHostId)
             }
             
             if(timeDifference >= 60000 && timeDifference < 65000)
@@ -173,13 +216,13 @@ function parseFile(file) {
         if (offset >= fileSize) {
 			console.log("Done reading file");
             console.log(chunkArray.length)
-            if(chunkArray.length < 50)
-            {
-                setTimeout(() => {
-                    startSendingChunks()
-                }, 1000);
-            }
-            else
+            // if(chunkArray.length < 50)
+            // {
+            //     setTimeout(() => {
+            //         startSendingChunks()
+            //     }, 1000);
+            // }
+            // else
             {
                 startSendingChunks()
             }
@@ -290,11 +333,19 @@ function loadChunks(blob, isPaused, currentTime)
     else {
         myplayer.play()
     }
-    myplayer.addRemoteTextTrack({
-        kind: 'captions', 
-        label:'added',
-        src: subBlobUrl,
-        mode: 'showing'}, false);
+    if(subBlobUrl != null)
+    {
+        myplayer.addRemoteTextTrack({
+            kind: 'captions', 
+            label:'en',
+            src: subBlobUrl,
+            mode: 'showing'}, false);
+    }
+}
+
+function loadSubs(subBlobUrl)
+{
+    
 }
 
 
@@ -343,4 +394,18 @@ socket.on("streamInfo", (size, length)=>{
 
 socket.on("seeked", ()=>{
     
+})
+
+let readyUsers = 0
+
+socket.on("readyToStream", ()=>{
+    console.log("works ?")
+    readyUsers++
+    if(readyUsers == (currentUserCount - 1))
+    {
+        document.getElementById("modal-title").innerHTML = "done";
+        let modalBody = document.getElementById("modal-body")
+        modalBody.innerHTML = "all users are ready to watch, you can start the video"
+        $('#modal').modal('toggle');
+    }
 })

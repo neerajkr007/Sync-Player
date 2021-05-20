@@ -7,7 +7,6 @@ var path = require('path');
 
 
 const mongoose = require('mongoose');
-const { copyFileSync, appendFileSync } = require('fs');
 
 const URI = "mongodb+srv://neerajkr007:MGpemPWPXnG7PEki@cluster0.eq19x.mongodb.net/DB0?retryWrites=true&w=majority"
 const connection = async ()=>{
@@ -48,8 +47,7 @@ app.get('/index', (req, res) =>
 
 app.get('/rooms', (req, res) =>
 {
-    res.sendFile(__dirname + '/rooms.html');
-    
+    //res.sendFile(__dirname + '/rooms.html');
 }); 
 
 app.get('/login', (req, res) =>
@@ -64,7 +62,7 @@ app.get('/signup', (req, res) =>
 
 app.get('/sw.js', (req, res) =>
 {
-    res.sendFile(__dirname + '/sw.js');
+    //res.sendFile(__dirname + '/sw.js');
 });
 
 app.get('/guest', (req, res) =>
@@ -637,11 +635,9 @@ io.on('connection', function(socket){
                         return result;
                     }
                     function convertSrtCue(caption) {
-                        // remove all html tags for security reasons
                         //srt = srt.replace(/<[a-zA-Z\/][^>]*>/g, '');
                         var cue = "";
                         var s = caption.split(/\n/);
-                        // concatenate muilt-line string separated in array into one
                         while (s.length > 3) {
                             for (var i = 3; i < s.length; i++) {
                                 s[2] += "\n" + s[i]
@@ -650,10 +646,15 @@ io.on('connection', function(socket){
                         }
                         var line = 0;
                         // detect identifier
-                        if (!s[0].match(/\d+:\d+:\d+/) && s[1].match(/\d+:\d+:\d+/)) {
-                          cue += s[0].match(/\w+/) + "\n";
-                          line += 1;
+                        try {
+                            if (!s[0].match(/\d+:\d+:\d+/) && s[1].match(/\d+:\d+:\d+/)) {
+                                cue += s[0].match(/\w+/) + "\n";
+                                line += 1;
+                              }
+                        } catch (error) {
+                            console.log(error)
                         }
+                        
                         // get time strings
                         if (s[line].match(/\d+:\d+:\d+/)) {
                           // convert time string
@@ -678,7 +679,11 @@ io.on('connection', function(socket){
                     }
                     for (let item of socket.adapter.rooms.get(socket.id)) {
                         if (item == socket.id) continue
-                        SOCKET_LIST[item].emit("subs", vtt)
+                        try {
+                            SOCKET_LIST[item].emit("subs", vtt)
+                        } catch (error) {
+                            console.log(error)
+                        }
                     }
                 })
                 
@@ -752,6 +757,10 @@ io.on('connection', function(socket){
         SOCKET_LIST[final].emit('streamInfo', size, length)
     })
 
+    socket.on("readyToStream", (hostId)=>{
+        SOCKET_LIST[hostId].emit("readyToStream")
+    })
+
 
 
 
@@ -764,13 +773,21 @@ io.on('connection', function(socket){
 
     socket.on("pauseEmit", (time)=>{
         for (let item of socket.adapter.rooms.get(socket.id)) {
-            SOCKET_LIST[item].emit('pause', time)
+            try {
+                SOCKET_LIST[item].emit('pause', time)
+            } catch (error) {
+                console.log(error)
+            }
         }
     });
 
     socket.on("playEmit", (time)=>{
         for (let item of socket.adapter.rooms.get(socket.id)) {
-            SOCKET_LIST[item].emit('play', time)
+            try {
+                SOCKET_LIST[item].emit('play', time)
+            } catch (error) {
+                console.log(error)
+            }
         }
     });
 

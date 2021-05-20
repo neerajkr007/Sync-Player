@@ -75,6 +75,7 @@ function addSubs(e)
         webvtt
         .getURL()
         .then(url => {
+            var myplayer = videojs("my-video");
             myplayer.addRemoteTextTrack({
                 kind: 'captions', 
                 label:'added',
@@ -376,11 +377,16 @@ socket.on("sessionType", (_currentSessionType)=>{
 socket.on("subs", data=>{
     SubBlob = new Blob([data], {type: 'text/plain'});
     subBlobUrl = URL.createObjectURL(SubBlob);
-    // myplayer.addRemoteTextTrack({
-    //     kind: 'captions', 
-    //     label:'added',
-    //     src: subBlobUrl,
-    //     mode: 'showing'}, false);
+    //loadSubs(subBlobUrl)
+    var myplayer = videojs("my-video");
+    if(subBlobUrl != null)
+    {
+        myplayer.addRemoteTextTrack({
+            kind: 'captions', 
+            label:'en',
+            src: subBlobUrl,
+            mode: 'showing'}, false);
+    }
 })
 
 

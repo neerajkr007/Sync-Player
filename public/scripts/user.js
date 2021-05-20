@@ -4,6 +4,7 @@ let myName = ""
 let mySocketId = ""
 let myHostId = ""
 let roomMemberCount = 0
+let currentUserCount = 0
 
 function getCookie(cname) {
     var name = cname + "=";
@@ -24,7 +25,7 @@ var signinrememberme = getCookie("signinrememberme")
 var signinhref = getCookie("signinhref")
 if(!signinrememberme || !window.location.href.match(signinhref))
 {
-    window.location.replace('login')
+    //window.location.replace('login')
     window.onloadstart
 }
 
@@ -449,6 +450,7 @@ function chatMenu()
 
 function updateRoomMemberList(roomMemberArray)
 {
+    currentUserCount = roomMemberArray.length
     document.getElementById('playerList').innerHTML = ""
     for(let i = 0; i < roomMemberArray.length; i++)
     {
