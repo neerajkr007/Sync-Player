@@ -25,7 +25,7 @@ var signinrememberme = getCookie("signinrememberme")
 var signinhref = getCookie("signinhref")
 if(!signinrememberme || !window.location.href.match(signinhref))
 {
-    //window.location.replace('login')
+    window.location.replace('login')
     window.onloadstart
 }
 
