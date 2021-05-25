@@ -7,6 +7,7 @@ var path = require('path');
 
 
 const mongoose = require('mongoose');
+const { Router } = require('express');
 
 const URI = "mongodb+srv://neerajkr007:MGpemPWPXnG7PEki@cluster0.eq19x.mongodb.net/DB0?retryWrites=true&w=majority"
 const connection = async ()=>{
@@ -67,7 +68,7 @@ app.get('/sw.js', (req, res) =>
 
 app.get('/guest', (req, res) =>
 {
-    res.sendFile(__dirname + '/user.html');
+    res.sendFile(__dirname + '/guest.html');
 });
 
 app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
@@ -84,6 +85,7 @@ app.get('/606f5bec26e2936274a3361f', (req, res) =>
 {
     res.sendFile(__dirname + '/user.html');
 });
+
 
 app.use(express.static(__dirname + '/public'));
 
@@ -104,6 +106,7 @@ var Player = function(id){
         roomId: "",
         name:"",
         myRoomNumber:-1,
+        roomType:"",
         isHost:false,
         isReady:false,
         fileSize:0,
@@ -122,6 +125,15 @@ var eventify = function(arr, callback) {
 
 var isPLayerShown = false;
 
+function makeid(length) {
+    var result           = [];
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+    result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+}
+return result.join('');
+}
 
 
 io.on('connection', function(socket){
@@ -157,6 +169,7 @@ io.on('connection', function(socket){
         SOCKET_LIST[socket.id] = socket;
         player = Player(socket.id);
         PLAYER_LIST[socket.id] = player;
+        player.roomType = "login"
         //console.log(socket.id)
         let me = await Users.findOne({"_id":newId})
         socket.emit("welcomeUser", me.userName)
@@ -185,6 +198,71 @@ io.on('connection', function(socket){
         
 })
 
+
+
+
+//          GUEST STUFF
+
+
+    socket.on("createGuestRoom", id =>{
+        app.get('/' + id, (req, res)=>{
+            res.sendFile(__dirname + '/guest.html');
+        })
+        socket.emit("createGuestRoom")
+    })
+
+    socket.on("createGuestRoom2", (id, guestName) =>{
+        if(SOCKET_LIST[id] == undefined)
+        {
+            socket.id = id
+            socket.join(socket.id)
+            SOCKET_LIST[socket.id] = socket;
+            player = Player(socket.id);
+            player.name = guestName
+            PLAYER_LIST[socket.id] = player;
+            PLAYER_LIST[socket.id].roomId = id
+            player.roomType = "guest"
+            //socket.emit("createGuestRoom2")
+        }
+        socket.emit("createGuestRoom2", socket.id, PLAYER_LIST[id].name)
+    })
+
+    socket.on("checkForHost", (roomId, guestName)=>{
+        if(socket.id != roomId)
+        {
+            socket.id = makeid(30)
+            socket.emit("checkForHost")
+            socket.join(roomId)
+            SOCKET_LIST[socket.id] = socket;
+            player = Player(socket.id);
+            player.name = guestName
+            PLAYER_LIST[socket.id] = player;
+            PLAYER_LIST[socket.id].roomId = roomId
+            player.roomType = "guest"
+            try 
+            {
+                let roomMemberArray = []
+                for(let item of socket.adapter.rooms.get(roomId))
+                {
+                    roomMemberArray.push(PLAYER_LIST[item].name)   
+                }
+                for (let item of socket.adapter.rooms.get(roomId)) 
+                {
+                    SOCKET_LIST[item].emit('joinedRoom', roomMemberArray)
+                    if (item == socket.id)
+                    {
+                        continue
+                    }
+                    console.log('sending init receive to ' + item)
+                    SOCKET_LIST[item].emit('initReceive', socket.id, roomId)
+                }
+            }
+            catch(e)
+            {
+
+            }
+        }
+    })
 
 
 
@@ -585,11 +663,15 @@ io.on('connection', function(socket){
 
 
 
-    socket.on("playAudioEmit", (n, hostId)=>{
-        if(n == 1)
-            io.sockets.emit("playAudio", hostId, socket.id);
-        else if(n == 2)
-            io.sockets.emit("pauseAudio", hostId, socket.id);
+    socket.on("playAudioEmit", (n, id) => {
+        for (let item of socket.adapter.rooms.get(id)) 
+        {
+            if (item == socket.id) continue
+            if (n == 1)
+                SOCKET_LIST[item].emit("playAudio", socket.id)
+            else if (n == 2)
+                SOCKET_LIST[item].emit("pauseAudio", socket.id)
+        }
     });
 
 
@@ -956,20 +1038,25 @@ io.on('connection', function(socket){
         console.log('socket disconnected ');
         if(socket.id.length > 20)
         {
-            let me = await Users.findOne({"_id":socket.id})
-            if(me != null)
+            let me
+            if(PLAYER_LIST[socket.id].roomType == "login")
             {
-                me.alreadyLoggedIn = false
-                me.save()
-                for (let i = 0; i < me.friends.length; i++)
+                me = await Users.findOne({"_id":socket.id})
+                if(me != null)
                 {
-                    let friend = await Users.findOne({"userName":me.friends[i]})
-                    if(SOCKET_LIST[friend._id] != undefined)
+                    me.alreadyLoggedIn = false
+                    me.save()
+                    for (let i = 0; i < me.friends.length; i++)
                     {
-                        SOCKET_LIST[friend._id].emit("wentOffline", me.userName)
-                    }
-                } 
+                        let friend = await Users.findOne({"userName":me.friends[i]})
+                        if(SOCKET_LIST[friend._id] != undefined)
+                        {
+                            SOCKET_LIST[friend._id].emit("wentOffline", me.userName)
+                        }
+                    } 
+                }
             }
+            
             let roomMemberArray = []
             try
             {
@@ -983,9 +1070,9 @@ io.on('connection', function(socket){
                     SOCKET_LIST[item].emit('leftRoom', roomMemberArray)
                 }
             }
-            catch
+            catch(e)
             {
-
+                console.log(e)
             }
             
             

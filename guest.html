@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"
+        integrity="sha512-2RDFHqfLZW8IhPRvQYmK9bTLfj/hddxGXQAred2wNZGkrKQkLGj8RCkXfRJPHlDerdHHIzTFaahq4s/P4V6Qig=="
+        crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/5c50a4aeb8.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/js/all.min.js"></script>
+    <title>Sync Player</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <script src="https://imshaikot.github.io/srt-webvtt/index.js"></script>
+    <!-- <link rel="manifest" href="/manifest.json"> -->
+</head>
+
+<body id="body" class="ubantuFont">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
+
+
+    <nav class="navbar navbar-expand-lg navbar-light" style="border-bottom: 1px solid black;">
+        <a class="navbar-brand" href="index">SyncPlayer</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="index">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="notice">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="main" class="row ubantuFont m-0 pl-3 pr-3" style="max-width: 100%;">
+        <div class="col-md-10">
+            <div class="row mt-5">
+                <p id="welcomeUser" class="ubantuFont col-md-9 display-4"></p>
+                <div id="playerlist" class="dropdown col-md-2 mb-5 text-center rounded text-white" style="background: transparent; margin-top: 15px; display: none;">
+                    <button class="btn btn-secondary w-100" type="menu" id="dropdownMenuButton4" style="background: #404040 !important;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        users connected - 
+                    </button>
+                    <div id="playerList" class="dropdown-menu text-white p-0" aria-labelledby="dropdownMenuButton4">
+                    </div>
+                  </div>
+                <div id="voice" class="col-md-1">
+                    <button class="ml-3" id="micButton" style="background-color: transparent; border: none; margin-top: 15px; display: none; outline: none;" onClick="toggleVoice()"><i class="fas fa-2x fa-microphone-slash" ></i></button>
+                    <div id="audioPlayer"></div>
+                </div>
+            </div>
+            <div id="hostUI">
+                <h4 id="randomElement1" class="ubantuFont mt-5">Get Started :</h4>
+                <div class="row mt-4 pl-3">
+                    <button id="getStartedButton" class="btn btn-info" onclick="getStarted();">create a room</button>
+                    <p id="sessionType" class="col-md-6 pl-2 mb-0" style="margin-top: 8px;"></p>
+                </div>
+            </div>
+            <div id="player" class="mt-10 mb-2" style="display: none;">
+                <h3 id="1">choose local file:</h3><br>
+                <input type="file" id="myfile" class="mb-5" name="myfile" accept="video/*" />
+                <video
+                  id="my-video"
+                  class="video-js"
+                  controls
+                  preload="auto"
+                  fluid = "true"
+                  data-setup='{"autoplay": false}'
+                >
+                </video>
+                <style type="text/css">
+                    .video-js .vjs-time-control{display:block;}
+                    .video-js .vjs-remaining-time{display: none;}
+                </style>
+                <label for="mySubs">upload subs</label>
+                <input type="file" id="mySubs" class="mb-5"/>
+            </div>
+        </div>
+        <div id="chatBoxButton" class="fixed-bottom mb-5 mt-10 chatToggleButton" style="left: calc(95% - 48px);">
+          <span onclick="document.getElementById('chatBoxButton').style.display = 'none'; document.getElementById('chatBox').style.display = 'block';">
+            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+              width="48" height="48"
+              viewBox="0 0 226 226"
+              style=" fill:#000000;"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><g><path d="M94.16667,169.5h75.33333l28.25,28.25v-103.58333c0,-10.40071 -8.43263,-18.83333 -18.83333,-18.83333h-84.75c-10.40071,0 -18.83333,8.43263 -18.83333,18.83333v56.5c0,10.40071 8.43263,18.83333 18.83333,18.83333" fill="#00a07f"></path><path d="M136.54167,122.41667h-80.04167l-28.25,28.25v-103.58333c0,-10.40071 8.43263,-18.83333 18.83333,-18.83333h89.45833c10.40071,0 18.83333,8.43263 18.83333,18.83333v56.5c0,10.40071 -8.43263,18.83333 -18.83333,18.83333" fill="#666666"></path></g></g></svg>
+          </span>
+        </div>
+        <div  id="chatBox" class="fixed-bottom mb-5 mt-10" style="left: calc(95% - 300px); display: none; ">
+          <section class="chatbox" style="height: calc(30vh + 50px) !important;">
+            <div style="min-height: 50px; padding-top: 16px; background-color: #2F323B; border-bottom: 1px solid #2671ff">
+              <span class="text-white">
+                <p id="friendNameChat" class="d-inline-flex ml-3 mb-0">Active Chats</p>
+                <i class="fas fa-times fa-1x float-right mr-3 d-inline-flex" onclick="document.getElementById('chatBox').style.display = 'none'; document.getElementById('chatBoxButton').style.display = 'block'"></i>
+              </span>
+            </div>
+            <section id="chatWindow" class="chat-window" style="max-height: 100% !important">
+            </section>
+          </section>
+        </div>
+    </div>
+
+
+    
+
+    <!-- MODALS -->
+    <div id="modal" class="modal fade ubantuFont" tabindex="-1" role="dialog" style="display: none;">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 id="modal-title" class="modal-title">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+            </div>
+            <div id="modal-footer" class="modal-footer">
+                <button id="searchButton" type="button" class="btn btn-info" style="display: none;" >Search</button>
+                <button id="modal-cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+
+    
+    <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.3.2/peerjs.min.js" integrity="sha512-4wTQ8feow93K3qVGVXUGLULDB9eAULiG+xdbaQH8tYZlXxYv9ij+evblXD0EOqmGWT8NBTd1vQGsURvrQzmKeg==" crossorigin="anonymous"></script>
+    <script src="/scripts/guest.js"></script>
+    <!-- <script src="/scripts/user.js"></script>
+    
+    <script src="/scripts/load.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mp4box@0.4.1/dist/mp4box.all.min.js" integrity="sha256-EcVkbViGB2s/KosHquMDEF2b6cfp0f3IVjZNxFH2x+s=" crossorigin="anonymous"></script>
+    <script src="/scripts/stream.js"></script> -->
+</body>
+
+</html>
