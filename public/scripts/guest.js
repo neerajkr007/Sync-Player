@@ -14,6 +14,11 @@ let mySocketId = ""
 let sessionType = ""
 let roomMemberCount = 0
 let voiceOn = true
+let currentSessionType = ""
+let hostSocket
+let SubBlob
+let subBlobUrl
+let once = true
 
 
 function updateRoomMemberList(roomMemberArray)
@@ -36,17 +41,20 @@ function getStarted() {
     cancelButton.innerHTML = "confirm"
     cancelButton.onclick = () => {
         document.getElementById("getStartedButton").remove()
-        if (document.getElementById("Radios1").checked) {
+        if (document.getElementById("Radios1").checked) 
+        {
             sessionType = "load"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios01").innerHTML
             document.getElementById('player').style.display = "block"
         }
-        else {
+        else 
+        {
             sessionType = "stream"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios02").innerHTML
+            document.getElementById('player').style.display = "block"
         }
+        currentSessionType = sessionType
         document.getElementById("randomElement1").remove()
-        document.getElementById('welcomeUser').innerHTML = "welcome " + guestName
 
     }
     $('#modal').modal('toggle');
@@ -67,6 +75,45 @@ function toggleVoice()
         socket.emit("playAudioEmit", 2, myHostId)
         voiceOn = true
         document.getElementById("micButton").innerHTML = '<i class="fas fa-2x fa-microphone-slash"></i>'
+    }
+}
+
+function inputChanged(e)
+{
+    if(sessionType == "load")
+    {
+        loadFile(e)
+    }
+    else if(sessionType == "stream")
+    {
+        streamFile(e)
+    }
+    console.log(sessionType)
+}
+
+function addSubs(e)
+{
+    const { target: { files } } = e
+    const [file] = files
+    {
+        const webvtt = new WebVTTConverter([file][0]);
+        webvtt
+        .getURL()
+        .then(url => {
+            var myplayer = videojs("my-video");
+            myplayer.addRemoteTextTrack({
+                kind: 'captions', 
+                label:'added',
+                src: url,
+                mode: 'showing'}, false);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+    }
+    if(sessionType == "stream" && mySocketId == myHostId)
+    {
+        socket.emit("subs", [file][0])
     }
 }
 
@@ -99,6 +146,7 @@ socket.on("createGuestRoom2", (id, hostName)=>{
 socket.on("checkForHost", ()=>{
     document.getElementById("hostUI").remove()
 })
+
 
 socket.on("initReceive", (socket_id, hostid) => {
     myHostId = hostid
@@ -208,13 +256,10 @@ socket.on("initReceive", (socket_id, hostid) => {
                     });
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
-            // if(myHostId == mySocketId)
-            // {
-            //     peersForHost.push(peers[socket_id])
-            //     currentSessionType = sessionType
-            //     socket.emit("sessionType", sessionType)
-            //     createDataChannel(conn)
-            // }
+            if(myHostId == mySocketId)
+            {
+                createDataChannel(conn)
+            }
         })
     })
 })
@@ -329,10 +374,10 @@ socket.on('initSend', (socket_id, ida) => {
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
             // //console.log(peers)
             // console.log(socket_id)
-            // if(myHostId == socket_id)
-            // {
-            //     recieveDataChannel(conn)
-            // }
+            if(myHostId == socket_id)
+            {
+                recieveDataChannel(conn)
+            }
         })
     })
 
@@ -358,12 +403,48 @@ socket.on("pauseAudio", (id) => {
 socket.on("joinedRoom", (roomMemberArray)=>{
     roomMemberCount = roomMemberArray.length
     updateRoomMemberList(roomMemberArray)
+    socket.emit("sessionType", sessionType)
 })
 
 socket.on("leftRoom", (roomMemberArray)=>{
     roomMemberCount = roomMemberArray.length
     updateRoomMemberList(roomMemberArray)
     //console.log(name + " left the room")
+})
+
+socket.on("sessionType", (_currentSessionType)=>{
+    currentSessionType = _currentSessionType
+    console.log(currentSessionType)
+    if(currentSessionType == "load")
+    {
+        document.getElementById('player').style.display = "block"
+        document.getElementById('1').style.display = "block"
+        document.getElementById('myfile').style.display = "block"
+    }
+    else if(currentSessionType == "stream")
+    {
+        document.getElementById('1').style.display = "none"
+        document.getElementById('myfile').style.display = "none"
+        document.getElementById('player').style.display = "block"
+        document.getElementsByClassName("vjs-big-play-button")[0].remove()
+        document.getElementById("mySubs").previousElementSibling.remove()
+        document.getElementById("mySubs").remove()
+    }
+})
+
+socket.on("subs", data=>{
+    SubBlob = new Blob([data], {type: 'text/plain'});
+    subBlobUrl = URL.createObjectURL(SubBlob);
+    //loadSubs(subBlobUrl)
+    var myplayer = videojs("my-video");
+    if(subBlobUrl != null)
+    {
+        myplayer.addRemoteTextTrack({
+            kind: 'captions', 
+            label:'en',
+            src: subBlobUrl,
+            mode: 'showing'}, false);
+    }
 })
 
 

@@ -110,6 +110,7 @@ var Player = function(id){
         isHost:false,
         isReady:false,
         fileSize:0,
+        sessionType:"",
         hostNumber:-1,
     } 
     return self;
@@ -648,8 +649,9 @@ io.on('connection', function(socket){
     })
 
     socket.on("sessionType", (currentSessionType)=>{
+        //PLAYER_LIST[roomId].sessionType
         let lastestJoinedUser;
-        for(lastestJoinedUser of socket.adapter.rooms.get(socket.id));
+        for(lastestJoinedUser of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId));
         SOCKET_LIST[lastestJoinedUser].emit("sessionType", currentSessionType)
     })
 
