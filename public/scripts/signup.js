@@ -43,6 +43,22 @@ function validatePassword()
     }
 }
 
+function validateUserName()
+{
+    let userNameFormat = /^[a-zA-Z0-9_]+$/;
+    listofInputs[1] = document.getElementById("input1").value
+    if (listofInputs[1].match(userNameFormat)) {
+        document.getElementById("input1").classList.remove("is-invalid");
+        document.getElementById("input1").classList.add("is-valid");
+        document.getElementById("invalid1").innerHTML = ""
+    }
+    else {
+        document.getElementById("input1").classList.remove("is-valid");
+        document.getElementById("input1").classList.add("is-invalid");
+        document.getElementById("invalid1").innerHTML = "only user characters a-z A-Z 0-9"
+    }
+}
+
 function validateAll()
 {
     let allGood = [false, false, false, false];

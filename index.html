@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"
+        integrity="sha512-2RDFHqfLZW8IhPRvQYmK9bTLfj/hddxGXQAred2wNZGkrKQkLGj8RCkXfRJPHlDerdHHIzTFaahq4s/P4V6Qig=="
+        crossorigin="anonymous"></script>
 	<script src="https://kit.fontawesome.com/5c50a4aeb8.js" crossorigin="anonymous"></script>
+	<!-- <link rel="manifest" href="/manifest.json"> -->
 </head>
+
+
 <body >
 	
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="/css/style.css">
+	
 
 	
 	<nav class="navbar navbar-expand-lg navbar-light" style="border-bottom: 1px solid black;" >
@@ -43,10 +50,9 @@
 			<h1 class="display-3 text-center"> Welcome to the SyncPlayer !</h1>
 		</div>
 		<div class="mt-6 text-center">
-			<button class="btn btn-success text-white" onclick="location.href = '/login'">Sign In</button>
-			<br>
-			<p class="mt-2">or</p>
-			<button class="btn mt-4 btn-outline-success text-black">Continue as a Guest</button>
+			<button class="btn btn-success" onclick="location.href = '/login'">Sign In</button>
+			<p class="mt-2 mb-0">or continue as a Guest</p>
+			<button class="btn mt-2 btn-success" onclick="createGuestRoom()">Guest</button>
 		</div>
 	</div>
 
@@ -54,5 +60,25 @@
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+	<script>
+		const socket = io.connect()
+		function createGuestRoom()
+		{
+			let roomId = makeid(30)
+			socket.emit('createGuestRoom', roomId)
+			socket.on("createGuestRoom", ()=>{
+				location.href = "/" + roomId
+			})
+		}
+		function makeid(length) {
+			var result           = [];
+			var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+			var charactersLength = characters.length;
+			for ( var i = 0; i < length; i++ ) {
+			result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+		}
+		return result.join('');
+		}
+	</script>
 </body>
 </html>

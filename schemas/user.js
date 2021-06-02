@@ -12,7 +12,37 @@ const user = new mongoose.Schema({
     },
     alreadyLoggedIn:{
         type:Boolean
-    }
+    },
+    friends:[{
+        type:String
+    }],
+    requests:[{
+        type:String
+    }],
+    notifications:[{
+        type:String
+    }],
+    // messages:[{
+    //     friendId:{
+    //         type:String
+    //     }, 
+    //     messagesArray:{
+    //         myMessages:{
+    //             type:Array
+    //         },
+    //         friendMessages:{
+    //             type:Array
+    //         }
+    //     }
+    // }]
+    messages:[{
+        friendId:{
+            type:String
+        },
+        friendMessage:{
+            type:Array
+        }
+    }]
 });
 
-module.exports = User = mongoose.model('user', user, 'users');
+module.exports = User = mongoose.model('user', user, 'users', {timestamps: true});

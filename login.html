@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-	<script src="https://kit.fontawesome.com/5c50a4aeb8.js" crossorigin="anonymous"></script>
+	  <script src="https://kit.fontawesome.com/5c50a4aeb8.js" crossorigin="anonymous"></script>    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js" integrity="sha512-2RDFHqfLZW8IhPRvQYmK9bTLfj/hddxGXQAred2wNZGkrKQkLGj8RCkXfRJPHlDerdHHIzTFaahq4s/P4V6Qig==" crossorigin="anonymous"></script>
+    <script>const socket = io.connect()</script>
 </head>
-<body>
-	
+<body >
+    <script>
+      window.onunload = ()=>{
+          socket.emit('yolo')
+      };
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -60,7 +65,15 @@
                 <input id="input1" type="password" class="noBorder form-control shadow-none" placeholder="enter password" style="padding:0.5rem">
                 <div id="invalid1" class="invalid-feedback"></div>
             </div>
-            <p class="mt-1 hoverPointer ml-auto" style="max-width: fit-content;">forgot password</p>
+            <div class="row">
+              <div class="col-md-6 ">
+                <input class="hoverPointer" type="checkbox" id="rememberMe">
+                <label class="hoverPointer" for="rememberMe">
+                  Remember me
+                </label>
+              </div>
+              <p class="mt-1 col-md-6 hoverPointer ml-auto" style="max-width: fit-content;">forgot password</p>
+            </div>
             <div id="randomDiv001" class="mt-5 offset-md-1 col-md-10">
                 <button id="loginButton" class="btn loginButton text-white display-4" onclick="tryLogin(document.getElementById('input0').value, document.getElementById('input1').value, false)">Login</button>
             </div>
