@@ -33,7 +33,10 @@ if(window.location.href.match("localhost"))
 {
     try
     {
-        mySocketId = window.location.href.slice(22)
+        if(window.location.href.slice(-30).match("/"))
+        mySocketId = window.location.href.slice(-24)
+        else
+        mySocketId = window.location.href.slice(-30)
         if(mySocketId.length == 30)
         guestMode = true
         if(!guestMode)
@@ -45,7 +48,10 @@ else if(window.location.href.match("sync"))
 {
     try
     {
-        mySocketId = window.location.href.slice(40)
+        if(window.location.href.slice(-30).match("/"))
+        mySocketId = window.location.href.slice(-24)
+        else
+        mySocketId = window.location.href.slice(-30)
         if(mySocketId.length == 30)
         guestMode = true
         if(!guestMode)
@@ -53,6 +59,7 @@ else if(window.location.href.match("sync"))
     }
     catch{}
 }
+console.log(mySocketId)
 
 if(guestMode)
 {

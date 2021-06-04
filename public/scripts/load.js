@@ -28,6 +28,9 @@ function loadFile(e){
         });
     }
     let playButton = document.getElementsByClassName("vjs-big-play-button")[0];
+    myplayer.on('seeking', ()=>{
+        console.log("seeked")
+    })
     if(myHostId == mySocketId)
     {
         myplayer.on('play', ()=>{
