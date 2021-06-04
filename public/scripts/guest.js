@@ -37,6 +37,7 @@ function getStarted() {
     modalBody.innerHTML =
         '<div class="form-check"><input class="form-check-input" type="radio" name="Radios" id="Radios1" value="load" checked><label id="Radios01" class="form-check-label" for="Radios1">users have their file and will load themselves</label></div>'
         + '<div class="form-check"><input class="form-check-input" type="radio" name="Radios" id="Radios2" value="stream"><label id="Radios02" class="form-check-label" for="Radios2">users will stream from the host</label></div>'
+        + '<div class="form-check"><input class="form-check-input" type="radio" name="Radios" id="Radios3" value="youtube"><label id="Radios03" class="form-check-label" for="Radios3">watch a youtube video</label></div>'
     let cancelButton = document.getElementById('modal-cancel')
     cancelButton.innerHTML = "confirm"
     cancelButton.onclick = () => {
@@ -47,10 +48,16 @@ function getStarted() {
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios01").innerHTML
             document.getElementById('player').style.display = "block"
         }
-        else 
-        {
+        else if(document.getElementById("Radios2").checked) {
             sessionType = "stream"
             document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios02").innerHTML
+            document.getElementById('player').style.display = "block"
+        }
+        else
+        {
+            sessionType = "youtube"
+            syncYoutube()
+            document.getElementById("sessionType").innerHTML = "Session Type  :  " + document.getElementById("Radios03").innerHTML
             document.getElementById('player').style.display = "block"
         }
         currentSessionType = sessionType
@@ -88,7 +95,11 @@ function inputChanged(e)
     {
         streamFile(e)
     }
-    console.log(sessionType)
+    // else if(sessionType == "youtube")
+    // {
+    //     syncYoutube(e)
+    // }
+    //console.log(sessionType)
 }
 
 function addSubs(e)
@@ -258,7 +269,8 @@ socket.on("initReceive", (socket_id, hostid) => {
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
             if(myHostId == mySocketId)
             {
-                createDataChannel(conn)
+                if(sessionType == "stream")
+                    createDataChannel(conn)
             }
         })
     })
@@ -374,7 +386,7 @@ socket.on('initSend', (socket_id, ida) => {
             }).catch(e => { alert(`getusermedia error ${e.name}`);})
             // //console.log(peers)
             // console.log(socket_id)
-            if(myHostId == socket_id)
+            if(myHostId == socket_id && sessionType == "stream")
             {
                 recieveDataChannel(conn)
             }

@@ -1,10 +1,11 @@
-var myplayer = videojs("my-video");
+var myplayer = videojs("my-video")
 let hostLoadedFile = false
 let currentFileSize = 0
 
 
 function loadFile(e){
     {
+        console.log(sessionType)
         const { target: { files } } = e
         const [file] = files
         currentFileSize = [file][([file].length - 1)].size;
@@ -29,12 +30,17 @@ function loadFile(e){
     let playButton = document.getElementsByClassName("vjs-big-play-button")[0];
     if(myHostId == mySocketId)
     {
-        var video = document.querySelector('video');
-        video.addEventListener('play', function once (){
-            video.removeEventListener('play', once)
+        myplayer.on('play', ()=>{
+            myplayer.off('play')
             var time = myplayer.currentTime();
 			socket.emit("playEmit", time);
-        });
+        })
+        // var video = document.querySelector('video');
+        // video.addEventListener('play', function once (){
+        //     video.removeEventListener('play', once)
+        //     var time = myplayer.currentTime();
+		// 	socket.emit("playEmit", time);
+        // });
     }
     else
     {
@@ -74,6 +80,11 @@ socket.on("getCurrentTimeLoad", (id, _currentFileSize)=>{
             })
         }
         socket.emit("setCurrentTime", id, currentTime, currentSessionType)
+        myplayer.on('play', ()=>{
+            myplayer.off('play')
+            var time = myplayer.currentTime();
+			socket.emit("playEmit", time);
+        })
     }
     
 })
@@ -107,12 +118,11 @@ socket.on("pause", (time) =>
     myplayer.pause();
     if (myHostId == mySocketId) 
     {
-        var video = document.querySelector('video');
-        video.addEventListener('play', function once() {
-            var time = myplayer.currentTime();
-            video.removeEventListener('play', once)
+        myplayer.on('play', ()=>{
+            myplayer.off('play')
+            let time = myplayer.currentTime()
             socket.emit("playEmit", time);
-        });
+        })
     }
 });
 
@@ -120,11 +130,10 @@ socket.on("play", (time) => {
     myplayer.currentTime(time);
     myplayer.play();
     if (myHostId == mySocketId) {
-        var video = document.querySelector('video');
-        video.addEventListener('pause', function once() {
-            var time = myplayer.currentTime();
-            video.removeEventListener('pause', once)
+        myplayer.on('pause', ()=>{
+            myplayer.off('pause')
+            let time = myplayer.currentTime()
             socket.emit("pauseEmit", time);
-        });
+        })
     }
 });

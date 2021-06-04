@@ -68,7 +68,7 @@ app.get('/sw.js', (req, res) =>
 
 app.get('/guest', (req, res) =>
 {
-    res.sendFile(__dirname + '/guest.html');
+    res.sendFile(__dirname + '/user.html');
 });
 
 app.get('/606169cd630a0d6978ddcb1e', (req, res) =>
@@ -207,7 +207,7 @@ io.on('connection', function(socket){
 
     socket.on("createGuestRoom", id =>{
         app.get('/' + id, (req, res)=>{
-            res.sendFile(__dirname + '/guest.html');
+            res.sendFile(__dirname + '/user.html');
         })
         socket.emit("createGuestRoom")
     })
@@ -232,7 +232,7 @@ io.on('connection', function(socket){
         if(socket.id != roomId)
         {
             socket.id = makeid(30)
-            socket.emit("checkForHost")
+            socket.emit("checkForHost", socket.id)
             socket.join(roomId)
             SOCKET_LIST[socket.id] = socket;
             player = Player(socket.id);
@@ -569,6 +569,7 @@ io.on('connection', function(socket){
 
     socket.on("createRoom", ()=>{
         socket.join(socket.id)
+        PLAYER_LIST[socket.id].roomId = socket.id
         SOCKET_LIST[socket.id].emit('joinedRoom', PLAYER_LIST[socket.id].name)
         //console.log(socket.adapter.rooms.get(socket.id).size)
         //console.log(socket.adapter.rooms.get(socket.id))
@@ -589,6 +590,7 @@ io.on('connection', function(socket){
 
     socket.on("acceptInvitationToRoom", (id, myName, friendsName) => {
         socket.join(id)
+        //console.log(socket.adapter.rooms.get(id))
             try 
             {
                 let roomMemberArray = []
@@ -651,8 +653,31 @@ io.on('connection', function(socket){
     socket.on("sessionType", (currentSessionType)=>{
         //PLAYER_LIST[roomId].sessionType
         let lastestJoinedUser;
-        for(lastestJoinedUser of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId));
+        for(lastestJoinedUser of socket.adapter.rooms.get(socket.id));
         SOCKET_LIST[lastestJoinedUser].emit("sessionType", currentSessionType)
+    })
+
+    socket.on("sessionType2", (currentSessionType, roomId)=>{
+        //PLAYER_LIST[roomId].sessionType
+        for (let item of socket.adapter.rooms.get(roomId)) 
+        {
+            SOCKET_LIST[item].emit('sessionType', currentSessionType)
+        }
+    })
+
+    socket.on("sessionType3", (currentSessionType, roomId)=>{
+        //PLAYER_LIST[roomId].sessionType
+        let lastestJoinedUser;
+        for(lastestJoinedUser of socket.adapter.rooms.get(roomId));
+        SOCKET_LIST[lastestJoinedUser].emit("sessionType", currentSessionType)
+    })
+
+    socket.on("ytLink", link=>{
+        for (let item of socket.adapter.rooms.get(socket.id)) 
+        {
+            if(item == socket.id) continue
+            SOCKET_LIST[item].emit('ytLink', link)
+        }
     })
 
     
@@ -1062,15 +1087,19 @@ io.on('connection', function(socket){
             let roomMemberArray = []
             try
             {
-                for(let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+                if(PLAYER_LIST[socket.id].roomId != "")
                 {
-                    if (item == socket.id) continue
-                    roomMemberArray.push(PLAYER_LIST[item].name)    
+                    for(let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+                    {
+                        if (item == socket.id) continue
+                        roomMemberArray.push(PLAYER_LIST[item].name)    
+                    }
+                    for (let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
+                    {
+                        SOCKET_LIST[item].emit('leftRoom', roomMemberArray)
+                    }
                 }
-                for (let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
-                {
-                    SOCKET_LIST[item].emit('leftRoom', roomMemberArray)
-                }
+                
             }
             catch(e)
             {

@@ -17,9 +17,8 @@ function streamFile(e) {
     let blob = new Blob([file], { type: "video/mp4" });
     let blobURL = URL.createObjectURL(blob);
     myplayer.src({ type: "video/mp4", src: blobURL });
-    var video = document.querySelector("video");
-    video.addEventListener("loadeddata", function once() {
-        video.removeEventListener('loadeddata', once);
+    myplayer.on('loadeddata', ()=>{
+        myplayer.off('loadeddata')
         currentFileDuration = myplayer.duration()
         socket.emit("streamInfo", currentFileSize, currentFileDuration, mySocketId)
         chunkArray = []
@@ -33,11 +32,11 @@ function streamFile(e) {
         modalBody.innerHTML = "other users are loading files please dont start the video till next alert"
         $('#modal').modal('toggle');
     });
-    video.addEventListener("play", function once() {
-      video.removeEventListener("play", once);
-      var time = myplayer.currentTime();
-      socket.emit("playEmit", time);
-    });
+    myplayer.on('play', ()=>{
+        myplayer.off('play')
+        var time = myplayer.currentTime();
+        socket.emit("playEmit", time);
+    })
 
 
 

@@ -5,6 +5,10 @@ let mySocketId = ""
 let myHostId = ""
 let roomMemberCount = 0
 let currentUserCount = 0
+let guestMode = false
+let roomId
+let guestNames = ["Pappu Pager", "Jhandu Lal Tyagi", "Soorma Bhopali", "Chota Chatri", "Circuit", "Chatur Silencer", "Langda Tyagi", "Crime Master Gogo", "Vasooli Bhai", "Raju", "Babu Bhaiya", "Shyam", "Munna Bhai", "Virus", "Dr. Ghungroo"]
+let guestName = guestNames[Math.floor(Math.random() * 15)]
 
 function getCookie(cname) {
     var name = cname + "=";
@@ -21,21 +25,18 @@ function getCookie(cname) {
     return "";
 }
 
-var signinrememberme = getCookie("signinrememberme")
-var signinhref = getCookie("signinhref")
-if(!signinrememberme || !window.location.href.match(signinhref))
-{
-    window.location.replace('login')
-    window.onloadstart
-}
+
+
 
 
 if(window.location.href.match("localhost"))
 {
-    
     try
     {
         mySocketId = window.location.href.slice(22)
+        if(mySocketId.length == 30)
+        guestMode = true
+        if(!guestMode)
         socket.emit("changeSocketId", mySocketId)
     }
     catch{}
@@ -45,11 +46,37 @@ else if(window.location.href.match("sync"))
     try
     {
         mySocketId = window.location.href.slice(40)
+        if(mySocketId.length == 30)
+        guestMode = true
+        if(!guestMode)
         socket.emit("changeSocketId", mySocketId)
     }
     catch{}
 }
 
+if(guestMode)
+{
+    document.getElementById("notGuestMode").remove()
+    document.getElementById("friendsButton").remove()
+    document.getElementById("chatBoxButton").remove()
+    document.getElementById("chatBox").remove()
+    roomId = window.location.href.slice(-30)
+    socket.emit("createGuestRoom2", roomId, guestName)
+    socket.emit('checkForHost', roomId, guestName)
+    myHostId = roomId
+}
+
+if(!guestMode)
+{
+    var signinrememberme = getCookie("signinrememberme")
+    var signinhref = getCookie("signinhref")
+    if(!signinrememberme || !window.location.href.match(signinhref))
+    {
+        //window.location.replace('login')
+        window.onloadstart
+    }
+    
+}
 
 //socket.emit("changeSocketId", )
 
@@ -465,6 +492,22 @@ function updateRoomMemberList(roomMemberArray)
 
 
 
+socket.on("createGuestRoom2", (id, hostName)=>{
+    mySocketId = id
+    if(hostName != guestName)
+    {
+        document.getElementById('welcomeUser').style = "font-size: xx-large !important;"
+        document.getElementById('welcomeUser').innerHTML = "welcome " + guestName + " you are in " + hostName + "'s room"
+    }
+    else
+    document.getElementById('welcomeUser').innerHTML = hostName + "'s room"
+})
+
+socket.on("checkForHost", (id)=>{
+    document.getElementById("hostUI").remove()
+    mySocketId = id
+})
+
 socket.on("notification", (user, users)=>{
     let n = user.requests.length
     //console.log(user)
@@ -713,6 +756,8 @@ socket.on("rejectInvitationToRoom", (friendsName)=>{
 socket.on("joinedRoom", (roomMemberArray)=>{
     roomMemberCount = roomMemberArray.length
     updateRoomMemberList(roomMemberArray)
+    if(guestMode)
+    socket.emit("sessionType3", sessionType, roomId)
     //console.log(name + " joined the room")
 })
 
