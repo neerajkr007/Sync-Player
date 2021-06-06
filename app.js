@@ -882,6 +882,7 @@ io.on('connection', function(socket){
 
     socket.on("pauseEmit", (time)=>{
         for (let item of socket.adapter.rooms.get(socket.id)) {
+            //if(item == socket.id) continue
             try {
                 SOCKET_LIST[item].emit('pause', time)
             } catch (error) {
@@ -892,8 +893,29 @@ io.on('connection', function(socket){
 
     socket.on("playEmit", (time)=>{
         for (let item of socket.adapter.rooms.get(socket.id)) {
+            //if(item == socket.id) continue
             try {
                 SOCKET_LIST[item].emit('play', time)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    });
+
+    socket.on("pauseEmitYT", (time)=>{
+        for (let item of socket.adapter.rooms.get(socket.id)) {
+            try {
+                SOCKET_LIST[item].emit('pauseYT', time)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    });
+
+    socket.on("playEmitYT", (time)=>{
+        for (let item of socket.adapter.rooms.get(socket.id)) {
+            try {
+                SOCKET_LIST[item].emit('playYT', time)
             } catch (error) {
                 console.log(error)
             }
@@ -1087,7 +1109,7 @@ io.on('connection', function(socket){
             let roomMemberArray = []
             try
             {
-                if(PLAYER_LIST[socket.id].roomId != "")
+                if(PLAYER_LIST[socket.id].roomId != "" && socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId != undefined))
                 {
                     for(let item of socket.adapter.rooms.get(PLAYER_LIST[socket.id].roomId))
                     {

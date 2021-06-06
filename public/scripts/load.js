@@ -1,4 +1,3 @@
-var myplayer = videojs("my-video")
 let hostLoadedFile = false
 let currentFileSize = 0
 
@@ -28,9 +27,8 @@ function loadFile(e){
         });
     }
     let playButton = document.getElementsByClassName("vjs-big-play-button")[0];
-    myplayer.on('seeking', ()=>{
-        console.log("seeked")
-    })
+
+    
     if(myHostId == mySocketId)
     {
         myplayer.on('play', ()=>{
@@ -117,9 +115,10 @@ socket.on("wrongFile", ()=>{
 
 socket.on("pause", (time) => 
 {
+    console.log("YOLO")
     myplayer.currentTime(time);
     myplayer.pause();
-    if (myHostId == mySocketId) 
+    if (myHostId == mySocketId && myplayer.paused()) 
     {
         myplayer.on('play', ()=>{
             myplayer.off('play')
@@ -127,16 +126,26 @@ socket.on("pause", (time) =>
             socket.emit("playEmit", time);
         })
     }
+    else if(myHostId == mySocketId && !myplayer.paused())
+    {
+        myplayer.pause();
+    }
 });
 
 socket.on("play", (time) => {
     myplayer.currentTime(time);
     myplayer.play();
-    if (myHostId == mySocketId) {
+    if (myHostId == mySocketId && !myplayer.paused()) {
         myplayer.on('pause', ()=>{
             myplayer.off('pause')
             let time = myplayer.currentTime()
             socket.emit("pauseEmit", time);
         })
     }
+    else if(myHostId == mySocketId && myplayer.paused())
+    {
+        myplayer.play();
+    }
 });
+
+

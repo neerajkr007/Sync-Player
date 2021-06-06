@@ -2,6 +2,9 @@ let sessionType = null
 let currentSessionType = ""
 let SubBlob
 let subBlobUrl
+var myplayer = videojs("my-video")
+
+let connForHost = []
 
 function getStarted() {
     document.getElementById("modal-title").innerHTML = "Session Type";
@@ -102,6 +105,53 @@ function addSubs(e) {
 }
 
 
+//          seeking stuff
+
+
+    var previousTime = 0;
+    var currentTime = 0;
+    var playerIsPaused = false
+    myplayer.controlBar.progressControl.on('mousedown', () => {
+        previousTime = myplayer.currentTime()
+        playerIsPaused = myplayer.paused()
+    }
+    );
+    myplayer.controlBar.progressControl.seekBar.on('mousedown', () => {
+        previousTime = myplayer.currentTime()
+        playerIsPaused = myplayer.paused()
+    }
+    );
+    // myplayer.on('keydown', (e) => {
+    //     if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    //         previousTime = myplayer.currentTime();
+    //     }
+    // });
+
+    myplayer.on('seeked', ()=>{
+        // console.log(previousTime)
+        // console.log(myplayer.currentTime())
+        console.log('%c ' + previousTime, 'background: #222; color: #bada55')
+        console.log('%c ' + myplayer.currentTime(), 'background: #222; color: #bada55')
+        if(Math.floor(previousTime) == Math.floor(currentTime))
+        {
+            return
+        }
+        currentTime = Math.floor(myplayer.currentTime())
+        console.log('%c seeked', 'background: #222; color: #bada55')
+        if(myHostId == mySocketId)
+        {
+            if(myplayer.paused())
+            {
+                socket.emit("pauseEmit", currentTime)
+            }
+            else
+            {
+                socket.emit("playEmit", currentTime)
+            }
+        }
+    })
+
+
 
 
 //          SOCKET STUFF
@@ -186,13 +236,20 @@ socket.on("initReceive", (socket_id, hostid) => {
     peers[socket_id].on('connection', function (conn) {
         conn.on('open', () => {
             console.log("connected")
-            if (once && !guestMode) {
-                document.getElementById('player').style.display = "block"
+            if (once && !guestMode && sessionType != "youtube") {
                 if (myHostId == mySocketId) {
+                    document.getElementById('player').style.display = "block"
                     document.getElementById('1').style.display = "block"
                     document.getElementById('myfile').style.display = "block"
                 }
                 
+                once = false
+            }
+            else if(once && sessionType == "youtube")
+            {
+                if (myHostId == mySocketId) {
+                    document.getElementById('player').style.display = "none"
+                }
                 once = false
             }
             document.getElementById('playerlist').style.display = "block"
@@ -221,6 +278,7 @@ socket.on("initReceive", (socket_id, hostid) => {
                 //peersForHost.push(peers[socket_id])
                 currentSessionType = sessionType
                 socket.emit("sessionType", sessionType)
+                connForHost.push(conn)
                 if (sessionType == "stream")
                     createDataChannel(conn)
             }
@@ -303,9 +361,9 @@ socket.on('initSend', (socket_id, ida) => {
                 document.getElementById('player').style.display = "block"
                 document.getElementById('1').style.display = "none"
                 document.getElementById('myfile').style.display = "none"
-                document.getElementsByClassName("vjs-big-play-button")[0].remove()
-                document.getElementById("mySubs").previousElementSibling.remove()
-                document.getElementById("mySubs").remove()
+                document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
+                document.getElementById("mySubs").previousElementSibling.style.display = "none"
+                document.getElementById("mySubs").style.display = "none"
                 once = false
             }
             document.getElementById('playerlist').style.display = "block"
@@ -335,12 +393,18 @@ socket.on('initSend', (socket_id, ida) => {
                 });
             }).catch(e => { alert(`getusermedia error ${e.name}`); })
 
-
-
-
-            if (myHostId == socket_id && sessionType == "stream") {
-                recieveDataChannel(conn)
-            }
+            setTimeout(() => {
+                if (myHostId == socket_id && sessionType == "stream") {
+                    recieveDataChannel(conn)
+                }
+            }, 1000);
+            conn.on('data', data=>{
+                if(data === "dew_it")
+                {
+                    conn.off('data')
+                    recieveDataChannel(conn)
+                }
+            })
         })
     })
 
@@ -383,13 +447,20 @@ socket.on("sessionType", (_currentSessionType) => {
             document.getElementById('1').style.display = "none"
             document.getElementById('myfile').style.display = "none"
             document.getElementById('player').style.display = "block"
-            document.getElementsByClassName("vjs-big-play-button")[0].remove()
-            document.getElementById("mySubs").previousElementSibling.remove()
-            document.getElementById("mySubs").remove()
+            if(guestMode)
+            {
+                document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
+                document.getElementById("mySubs").previousElementSibling.style.display = "none"
+                document.getElementById("mySubs").style.display = "none"
+            }
         }
         else
         {
             document.getElementById('player').style.display = "block"
+            for(item of connForHost)
+            {
+                createDataChannel(item)
+            }
         }
         
     }
@@ -400,7 +471,7 @@ socket.on("sessionType", (_currentSessionType) => {
             document.getElementById('1').style.display = "none"
             document.getElementById('myfile').style.display = "none"
             document.getElementById('player').style.display = "block"
-            document.getElementsByClassName("vjs-big-play-button")[0].remove()
+            document.getElementsByClassName("vjs-big-play-button")[0].style.display = "none"
             document.getElementById("mySubs").previousElementSibling.style.display = "none"
             document.getElementById("mySubs").style.display = "none"
         }

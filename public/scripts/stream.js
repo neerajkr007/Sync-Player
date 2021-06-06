@@ -1,4 +1,4 @@
-var myplayer = videojs("my-video");
+//var myplayer = videojs("my-video");
 let chunkArray = []
 let connArray = []
 let currentFileDuration = 0
@@ -43,56 +43,57 @@ function streamFile(e) {
     //          SEEKING STUFF
 
 
-    var previousTime = 0;
-    var currentTime = 0;
-    myplayer.controlBar.progressControl.on('mousedown', () => 
-        previousTime = myplayer.currentTime()
-    );
-    myplayer.controlBar.progressControl.seekBar.on('mousedown', () => 
-        previousTime = myplayer.currentTime()
-    );
-    myplayer.on('keydown', (e) => {
-        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-            previousTime = myplayer.currentTime();
-        }
-    });
+    // var previousTime = 0;
+    // var currentTime = 0;
+    // myplayer.controlBar.progressControl.on('mousedown', () => 
+    //     previousTime = myplayer.currentTime()
+    // );
+    // myplayer.controlBar.progressControl.seekBar.on('mousedown', () => 
+    //     previousTime = myplayer.currentTime()
+    // );
+    // myplayer.on('keydown', (e) => {
+    //     if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    //         previousTime = myplayer.currentTime();
+    //     }
+    // });
 
-    console.log(previousTime);
-    myplayer.on('seeked', function once(){
-        if(Math.floor(previousTime) == Math.floor(currentTime))
-        {
-            return
-        }
-        currentTime = Math.floor(myplayer.currentTime())
-        // console.log(previousTime)
-        // console.log(currentTime)
-        // console.log("seeked")
-        newChunkNumber = oneSecondChunks*currentTime
-        // let newTime = newChunkNumber*oneChunkLength
-        // let oldTime = []
-        for(let i = 0; i < chunksSent.length; i++)
-        {
-            oldTime[i] = chunksSent[i]*oneChunkLength
-            if(newTime - oldTime[i] >= 60)
-            {
-                //console.log("yolo")
-            }
-            if(oldTime[i] - currentTime >= 60)
-            {
-                //          LOAD VIDEO TILL NOW
-            }
-            else 
-            {
+    // console.log(previousTime);
+    // myplayer.on('seeked', function once(){
+    //     if(Math.floor(previousTime) == Math.floor(currentTime))
+    //     {
+    //         return
+    //     }
+    //     currentTime = Math.floor(myplayer.currentTime())
+    //     // console.log(previousTime)
+    //     // console.log(currentTime)
+    //     // console.log("seeked")
+    //     newChunkNumber = oneSecondChunks*currentTime
+    //     // let newTime = newChunkNumber*oneChunkLength
+    //     // let oldTime = []
+    //     for(let i = 0; i < chunksSent.length; i++)
+    //     {
+    //         oldTime[i] = chunksSent[i]*oneChunkLength
+    //         if(newTime - oldTime[i] >= 60)
+    //         {
+    //             //console.log("yolo")
+    //         }
+    //         if(oldTime[i] - currentTime >= 60)
+    //         {
+    //             //          LOAD VIDEO TILL NOW
+    //         }
+    //         else 
+    //         {
 
-            }
-        }
-    })
+    //         }
+    //     }
+    // })
 }
 
 
 function createDataChannel (conn)
 {
-    //conn.send('Hello!');
+    console.log("create data channel")
+    conn.send('dew_it');
     connArray.push(conn)
     if(myplayer.currentTime() > 10)
     {
@@ -107,8 +108,11 @@ let once2 = true
 let once33 = true
 let chunksRecieved = 0
 
+
 function recieveDataChannel(conn)
 {
+    
+    console.log("recieve data channel")
     console.log("conn Recieved")
     
     let lastTime = 0
@@ -247,6 +251,7 @@ function parseFile(file) {
 
 function startSendingChunks()
 {
+    console.log("sending chinks called")
     for(let i = 0; i < connArray.length; i++)
     {
         connArray[i].off('data')

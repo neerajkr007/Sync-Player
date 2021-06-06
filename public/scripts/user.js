@@ -59,7 +59,6 @@ else if(window.location.href.match("sync"))
     }
     catch{}
 }
-console.log(mySocketId)
 
 if(guestMode)
 {
@@ -82,6 +81,7 @@ if(!guestMode)
         //window.location.replace('login')
         window.onloadstart
     }
+    socket.emit('createRoom')
     
 }
 
@@ -206,7 +206,6 @@ function showFriends(friends)
             a1.parentElement.classList.remove('show')
             if(sessionType != null)
             {
-                socket.emit('createRoom')
                 socket.emit('inviteToRoom', friends[i], myName)
             }
             else
