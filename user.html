@@ -16,7 +16,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-youtube@2.6.1/dist/Youtube.min.js"></script>
     <script src="https://imshaikot.github.io/srt-webvtt/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mtonomy/videojs-source-selector@1.3.1/dist/videojs-source-selector.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@2.1.0/dist/videojs-contrib-quality-levels.min.js"></script>
     <!-- <link rel="manifest" href="/manifest.json"> -->
 </head>
 
@@ -25,7 +28,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
 
 
     <nav class="navbar navbar-expand-lg navbar-light" style="border-bottom: 1px solid black;">
@@ -44,7 +46,7 @@
                     <a class="nav-link" href="notice">About</a>
                 </li>
             </ul>
-            <ul class="nav navbar-nav navbar-right">
+            <ul id="notGuestMode" class="nav navbar-nav navbar-right">
                 <li class="nav-item active dropdown mr-3" >
                     <button class="nav-link noBorder shadow-none p-0" data-toggle="dropdown" onclick="document.getElementById('bellCounter').style.display = 'none'" aria-expanded="false" aria-haspopup="true">
                         <span class="fa-layers fa-fw fa-2x" style="color: beige;">
@@ -95,6 +97,10 @@
                     <p id="sessionType" class="col-md-6 pl-2 mb-0" style="margin-top: 8px;"></p>
                 </div>
             </div>
+            <div id="ytLinkInputDiv" style="display: none;">
+                <input style="width: 300px;" type="text" placeholder="enter the link for youtube video" id="ytLinkInput">
+                <button class="btn btn-info" onclick="syncYoutube()">go</button>
+            </div>
             <div id="player" class="mt-10 mb-2" style="display: none;">
                 <h3 id="1">choose local file:</h3><br>
                 <input type="file" id="myfile" class="mb-5" name="myfile" accept="video/*" />
@@ -104,14 +110,16 @@
                   controls
                   preload="auto"
                   fluid = "true"
-                  data-setup='{"autoplay": false}'
+                  data-setup = '{"autoplay": false, "techOrder": ["html5"]}'
                 >
                 </video>
+                <script>
+                </script>
                 <style type="text/css">
                     .video-js .vjs-time-control{display:block;}
                     .video-js .vjs-remaining-time{display: none;}
                 </style>
-                <label for="mySubs">upload subs</label>
+                <label id="mySubsLabel" for="mySubs">upload subs</label>
                 <input type="file" id="mySubs" class="mb-5"/>
             </div>
         </div>
@@ -169,7 +177,6 @@
 
 
     
-    <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
@@ -185,6 +192,7 @@
     <script src="/scripts/load.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mp4box@0.4.1/dist/mp4box.all.min.js" integrity="sha256-EcVkbViGB2s/KosHquMDEF2b6cfp0f3IVjZNxFH2x+s=" crossorigin="anonymous"></script>
     <script src="/scripts/stream.js"></script>
+    <script src="/scripts/youtube.js"></script>
     <script>
         document.getElementById('myfile').addEventListener('change', inputChanged)
         document.getElementById('mySubs').addEventListener('change', addSubs)
