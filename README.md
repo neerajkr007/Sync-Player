@@ -1,2 +1,2 @@
 # Sync-Player
-https://sync-player-proto.herokuapp.com/
+https://sync--player.herokuapp.com/
